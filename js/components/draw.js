@@ -239,6 +239,7 @@ export class DrawEngine {
       }
 
       main.on('click', (e) => { L.DomEvent.stopPropagation(e); this.select(s.id); });
+      this._makeDraggable(main, s);
       main.addTo(g);
 
       if (on) {
@@ -266,6 +267,149 @@ export class DrawEngine {
       this._layers.set(s.id, g);
     });
   }
+
+
+  /* ------------------------------------------------------------------
+     Dragging — a committed shape can be repositioned wholesale
+     ------------------------------------------------------------------ */
+
+  _makeDraggable(layer, shape) {
+    let dragging = false, origin = null, before = null;
+
+    const move = (e) => {
+      if (!dragging) return;
+      const dLat = e.latlng.lat - origin.lat;
+      const dLng = e.latlng.lng - origin.lng;
+      const moved = before.map(([la, lo]) => [la + dLat, lo + dLng]);
+      const s = this.shapes.find((x) => x.id === shape.id);
+      if (!s) return;
+      s.latlngs = moved;
+      this._redrawShape(s);
+    };
+
+    const up = () => {
+      if (!dragging) return;
+      dragging = false;
+      this.map.dragging.enable();
+      this.map.off('mousemove', move);
+      this.map.off('mouseup', up);
+      this.nmap.root.classList.remove('is-dragging-shape');
+      const s = this.shapes.find((x) => x.id === shape.id);
+      if (s) {
+        s.latlngs = s.latlngs.map(([la, lo]) => [+la.toFixed(6), +lo.toFixed(6)]);
+        this.render();
+        this.onSelect(s);
+        this.onChange(this.shapes, `Move ${s.label}`);
+      }
+    };
+
+    layer.on('mousedown', (e) => {
+      if (this.tool) return;                  // drawing takes priority
+      if (this.selectedId !== shape.id) this.select(shape.id);
+      dragging = true;
+      origin = e.latlng;
+      before = this.shapes.find((x) => x.id === shape.id).latlngs.map((p) => [...p]);
+      this.map.dragging.disable();
+      this.map.on('mousemove', move);
+      this.map.on('mouseup', up);
+      this.nmap.root.classList.add('is-dragging-shape');
+      L.DomEvent.stopPropagation(e);
+    });
+  }
+
+  /** Cheap in-place geometry update while dragging (no full re-render). */
+  _redrawShape(s) {
+    const g = this._layers.get(s.id);
+    if (!g) return;
+    const layers = g.getLayers();
+    const main = layers[0];
+    if (s.type === 'circle') main.setLatLng(s.latlngs[0]);
+    else if (s.type === 'point') main.setLatLng(s.latlngs[0]);
+    else main.setLatLngs(s.latlngs);
+
+    // vertex handles + label follow
+    const at = s.type === 'polygon' ? centroid(s.latlngs)
+      : s.type === 'circle' || s.type === 'point' ? s.latlngs[0]
+      : s.latlngs.at(-1);
+    layers.forEach((l) => {
+      if (l instanceof L.Marker) l.setLatLng(at);
+    });
+    if (s.type !== 'circle' && s.type !== 'point') {
+      let i = 0;
+      layers.forEach((l) => {
+        if (l instanceof L.CircleMarker && l !== main) { l.setLatLng(s.latlngs[i]); i++; }
+      });
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     Clipboard — copy / cut / paste / duplicate
+     ------------------------------------------------------------------ */
+
+  copy(id = this.selectedId) {
+    const s = this.shapes.find((x) => x.id === id);
+    if (!s) return null;
+    this._clipboard = JSON.parse(JSON.stringify(s));
+    return this._clipboard;
+  }
+
+  cut(id = this.selectedId) {
+    const s = this.copy(id);
+    if (s) this.remove(id);
+    return s;
+  }
+
+  /**
+   * Paste the clipboard. Without a target the copy is nudged south-east so it
+   * doesn't hide under the original; with one it lands at that point.
+   */
+  paste(at = null) {
+    if (!this._clipboard) return null;
+    const src = this._clipboard;
+    let pts;
+
+    if (at) {
+      const anchor = src.latlngs[0];
+      const dLat = at.lat - anchor[0];
+      const dLng = at.lng - anchor[1];
+      pts = src.latlngs.map(([la, lo]) => [+(la + dLat).toFixed(6), +(lo + dLng).toFixed(6)]);
+    } else {
+      const off = this._pasteOffset();
+      pts = src.latlngs.map(([la, lo]) => [+(la - off).toFixed(6), +(lo + off).toFixed(6)]);
+    }
+
+    const shape = {
+      ...JSON.parse(JSON.stringify(src)),
+      id: uid(),
+      latlngs: pts,
+      label: this._copyName(src.label),
+      created: Date.now(),
+    };
+    this.shapes.push(shape);
+    this.render();
+    this.select(shape.id);
+    this.onChange(this.shapes, `Paste ${shape.label}`);
+    return shape;
+  }
+
+  duplicate(id = this.selectedId) {
+    if (!this.copy(id)) return null;
+    return this.paste();
+  }
+
+  /** Offset scaled to the current view so a paste is always visible. */
+  _pasteOffset() {
+    const b = this.map.getBounds();
+    return Math.abs(b.getNorth() - b.getSouth()) * 0.06;
+  }
+
+  _copyName(label) {
+    const base = label.replace(/ \(copy( \d+)?\)$/, '');
+    const existing = this.shapes.filter((s) => s.label.startsWith(base)).length;
+    return existing ? `${base} (copy${existing > 1 ? ' ' + existing : ''})` : `${base} (copy)`;
+  }
+
+  get clipboard() { return this._clipboard || null; }
 
   /* ------------------------------------------------------------------
      Selection + mutation

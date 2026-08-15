@@ -25,38 +25,19 @@ import { History } from '../core/history.js';
 import { projects } from '../data/projects.js';
 import { measureShape } from '../core/geo.js';
 import { loadPrefs } from './settings.js';
+import { LAYER_GROUPS } from '../data/layers.js';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js';
+import { createStatusBar } from '../components/statusbar.js';
 
-const RESOURCES = ['gold', 'lithium', 'tin', 'iron', 'lead', 'barite', 'oil', 'gas'];
+const RESOURCES = LEGEND_RESOURCES;
 
-const LAYER_TREE = [
-  {
-    group: 'Base', items: [
-      { id: 'graticule', label: 'Coordinate grid', color: '#2dd8c3', on: true },
-      { id: 'labels', label: 'Place labels', color: '#93a8ab', on: true },
-    ],
-  },
-  {
-    group: 'Mineral', items: [
-      { id: 'deposits', label: 'Mineral occurrences', color: '#f5b942', on: true },
-      { id: 'prospectivity', label: 'Prospectivity heat', color: '#ff8a3d', on: true },
-      { id: 'lgas', label: 'LGA boundaries', color: '#5eead4', on: false, hint: 'Auto at zoom 8.5+' },
-    ],
-  },
-  {
-    group: 'Pending data service', items: [
-      { id: 'geology', label: 'Geological units', color: '#8b7dff', soon: true },
-      { id: 'titles', label: 'Mining titles', color: '#4d9dff', soon: true },
-      { id: 'risk', label: 'Risk zones', color: '#ff4d5e', soon: true },
-      { id: 'infra', label: 'Roads & infrastructure', color: '#9aa7b0', soon: true },
-    ],
-  },
-];
 
 export function createExplore() {
   let root, nmap, deposits = [], unsub = [];
   let draw, history, activeProject = null, dirty = false;
   let inspectorMode = 'geo';   // 'geo' | 'shape'
   let lastGeo = null;          // remembers the geographic selection
+  let legend = null, statusBar = null, setDockRef = null, lastCursor = null;
 
   /* ================= helpers ================= */
 
@@ -98,19 +79,24 @@ export function createExplore() {
 
   /* ================= templates ================= */
 
-  const layerTree = () => LAYER_TREE.map((g) => `
-    <div class="lt-group">
-      <div class="lt-group-hd">${g.group}</div>
-      ${g.items.map((it) => `
-        <button class="lt-item ${it.on ? 'is-on' : ''} ${it.soon ? 'is-soon' : ''}"
-                data-layer="${it.id}" role="switch" aria-checked="${!!it.on}">
-          <span class="lt-eye">${icon('eye', { size: 13 })}</span>
-          <i class="lt-swatch" style="background:${it.color};box-shadow:0 0 6px ${it.color}"></i>
-          <span class="lt-label">${it.label}</span>
-          ${it.soon ? '<span class="lt-tag">SOON</span>'
-                    : it.hint ? `<span class="lt-hint" title="${it.hint}">${icon('info', { size: 11 })}</span>` : ''}
-        </button>`).join('')}
-    </div>`).join('');
+  const layerTree = () => {
+    const st = store.get('layers');
+    return LAYER_GROUPS.map((g) => `
+      <div class="lt-group">
+        <div class="lt-group-hd">${g.group}</div>
+        ${g.items.map((it) => {
+          const on = it.soon ? false : (st[it.id] ?? it.def);
+          return `<button class="lt-item ${on ? 'is-on' : ''} ${it.soon ? 'is-soon' : ''}"
+                  data-layer="${it.id}" role="switch" aria-checked="${on}">
+            <span class="lt-eye">${icon('eye', { size: 13 })}</span>
+            <i class="lt-swatch" style="background:${it.color};box-shadow:0 0 6px ${it.color}"></i>
+            <span class="lt-label">${it.label}</span>
+            ${it.soon ? '<span class="lt-tag">SOON</span>'
+                      : it.hint ? `<span class="lt-hint" title="${it.hint}">${icon('info', { size: 11 })}</span>` : ''}
+          </button>`;
+        }).join('')}
+      </div>`).join('');
+  };
 
   const resourceFilter = () => `
     <div class="ex-chips">
@@ -152,11 +138,13 @@ export function createExplore() {
         </button>`).join('')}
     </div>
     <div class="mt-hint" id="mt-hint">Select a tool to begin measuring</div>
-    <div class="row gap-6" style="margin-top:8px">
-      <button class="btn-ghost" id="undo-btn" disabled style="height:26px;font-size:9px">
-        ${icon('refresh', { size: 11 })} Undo</button>
-      <button class="btn-ghost" id="redo-btn" disabled style="height:26px;font-size:9px">
-        Redo ${icon('refresh', { size: 11 })}</button>
+    <div class="mt-actions">
+      <button class="act-btn" id="undo-btn" disabled title="Undo (Ctrl+Z)">
+        ${icon('undo', { size: 13 })}<span>Undo</span></button>
+      <button class="act-btn" id="redo-btn" disabled title="Redo (Ctrl+Shift+Z)">
+        ${icon('redo', { size: 13 })}<span>Redo</span></button>
+      <button class="act-btn act-primary" id="mt-save" title="Save study (Ctrl+S)">
+        ${icon('save', { size: 13 })}<span>Save</span></button>
     </div>`;
 
   const shapeList = () => {
@@ -171,7 +159,10 @@ export function createExplore() {
             <span class="shp-n">${sh.label}</span>
             <span class="shp-m">${m.primary}</span>
           </span>
-          <button class="shp-x" data-del="${sh.id}" title="Delete">${icon('minus', { size: 11 })}</button>
+          <span class="shp-acts">
+            <button class="shp-a" data-copy="${sh.id}" title="Copy (Ctrl+C)">${icon('copy', { size: 11 })}</button>
+            <button class="shp-a shp-del" data-del="${sh.id}" title="Delete">${icon('trash', { size: 11 })}</button>
+          </span>
         </div>`;
       }).join('')}
     </div>
@@ -356,6 +347,8 @@ export function createExplore() {
           </div>
           <button class="dock-tab dock-tab-l" id="tab-left" title="Collapse panel">${icon('chevronL', { size: 13 })}</button>
         </aside>
+        <button class="dock-show dock-show-l" id="show-left" hidden title="Show tools">
+          ${icon('layers', { size: 13 })}<span>Tools</span></button>
 
         <section class="ex-map" id="ex-map">
           <div id="map-canvas"></div>
@@ -375,9 +368,7 @@ export function createExplore() {
               <button class="tool-btn" data-tool="in" title="Zoom in">${icon('plus', { size: 15 })}</button>
               <button class="tool-btn" data-tool="out" title="Zoom out">${icon('minus', { size: 15 })}</button>
               <div class="tool-sep-v"></div>
-              <button class="tool-btn" data-hist="undo" title="Undo (Ctrl+Z)" disabled>${icon('chevronL', { size: 15 })}</button>
-              <button class="tool-btn" data-hist="redo" title="Redo (Ctrl+Shift+Z)" disabled>${icon('chevronR', { size: 15 })}</button>
-              <div class="tool-sep-v"></div>
+              <button class="tool-btn" data-tool="measure-toggle" title="Measure & draw tools">${icon('ruler', { size: 15 })}</button>
               <button class="tool-btn" data-tool="full" title="Fullscreen">${icon('fullscreen', { size: 15 })}</button>
             </div>
             <div class="spacer"></div>
@@ -385,6 +376,14 @@ export function createExplore() {
               <button data-base="vector" class="is-on">Vector</button>
               <button data-base="satellite">Satellite</button>
             </div>
+          </div>
+
+          <div class="measure-dock glass-bar" id="measure-dock">
+            <div class="md-hd">
+              ${icon('ruler', { size: 12 })}<span>Measure &amp; Draw</span>
+              <button class="md-x" id="md-hide" title="Hide">${icon('minus', { size: 12 })}</button>
+            </div>
+            <div class="md-bd" id="measure-tools">${measureTools()}</div>
           </div>
 
           <div class="draw-banner" id="draw-banner" hidden>
@@ -395,22 +394,10 @@ export function createExplore() {
             <button class="db-btn db-x" id="db-cancel">Esc</button>
           </div>
 
-          <div class="ex-status glass-bar">
-            <span class="exs" title="Cursor position">${icon('pin', { size: 11 })}<b id="exs-coord" class="t-mono">—</b></span>
-            <span class="exs-sep"></span>
-            <span class="exs">ZOOM <b id="exs-zoom" class="t-mono">6.1</b></span>
-            <span class="exs-sep"></span>
-            <span class="exs">LEVEL <b id="exs-band" class="t-mono">nation</b></span>
-            <span class="exs-sep"></span>
-            <span class="exs">SCALE <b id="exs-scale" class="t-mono">200 km</b></span>
-            <span class="exs-sep"></span>
-            <span class="exs exs-count">${icon('minerals', { size: 11 })}<b id="exs-visible" class="t-mono">64</b> sites</span>
-          </div>
         </section>
 
         <aside class="ex-dock ex-right" id="ex-right">
           <div class="ex-dock-scroll">
-            ${panel('measure', 'Measure & Draw', 'ruler', `<div id="measure-tools">${measureTools()}</div>`)}
             ${panel('shapes', 'Measurements', 'grid', `<div id="shape-list">${shapeList()}</div>`)}
             ${panel('inspector', 'Inspector', 'info', `
               <div class="insp-tabs" id="insp-tabs">
@@ -423,6 +410,8 @@ export function createExplore() {
           </div>
           <button class="dock-tab dock-tab-r" id="tab-right" title="Collapse panel">${icon('chevronR', { size: 13 })}</button>
         </aside>
+        <button class="dock-show dock-show-r" id="show-right" hidden title="Show inspector">
+          ${icon('info', { size: 13 })}<span>Intel</span></button>
       </div>`;
 
     deposits = await api.getDeposits();
@@ -457,8 +446,21 @@ export function createExplore() {
     });
     history.reset([], 'Empty');
 
+    // Shared chrome: resource legend + breadcrumb/coordinate status bar
+    legend = createLegend(stage, {
+      scope: 'explore',
+      getActive: () => $$('#res-filter .ex-chip.is-on', view).map((c) => c.dataset.res),
+      onToggle: (list) => {
+        $$('#res-filter .ex-chip', view).forEach((c) => c.classList.toggle('is-on', list.includes(c.dataset.res)));
+        applyResources(list);
+      },
+    });
+    statusBar = createStatusBar(stage, nmap);
+    unsub.push(() => statusBar.destroy());
+
     wireMap(stage);
     wireDocks(view);
+    setMeasureDock(isMeasureDockOpen());
     wirePanels(view);
     wireLayers(view);
     wireResources(view);
@@ -474,17 +476,8 @@ export function createExplore() {
 
   function wireMap(stage) {
     // live coordinate readout
-    nmap.map.on('mousemove', (e) => {
-      $('#exs-coord', root).textContent = fmt.coord(e.latlng.lat, e.latlng.lng);
-    });
-    nmap.map.on('mouseout', () => { $('#exs-coord', root).textContent = '—'; });
+    nmap.map.on('mousemove', (e) => { lastCursor = e.latlng; });
 
-    stage.addEventListener('map:scale', (e) => {
-      const { zoom, km, band } = e.detail;
-      $('#exs-zoom', root).textContent = zoom.toFixed(1);
-      $('#exs-band', root).textContent = band;
-      $('#exs-scale', root).textContent = km >= 1 ? `${km} km` : '<1 km';
-    });
 
     // occurrence markers feed the inspector
     nmap.depMarkers.forEach((m) => {
@@ -505,6 +498,7 @@ export function createExplore() {
       if (t === 'in') nmap.zoomBy(0.6);
       if (t === 'out') nmap.zoomBy(-0.6);
       if (t === 'reset') nmap.resetView();
+      if (t === 'measure-toggle') setMeasureDock(!isMeasureDockOpen());
       if (t === 'full') {
         if (!document.fullscreenElement) $('#ex-map', root).requestFullscreen?.();
         else document.exitFullscreen?.();
@@ -574,6 +568,12 @@ export function createExplore() {
     });
 
     $('#shape-list', view).addEventListener('click', (e) => {
+      const cp = e.target.closest('[data-copy]');
+      if (cp) {
+        draw.copy(cp.dataset.copy);
+        toast('Copied · press Ctrl+V to paste');
+        return;
+      }
       const del = e.target.closest('[data-del]');
       if (del) { draw.remove(del.dataset.del); return; }
       if (e.target.closest('#clear-shapes')) {
@@ -583,6 +583,9 @@ export function createExplore() {
       const row = e.target.closest('[data-shape]');
       if (row) { draw.select(row.dataset.shape); draw.zoomTo(row.dataset.shape); }
     });
+
+    $('#md-hide', view)?.addEventListener('click', () => setMeasureDock(false));
+    $('#mt-save', view)?.addEventListener('click', () => saveProject());
 
     const banner = $('#draw-banner', view);
     banner.addEventListener('click', (e) => {
@@ -660,6 +663,30 @@ export function createExplore() {
       }
       if (e.key === 'Enter' && draw.draft.length) { e.preventDefault(); draw.commitDraft(); return; }
       if (e.key === 'Delete' && draw.selectedId) { draw.remove(draw.selectedId); return; }
+
+      // clipboard
+      if (mod && e.key.toLowerCase() === 'c' && draw.selectedId) {
+        e.preventDefault(); draw.copy(); toast('Measurement copied'); return;
+      }
+      if (mod && e.key.toLowerCase() === 'x' && draw.selectedId) {
+        e.preventDefault(); draw.cut(); toast('Measurement cut'); return;
+      }
+      if (mod && e.key.toLowerCase() === 'v' && draw.clipboard) {
+        e.preventDefault();
+        const sh = draw.paste(lastCursor);
+        if (sh) toast(`Pasted "${sh.label}"`);
+        return;
+      }
+      if (mod && e.key.toLowerCase() === 'd' && draw.selectedId) {
+        e.preventDefault();
+        const sh = draw.duplicate();
+        if (sh) toast(`Duplicated as "${sh.label}"`);
+        return;
+      }
+
+      // panel visibility
+      if (e.key === '[') { setDockRef?.('left',  !$('#ex-left', root).classList.contains('is-collapsed')); return; }
+      if (e.key === ']') { setDockRef?.('right', !$('#ex-right', root).classList.contains('is-collapsed')); return; }
 
       const map = { m: 'line', a: 'polygon', r: 'circle', p: 'point' };
       if (map[e.key.toLowerCase()]) {
@@ -761,17 +788,122 @@ export function createExplore() {
 
   /* ---- docks ---- */
   function wireDocks(view) {
-    $('#tab-left', view).addEventListener('click', () => {
-      const d = $('#ex-left', view);
-      d.classList.toggle('is-collapsed');
-      setTimeout(() => nmap.invalidate(), 260);
-    });
-    $('#tab-right', view).addEventListener('click', () => {
-      const d = $('#ex-right', view);
-      d.classList.toggle('is-collapsed');
-      setTimeout(() => nmap.invalidate(), 260);
+    const DK = 'nmi.exDocks';
+    const readDocks = () => { try { return JSON.parse(localStorage.getItem(DK) || '{}'); } catch { return {}; } };
+
+    function setDock(side, collapsed) {
+      $(`#ex-${side}`, view).classList.toggle('is-collapsed', collapsed);
+      $(`#show-${side}`, view).hidden = !collapsed;
+      const st = readDocks(); st[side] = collapsed;
+      localStorage.setItem(DK, JSON.stringify(st));
+      setTimeout(() => nmap.invalidate(), 270);
+    }
+    setDockRef = setDock;
+
+    const saved = readDocks();
+    setDock('left', !!saved.left);
+    setDock('right', !!saved.right);
+
+    view.addEventListener('click', (e) => {
+      if (e.target.closest('#tab-left'))   setDock('left',  !$('#ex-left', view).classList.contains('is-collapsed'));
+      if (e.target.closest('#tab-right'))  setDock('right', !$('#ex-right', view).classList.contains('is-collapsed'));
+      if (e.target.closest('#show-left'))  setDock('left', false);
+      if (e.target.closest('#show-right')) setDock('right', false);
     });
   }
+
+  /* ---- floating measure dock (stays available in fullscreen) ---- */
+  const MD_KEY = 'nmi.measureDock';
+  const isMeasureDockOpen = () => localStorage.getItem(MD_KEY) !== '0';
+  function setMeasureDock(open) {
+    const d = $('#measure-dock', root);
+    if (d) d.hidden = !open;
+    $('[data-tool="measure-toggle"]', root)?.classList.toggle('is-on', open);
+    localStorage.setItem(MD_KEY, open ? '1' : '0');
+    if (!open && draw?.tool) { draw.setTool(null); syncToolButtons(); }
+  }
+
+  /* ---- collapsible panels ---- */
+
+  /* ---- draw / measure tools ---- */
+
+
+
+  /* ---- history ---- */
+  function doUndo() {
+    const st = history.undo();
+    if (!st) return;
+    draw.setShapes(st);
+    renderShapeList(); renderInspector(); markDirty(true);
+    toast(`Undo${history.redoLabel ? ` · ${history.redoLabel}` : ''}`);
+  }
+  function doRedo() {
+    const st = history.redo();
+    if (!st) return;
+    draw.setShapes(st);
+    renderShapeList(); renderInspector(); markDirty(true);
+    toast('Redo');
+  }
+
+
+  /* ---- projects ---- */
+  function markDirty(v) {
+    dirty = v;
+    const d = $('.prj-dirty', root);
+    if (d) d.classList.toggle('is-on', v);
+  }
+
+  function saveProject() {
+    const nameEl = $('#prj-name', root);
+    const name = (nameEl?.value || '').trim() || `Untitled study ${projects.list().length + 1}`;
+    const payload = {
+      name,
+      shapes: draw.shapes,
+      view: nmap.getView(),
+      layers: { ...store.get('layers') },
+    };
+    if (activeProject) {
+      activeProject = projects.update(activeProject.id, payload);
+      toast(`Saved "${name}"`);
+    } else {
+      activeProject = projects.create(payload);
+      toast(`Created "${name}"`);
+    }
+    markDirty(false);
+    renderProjects();
+  }
+
+  function openProject(id) {
+    const p = projects.get(id);
+    if (!p) return;
+    activeProject = p;
+    history.mute(() => draw.setShapes(p.shapes || []));
+    history.reset(p.shapes || [], 'Opened');
+    if (p.view) nmap.setView(p.view);
+    renderShapeList(); renderInspector(); renderProjects();
+    markDirty(false);
+    toast(`Opened "${p.name}" · ${(p.shapes || []).length} items`);
+  }
+
+  function newProject() {
+    activeProject = null;
+    history.mute(() => draw.setShapes([]));
+    history.reset([], 'New study');
+    renderShapeList(); renderInspector(); renderProjects();
+    markDirty(false);
+    toast('Started a new study');
+  }
+
+
+
+
+  function setInspectorTab(mode) {
+    inspectorMode = mode;
+    $$('#insp-tabs button', root).forEach((b) =>
+      b.classList.toggle('is-on', b.dataset.itab === mode));
+  }
+
+  /* ---- docks ---- */
 
   /* ---- layer tree ---- */
   function wireLayers(view) {
@@ -815,21 +947,23 @@ export function createExplore() {
   }
 
   /* ---- resource filter ---- */
+  function applyResources(list) {
+    nmap.filterResources(list);
+    legend?.sync(list);
+  }
+
   function wireResources(view) {
-    const apply = () => {
-      const on = $$('#res-filter .ex-chip.is-on', view).map((c) => c.dataset.res);
-      nmap.filterResources(on);
-      const visible = deposits.filter((d) => on.includes(d.resource)).length;
-      $('#exs-visible', view).textContent = visible;
-    };
+    const readChips = () => $$('#res-filter .ex-chip.is-on', view).map((c) => c.dataset.res);
     $('#res-filter', view).addEventListener('click', (e) => {
       const chip = e.target.closest('[data-res]');
-      if (chip) { chip.classList.toggle('is-on'); apply(); return; }
+      if (chip) { chip.classList.toggle('is-on'); applyResources(readChips()); return; }
       if (e.target.closest('[data-res-all]')) {
-        $$('#res-filter .ex-chip', view).forEach((c) => c.classList.add('is-on')); apply(); return;
+        $$('#res-filter .ex-chip', view).forEach((c) => c.classList.add('is-on'));
+        applyResources(readChips()); return;
       }
       if (e.target.closest('[data-res-none]')) {
-        $$('#res-filter .ex-chip', view).forEach((c) => c.classList.remove('is-on')); apply();
+        $$('#res-filter .ex-chip', view).forEach((c) => c.classList.remove('is-on'));
+        applyResources(readChips());
       }
     });
   }

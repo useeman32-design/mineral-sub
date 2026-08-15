@@ -8,9 +8,12 @@ import { icon } from '../core/icons.js';
 import { store } from '../core/store.js';
 import { $, $$ } from '../core/utils.js';
 import { RESOURCE_META } from '../data/fixtures.js';
+import { LAYER_GROUPS, applyLayer } from '../data/layers.js';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js';
+import { createStatusBar } from '../components/statusbar.js';
 import { toast } from '../modules/dashboard.js';
 
-const RESOURCES = ['gold', 'lithium', 'tin', 'iron', 'lead', 'barite', 'oil', 'gas'];
+const RESOURCES = LEGEND_RESOURCES;
 
 export function mapToolbar(stage, nmap) {
   /* ---------- markup ---------- */
@@ -59,55 +62,14 @@ export function mapToolbar(stage, nmap) {
     </div>`;
   stage.appendChild(tools);
 
-  const crumbs = document.createElement('div');
-  crumbs.className = 'map-ui drill-path';
-  crumbs.id = 'drill-path';
-  stage.appendChild(crumbs);
+  const legendCtl = createLegend(stage, {
+    scope: 'overview',
+    getActive: () => store.get('filters').resources,
+    onToggle: (list) => { nmap.filterResources(list); updateChipStates(); },
+  });
+  const legend = legendCtl.el;
 
-  const legend = document.createElement('div');
-  legend.className = 'map-ui map-legend glass-bar';
-  legend.id = 'map-legend';
-  legend.innerHTML = `
-    <div class="lg-hd">
-      <span>Resource Legend</span>
-      <span class="lg-acts">
-        <button class="lg-toggle" id="lg-all" title="Show / hide all resources">${icon('eye', { size: 12 })}</button>
-        <button class="lg-toggle" id="lg-collapse" title="Hide legend">${icon('minus', { size: 12 })}</button>
-      </span>
-    </div>
-    <div class="lg-list" id="lg-list">
-      ${RESOURCES.map((r) => {
-        const m = RESOURCE_META[r];
-        return `<div class="lg-row" data-lg="${r}">
-          <i class="lg-dot" style="background:${m.hex};box-shadow:0 0 6px ${m.hex}"></i>
-          <span>${m.label}</span></div>`;
-      }).join('')}
-    </div>
-    <div class="lg-scale"><span>Low</span><div class="lg-ramp"></div><span>High</span></div>`;
-  stage.appendChild(legend);
-
-  // Collapsed affordance — a small pill that restores the legend
-  const legendPill = document.createElement('button');
-  legendPill.className = 'map-ui legend-pill';
-  legendPill.id = 'legend-pill';
-  legendPill.hidden = true;
-  legendPill.innerHTML = `${icon('layers', { size: 12 })}<span>Legend</span>`;
-  stage.appendChild(legendPill);
-
-  const LEGEND_KEY = 'nmi.legendHidden';
-  function setLegend(hidden) {
-    legend.hidden = hidden;
-    legendPill.hidden = !hidden;
-    localStorage.setItem(LEGEND_KEY, hidden ? '1' : '0');
-  }
-  setLegend(localStorage.getItem(LEGEND_KEY) === '1');
-  legendPill.addEventListener('click', () => setLegend(false));
-
-  const meta = document.createElement('div');
-  meta.className = 'map-ui map-meta';
-  meta.innerHTML = `
-    <div class="scalebar"><span class="lbl" id="scale-lbl">200 km</span><div class="bar"></div></div>`;
-  stage.appendChild(meta);
+  const statusBar = createStatusBar(stage, nmap);
 
   /* ---------- deposit counts for menus ---------- */
   const counts = {};
@@ -155,19 +117,23 @@ export function mapToolbar(stage, nmap) {
     }),
     layers: () => {
       const L = store.get('layers');
+      const items = [];
+      LAYER_GROUPS.forEach((g, gi) => {
+        if (gi) items.push({ sep: true, id: `sep-${gi}`, label: g.group });
+        g.items.forEach((it) => items.push({
+          id: it.id,
+          label: it.label,
+          swatch: it.color,
+          on: it.soon ? false : (L[it.id] ?? it.def),
+          soon: it.soon,
+        }));
+      });
       return {
         title: 'Map Layers',
-        items: [
-          { id: 'deposits', label: 'Mineral occurrences', swatch: '#f5b942', on: L.deposits },
-          { id: 'prospectivity', label: 'Prospectivity heat', swatch: '#ff8a3d', on: L.prospectivity },
-          { id: 'graticule', label: 'Coordinate grid', swatch: '#2dd8c3', on: L.graticule !== false },
-          { id: 'risk', label: 'Risk zones', swatch: '#ff4d5e', on: L.risk, soon: true },
-          { id: 'titles', label: 'Mining titles', swatch: '#8b7dff', on: L.titles, soon: true },
-          { id: 'infrastructure', label: 'Roads & infrastructure', swatch: '#9aa7b0', on: L.infrastructure, soon: true },
-        ],
+        items,
         onPick: (id, item) => {
-          if (item.soon) { toast(`${item.label} layer arrives with the GIS data service`); return true; }
-          nmap.toggleLayer(id, !item.on);
+          if (item.sep) return true;
+          applyLayer(nmap, id, !item.on, { store, toast });
           return true;
         },
       };
@@ -187,7 +153,7 @@ export function mapToolbar(stage, nmap) {
     node.className = 'menu';
     node.innerHTML = `
       <div class="menu-title">${spec.title}</div>
-      ${spec.items.map((it) => `
+      ${spec.items.map((it) => it.sep ? `<div class="menu-group">${it.label}</div>` : `
         <button class="menu-item ${it.on ? 'is-on' : ''}" data-id="${it.id}"
           role="menuitemcheckbox" aria-checked="${!!it.on}">
           <i class="swatch" style="background:${it.swatch};box-shadow:0 0 6px ${it.swatch}"></i>
@@ -332,60 +298,7 @@ export function mapToolbar(stage, nmap) {
   document.addEventListener('fullscreenchange', syncFullscreen);
   syncFullscreen();
 
-  /* ---------- legend ---------- */
-  function syncLegend(list) {
-    $$('.lg-row', legend).forEach((r) => r.classList.toggle('is-off', !list.includes(r.dataset.lg)));
-  }
-  legend.addEventListener('click', (e) => {
-    if (e.target.closest('#lg-collapse')) { setLegend(true); return; }
-    if (e.target.closest('#lg-all')) {
-      const all = store.get('filters').resources.length === RESOURCES.length;
-      const list = all ? [] : [...RESOURCES];
-      nmap.filterResources(list); syncLegend(list); updateChipStates();
-      return;
-    }
-    const row = e.target.closest('.lg-row');
-    if (!row) return;
-    const id = row.dataset.lg;
-    let list = [...store.get('filters').resources];
-    list = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
-    nmap.filterResources(list); syncLegend(list); updateChipStates();
-  });
-
-  /* ---------- breadcrumb (drill path) ---------- */
-  const NEXT = { nation: 'state', state: 'LGA', lga: 'local area', local: 'prospect', prospect: 'occurrence' };
-
-  function renderCrumbs() {
-    const d = store.get('drill');
-    const parts = [{ id: 'nation', label: 'Nigeria' }];
-    if (d.state) parts.push({ id: 'state', label: d.state });
-    if (d.lga) parts.push({ id: 'lga', label: d.lga });
-    if (d.prospect) parts.push({ id: 'prospect', label: d.prospect });
-
-    crumbs.innerHTML =
-      parts.map((p, i) => `
-        <button class="crumb ${i === parts.length - 1 ? 'is-current' : ''}" data-crumb="${p.id}">
-          ${i === 0 ? icon('pin', { size: 11 }) : ''}<span>${p.label}</span>
-        </button>
-        ${i < parts.length - 1 ? `<span class="crumb-sep">${icon('chevronR', { size: 10 })}</span>` : ''}`).join('') +
-      `<span class="crumb-sep">${icon('chevronR', { size: 10 })}</span>
-       <span class="crumb-next">${NEXT[d.level] || 'detail'}</span>`;
-  }
-  crumbs.addEventListener('click', (e) => {
-    const c = e.target.closest('[data-crumb]');
-    if (!c) return;
-    if (c.dataset.crumb === 'nation') nmap.resetView();
-  });
-  renderCrumbs();
-  store.subscribe('drill', renderCrumbs);
-
-  /* ---------- zoom + scale readout ---------- */
-  stage.addEventListener('map:scale', (e) => {
-    const { zoom, km, band } = e.detail;
-    $('#zoom-lvl', tools).textContent = zoom.toFixed(1);
-    $('#zoom-band', tools).textContent = band;
-    $('#scale-lbl', meta).textContent = km >= 1 ? `${km} km` : '<1 km';
-  });
+  const syncLegend = (list) => legendCtl.sync(list);
 
   /* ---------- location search ---------- */
   const input = $('#map-loc-search', bar);
@@ -403,5 +316,5 @@ export function mapToolbar(stage, nmap) {
   });
 
   updateChipStates();
-  return { closeMenu, renderCrumbs };
+  return { closeMenu, legend: legendCtl, statusBar };
 }

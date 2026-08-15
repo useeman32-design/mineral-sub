@@ -294,8 +294,10 @@
 .map-legend {
   bottom: var(--map-edge);
   right: calc(var(--map-edge) + var(--map-tool-w) + 12px);
-  width: 190px; padding: 9px 10px; display: flex;
+  width: 190px; padding: 9px 10px;
 }
+.ex-map > .map-legend,
+.ex-map > .legend-pill { right: var(--map-edge); }
 .map-legend {
   display: flex;
   flex-direction: column;
@@ -876,7 +878,7 @@ body.is-resizing iframe, body.is-resizing .leaflet-container { pointer-events: n
 /* ============================================================
    Zoom-scaled deposit markers (calmer at national extent)
    ============================================================ */
-.map-stage { --dep-scale: 1; --map-tool-w: 52px; --map-edge: 12px; }
+.map-stage, .ex-map { --dep-scale: 1; --map-tool-w: 52px; --map-edge: 12px; }
 .dep-core {
   width: calc(8px * var(--dep-scale));
   height: calc(8px * var(--dep-scale));
@@ -1477,3 +1479,170 @@ body.is-resizing iframe, body.is-resizing .leaflet-container { pointer-events: n
 
 /* disabled history buttons */
 .tool-btn:disabled, .btn-ghost:disabled { opacity: .3; pointer-events: none; }
+
+/* ============================================================
+   Shared map status bar (Overview + Explore)
+   ============================================================ */
+.map-statusbar {
+  bottom: 12px; left: 12px;
+  display: flex; align-items: center; gap: 8px;
+  max-width: calc(100% - 260px);
+  padding: 5px 11px 5px 7px;
+  border-radius: var(--r-pill);
+  background: rgba(9,14,16,.86);
+  border: 1px solid var(--line-soft);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+[data-theme="light"] .map-statusbar { background: rgba(255,255,255,.92); }
+.sb-crumbs { display: flex; align-items: center; gap: 3px; min-width: 0; }
+.sb-sep { width: 1px; height: 13px; background: var(--line-faint); flex: none; }
+.sb-coord {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: var(--fs-micro); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+}
+.sb-coord b { color: var(--cyan-300); font-weight: 600; letter-spacing: 0; text-transform: none; font-size: 10px; }
+
+/* Overview reuses the same anchor as the old drill path */
+.map-stage .map-statusbar { bottom: 12px; left: 12px; }
+
+/* ============================================================
+   Layer menu groups (Overview)
+   ============================================================ */
+.menu-group {
+  padding: 8px 8px 4px;
+  margin-top: 3px;
+  border-top: 1px solid var(--line-faint);
+  font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+}
+.menu-item[aria-checked] .mi-count { margin-left: auto; }
+
+/* ============================================================
+   Explore — dock show tabs
+   ============================================================ */
+.dock-show {
+  position: absolute;
+  top: 14px;
+  z-index: 45;
+  display: flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  color: var(--text-mid);
+  font-size: var(--fs-micro);
+  letter-spacing: .1em; text-transform: uppercase; font-weight: 600;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition: all var(--t-fast) var(--ease);
+}
+.dock-show[hidden] { display: none !important; }
+.dock-show:hover { color: var(--green); border-color: rgba(0,230,118,.34); background: var(--green-dim); }
+.dock-show-l { left: 0; border-left: none; border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+.dock-show-r { right: 0; border-right: none; border-radius: var(--r-sm) 0 0 var(--r-sm); }
+
+/* Collapsed docks must not reserve grid space */
+.ex-dock.is-collapsed { width: 0; min-width: 0; border-width: 0; }
+.ex-dock.is-collapsed .dock-tab { display: none; }
+
+/* ============================================================
+   Floating measure dock
+   ============================================================ */
+.measure-dock {
+  position: absolute;
+  top: 58px; left: 12px;
+  z-index: var(--z-map-ui);
+  width: 218px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.measure-dock[hidden] { display: none !important; }
+.md-hd {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 9px;
+  border-bottom: 1px solid var(--line-faint);
+  color: var(--green);
+  font-size: var(--fs-micro);
+  letter-spacing: .12em; text-transform: uppercase; font-weight: 600;
+}
+.md-hd span { flex: 1 1 auto; color: var(--text-hi); }
+.md-x {
+  width: 18px; height: 18px;
+  display: grid; place-items: center;
+  border-radius: 4px; color: var(--text-faint);
+  transition: all var(--t-fast) var(--ease);
+}
+.md-x:hover { color: var(--red); background: var(--red-dim); }
+.md-bd { padding: 9px; }
+
+/* Fullscreen keeps the map chrome usable */
+.ex-map:fullscreen .measure-dock,
+.ex-map:fullscreen .map-statusbar,
+.ex-map:fullscreen .map-legend,
+.ex-map:fullscreen .legend-pill,
+.ex-map:fullscreen .ex-top { display: flex; }
+
+/* ============================================================
+   Labelled action buttons (undo / redo / save)
+   ============================================================ */
+.mt-actions { display: flex; gap: 5px; margin-top: 8px; }
+.act-btn {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  height: 28px; padding: 0 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-soft);
+  background: var(--surface-2);
+  color: var(--text-mid);
+  font-size: 9px; font-weight: 600;
+  letter-spacing: .07em; text-transform: uppercase;
+  white-space: nowrap;
+  transition: all var(--t-fast) var(--ease);
+}
+.act-btn:hover:not(:disabled) { color: var(--text-hi); border-color: var(--line-strong); background: var(--surface-3); }
+.act-btn:disabled { opacity: .32; pointer-events: none; }
+.act-btn svg { flex: none; }
+.act-primary {
+  color: #04120a;
+  background: linear-gradient(140deg, var(--green-300), var(--green));
+  border-color: rgba(0,230,118,.5);
+  box-shadow: 0 0 14px -6px rgba(0,230,118,.7);
+}
+.act-primary:hover:not(:disabled) {
+  color: #04120a;
+  background: linear-gradient(140deg, #6bffb8, var(--green-300));
+  border-color: rgba(0,230,118,.7);
+}
+
+/* ============================================================
+   Draggable + copyable measurements
+   ============================================================ */
+.shp-acts { display: flex; gap: 1px; flex: none; opacity: 0; transition: opacity var(--t-fast) var(--ease); }
+.shp-row:hover .shp-acts, .shp-row.is-on .shp-acts { opacity: 1; }
+.shp-a {
+  width: 19px; height: 19px;
+  display: grid; place-items: center;
+  border-radius: 4px; color: var(--text-faint);
+  transition: all var(--t-fast) var(--ease);
+}
+.shp-a:hover { color: var(--green); background: var(--surface-hover); }
+.shp-del:hover { color: var(--red); background: var(--red-dim); }
+
+/* Drag affordance on committed shapes */
+.leaflet-pane path.leaflet-interactive { cursor: pointer; }
+.ex-map.is-dragging-shape,
+.ex-map.is-dragging-shape .leaflet-container { cursor: grabbing !important; }
+.map-stage.is-dragging-shape,
+.map-stage.is-dragging-shape .leaflet-container { cursor: grabbing !important; }
+
+@media (max-width: 900px) {
+  .map-statusbar { max-width: calc(100% - 24px); }
+  .measure-dock { top: 104px; }
+}
