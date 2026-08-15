@@ -89,6 +89,18 @@ is.
 Adding a criterion means appending one entry to `CRITERIA` — the editor, the
 evidence breakdown and the weight maths all pick it up automatically.
 
+### Mineral specimen artwork
+
+`assets/minerals/` holds one square specimen image per commodity, referenced
+through `api.getCommodities()` so no component hardcodes an asset path. Ten are
+photographs (`.png`); the remaining seven are procedurally generated SVG
+specimens produced by `tools/make-mineral-svgs.py`, framed to match so the two
+sit side by side without looking mismatched.
+
+Photographs are centre-cropped square, resized to 480px and palette-quantised
+by `tools/optimise-minerals.py` — 15.4 MB down to 1.6 MB. Re-run it after
+adding any new photograph.
+
 ### Cross-module navigation
 
 A module hands a selection to another through `store.pendingFocus`, then routes.

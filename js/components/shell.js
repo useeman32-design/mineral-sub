@@ -4,9 +4,9 @@
  * touch them.
  */
 
-import { icon, brandMark } from '../core/icons.js?v=e0ff5e1';
-import { store } from '../core/store.js?v=e0ff5e1';
-import { $, $$ } from '../core/utils.js?v=e0ff5e1';
+import { icon, brandMark } from '../core/icons.js?v=b9c6490';
+import { store } from '../core/store.js?v=b9c6490';
+import { $, $$ } from '../core/utils.js?v=b9c6490';
 
 export const NAV = [
   { group: 'Intelligence', items: [

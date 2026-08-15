@@ -10,12 +10,11 @@
  * so the two data modules feel like the same product.
  */
 
-import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=e0ff5e1';
-import { icon } from '../core/icons.js?v=e0ff5e1';
-import { api } from '../data/api.js?v=e0ff5e1';
-import { store } from '../core/store.js?v=e0ff5e1';
+import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=b9c6490';
+import { icon } from '../core/icons.js?v=b9c6490';
+import { api } from '../data/api.js?v=b9c6490';
+import { store } from '../core/store.js?v=b9c6490';
 
-const VIEW_KEY = 'nmi.mineralsView';
 const CATEGORIES = ['All', 'Metallic', 'Industrial', 'Energy'];
 
 const TREND_META = {
@@ -33,7 +32,6 @@ export function createMinerals() {
   let category = 'All';
   let query = '';
   let sort = 'occurrences';
-  let layout = localStorage.getItem(VIEW_KEY) || 'grid';
 
   /* ------------------------------------------------------------------ *
    * Derived data
@@ -88,37 +86,23 @@ export function createMinerals() {
     const on = c.id === selectedId;
     return `
       <button class="mn-card ${on ? 'is-on' : ''}" data-commodity="${c.id}"
-              aria-pressed="${on}" style="--cm:${c.hex}">
-        <span class="mn-card-bar"></span>
-        <span class="mn-card-hd">
-          <i class="mn-dot"></i>
-          <span class="mn-card-n">${c.label}</span>
+              aria-pressed="${on}" aria-expanded="${on}" style="--cm:${c.hex}">
+        <span class="mn-shot">
+          <img src="${c.image}" alt="${c.label} specimen" loading="lazy" decoding="async" />
+          <span class="mn-shot-v"></span>
+          <span class="mn-cat-tag">${c.category}</span>
           ${trendChip(c.trend)}
         </span>
-        <span class="mn-card-v">${fmt.int(c.occurrences)}<em>occurrences</em></span>
-        <span class="mn-bar" role="img" aria-label="${c.share}% of leading commodity">
-          <span class="mn-bar-f" style="width:${c.share}%"></span>
+        <span class="mn-card-b">
+          <span class="mn-card-hd">
+            <i class="mn-dot"></i>
+            <span class="mn-card-n">${c.label}</span>
+          </span>
+          <span class="mn-card-v">${fmt.int(c.occurrences)}<em>occurrences</em></span>
+          <span class="mn-bar" role="img" aria-label="${c.share}% of leading commodity">
+            <span class="mn-bar-f" style="width:${c.share}%"></span>
+          </span>
         </span>
-        <span class="mn-card-ft">
-          <span>${c.siteCount} catalogued</span>
-          <span>${c.stateCount} states</span>
-        </span>
-      </button>`;
-  }
-
-  function commodityRow(c) {
-    const on = c.id === selectedId;
-    return `
-      <button class="mn-row ${on ? 'is-on' : ''}" data-commodity="${c.id}"
-              aria-pressed="${on}" style="--cm:${c.hex}">
-        <i class="mn-dot"></i>
-        <span class="mn-row-n">${c.label}</span>
-        <span class="mn-row-cat">${c.category}</span>
-        <span class="mn-row-bar"><span style="width:${c.share}%"></span></span>
-        <span class="mn-row-v t-mono">${fmt.int(c.occurrences)}</span>
-        <span class="mn-row-s">${c.siteCount}</span>
-        <span class="mn-row-st">${c.stateCount}</span>
-        ${trendChip(c.trend)}
       </button>`;
   }
 
@@ -126,9 +110,9 @@ export function createMinerals() {
     return `
       <div class="mn-empty">
         <div class="mn-empty-g">${icon('minerals', { size: 30, sw: 1.3 })}</div>
-        <p class="mn-empty-t">Select a commodity</p>
+        <p class="mn-empty-t">Select a specimen above</p>
         <p class="mn-empty-s">Its occurrence register, host geology, grade notes
-        and leading states appear here.</p>
+        and leading states open here.</p>
       </div>`;
   }
 
@@ -143,7 +127,7 @@ export function createMinerals() {
     return `
       <header class="mn-dh" style="--cm:${c.hex}">
         <div class="mn-dh-t">
-          <span class="mn-dh-dot"></span>
+          <span class="mn-dh-shot"><img src="${c.image}" alt="${c.label} specimen" decoding="async" /></span>
           <div>
             <div class="mn-dh-cat">${c.category} · ${c.maturity}</div>
             <h2>${c.label}</h2>
@@ -153,6 +137,7 @@ export function createMinerals() {
           ${kpi('Occurrences', fmt.int(c.occurrences), `${trendChip(c.trend)} national register`, c.hex)}
           ${kpi('Catalogued sites', c.siteCount, `${c.producing} producing`, 'var(--green)')}
           ${kpi('States', c.stateCount, 'with recorded presence', 'var(--cyan)')}
+          <button class="mn-close" data-close title="Close profile">${icon('plus', { size: 15 })}</button>
         </div>
       </header>
 
@@ -228,8 +213,8 @@ export function createMinerals() {
         <header class="mn-head">
           <div class="mn-head-t">
             <h1>Minerals</h1>
-            <p>Commodity register across ${all.length} tracked minerals — occurrence
-            counts, host geology and state-level distribution.</p>
+            <p>Commodity register across ${all.length} tracked minerals — select a
+            specimen to open its full profile.</p>
           </div>
           <div class="mn-head-k">
             ${kpi('Commodities', t.commodities, 'in current view', 'var(--green)')}
@@ -238,42 +223,30 @@ export function createMinerals() {
           </div>
         </header>
 
-        <div class="mn-body">
-          <aside class="mn-dock" id="mn-dock">
-            <div class="mn-tools">
-              <div class="mn-search">
-                ${icon('search', { size: 13 })}
-                <input id="mn-q" type="search" placeholder="Filter commodities or states"
-                       autocomplete="off" value="${query.replace(/"/g, '&quot;')}" />
-              </div>
-              <div class="mn-cats" role="tablist">
-                ${CATEGORIES.map((c) => `
-                  <button role="tab" class="mn-cat ${c === category ? 'is-on' : ''}"
-                          data-cat="${c}" aria-selected="${c === category}">${c}</button>`).join('')}
-              </div>
-              <div class="mn-sortrow">
-                <label class="mn-sort">
-                  <span>Sort</span>
-                  <select id="mn-sort">
-                    <option value="occurrences"${sort === 'occurrences' ? ' selected' : ''}>Occurrences</option>
-                    <option value="sites"${sort === 'sites' ? ' selected' : ''}>Catalogued sites</option>
-                    <option value="states"${sort === 'states' ? ' selected' : ''}>State spread</option>
-                    <option value="label"${sort === 'label' ? ' selected' : ''}>Name</option>
-                  </select>
-                </label>
-                <div class="mn-layout" role="group" aria-label="Layout">
-                  <button data-layout="grid" class="${layout === 'grid' ? 'is-on' : ''}"
-                          title="Card view" aria-pressed="${layout === 'grid'}">${icon('grid', { size: 13 })}</button>
-                  <button data-layout="list" class="${layout === 'list' ? 'is-on' : ''}"
-                          title="Table view" aria-pressed="${layout === 'list'}">${icon('layers', { size: 13 })}</button>
-                </div>
-              </div>
-            </div>
-            <div class="mn-list ${layout === 'list' ? 'is-list' : 'is-grid'}" id="mn-list"></div>
-          </aside>
-
-          <section class="mn-detail" id="mn-detail"></section>
+        <div class="mn-tools">
+          <div class="mn-search">
+            ${icon('search', { size: 13 })}
+            <input id="mn-q" type="search" placeholder="Filter commodities or states"
+                   autocomplete="off" value="${query.replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="mn-cats" role="tablist">
+            ${CATEGORIES.map((c) => `
+              <button role="tab" class="mn-cat ${c === category ? 'is-on' : ''}"
+                      data-cat="${c}" aria-selected="${c === category}">${c}</button>`).join('')}
+          </div>
+          <label class="mn-sort">
+            <span>Sort</span>
+            <select id="mn-sort">
+              <option value="occurrences"${sort === 'occurrences' ? ' selected' : ''}>Occurrences</option>
+              <option value="sites"${sort === 'sites' ? ' selected' : ''}>Catalogued sites</option>
+              <option value="states"${sort === 'states' ? ' selected' : ''}>State spread</option>
+              <option value="label"${sort === 'label' ? ' selected' : ''}>Name</option>
+            </select>
+          </label>
         </div>
+
+        <div class="mn-gallery" id="mn-list"></div>
+        <section class="mn-detail" id="mn-detail"></section>
       </div>`;
   }
 
@@ -286,23 +259,12 @@ export function createMinerals() {
     if (!host) return;
     const list = visible();
 
-    host.className = `mn-list ${layout === 'list' ? 'is-list' : 'is-grid'}`;
     if (!list.length) {
       host.innerHTML = `<p class="mn-none mn-none-pad">No commodity matches
-        “${query}”${category !== 'All' ? ` in ${category}` : ''}.</p>`;
+        \u201c${query}\u201d${category !== 'All' ? ` in ${category}` : ''}.</p>`;
       return;
     }
-
-    if (layout === 'list') {
-      host.innerHTML = `
-        <div class="mn-row mn-row-h">
-          <i></i><span>Commodity</span><span>Class</span><span>Share</span>
-          <span class="mn-row-v">Occ.</span><span>Sites</span><span>States</span><span></span>
-        </div>
-        ${list.map(commodityRow).join('')}`;
-    } else {
-      host.innerHTML = list.map(commodityCard).join('');
-    }
+    host.innerHTML = list.map(commodityCard).join('');
   }
 
   function renderDetail() {
@@ -324,9 +286,18 @@ export function createMinerals() {
   }
 
   function select(id) {
-    selectedId = id;
+    // Clicking the open commodity again collapses the detail panel.
+    selectedId = selectedId === id ? null : id;
     renderList();
     renderDetail();
+
+    if (!selectedId) return;
+    const card = $(`[data-commodity="${selectedId}"]`, root);
+    card?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    // Let the panel paint before scrolling to it.
+    requestAnimationFrame(() => {
+      $('#mn-detail', root)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
   }
 
   /* ------------------------------------------------------------------ *
@@ -336,6 +307,13 @@ export function createMinerals() {
   function wire() {
     // Commodity selection (cards and rows share the data attribute)
     root.addEventListener('click', (e) => {
+      if (e.target.closest('[data-close]')) {
+        selectedId = null;
+        renderList();
+        renderDetail();
+        return;
+      }
+
       const pick = e.target.closest('[data-commodity]');
       if (pick) { select(pick.dataset.commodity); return; }
 
@@ -349,19 +327,6 @@ export function createMinerals() {
         });
         renderList();
         renderTotals();
-        return;
-      }
-
-      const lay = e.target.closest('[data-layout]');
-      if (lay) {
-        layout = lay.dataset.layout;
-        localStorage.setItem(VIEW_KEY, layout);
-        $$('[data-layout]', root).forEach((b) => {
-          const on = b.dataset.layout === layout;
-          b.classList.toggle('is-on', on);
-          b.setAttribute('aria-pressed', on);
-        });
-        renderList();
         return;
       }
 
@@ -409,7 +374,6 @@ export function createMinerals() {
       view.innerHTML = `<div class="mn-loading">${icon('refresh', { size: 18 })}<span>Loading commodity register…</span></div>`;
 
       all = await api.getCommodities();
-      if (!selectedId && all.length) selectedId = all[0].id;
 
       view.innerHTML = shell();
       wire();

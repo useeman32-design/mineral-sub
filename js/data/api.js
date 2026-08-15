@@ -10,11 +10,17 @@
  *   await api.getDashboardSummary();   ->  GET /api/v1/dashboard/summary
  */
 
-import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=e0ff5e1';
-import { seeded } from '../core/utils.js?v=e0ff5e1';
+import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=b9c6490';
+import { seeded } from '../core/utils.js?v=b9c6490';
 
 /* Descriptive reference copy for the commodity register. Replaced by the
    geological survey's own text once the minerals endpoint is live. */
+/* Commodities with a photographed specimen; the rest use generated SVG art. */
+const PHOTO_IDS = new Set([
+  'gold', 'lithium', 'tin', 'iron', 'lead',
+  'barite', 'limestone', 'marble', 'coal', 'bitumen',
+]);
+
 const GRADE_NOTES = {
   gold: 'Artisanal workings report 3–12 g/t in quartz-vein material; bulk-tonnage potential untested at depth.',
   lithium: 'Pegmatite-hosted spodumene and lepidolite, 1.2–2.4% Li₂O in channel samples across the Nasarawa–Kogi belt.',
@@ -237,6 +243,7 @@ export class Api {
           hostRock: HOST_ROCK[id] || 'Host lithology under review.',
           uses: END_USES[id] || 'Industrial applications under review.',
           maturity: producing > 0 ? 'Producing' : sites.length ? 'Exploration' : 'Reconnaissance',
+          image: `assets/minerals/${id}.${PHOTO_IDS.has(id) ? 'png' : 'svg'}`,
         };
       }).sort((a, b) => b.occurrences - a.occurrences);
     });
