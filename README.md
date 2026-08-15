@@ -51,7 +51,44 @@ nmi/
     │   └── map-toolbar.js      # floating map UI: filters, layers, zoom, legend
     └── modules/
         ├── dashboard.js        # the Overview module (fully implemented)
+        ├── explore.js          # Explore Map: docks, drawing, measurement
+        ├── minerals.js         # Minerals: commodity register + dossier
+        ├── settings.js         # workspace preferences
         └── stub.js             # "coming soon" factory for pending modules
+```
+
+### Module status
+
+| Module | State |
+| --- | --- |
+| Overview | Implemented |
+| Explore Map | Implemented |
+| Minerals | Implemented |
+| Settings | Implemented |
+| Prospectivity, Risk, Oil & Gas, Mining Titles, Reports, Data Center | Placeholder via `createStub` |
+
+### Cross-module navigation
+
+A module hands a selection to another through `store.pendingFocus`, then routes.
+The receiving module consumes the request in `onShow()` and clears it, so a
+later revisit does not re-trigger the jump:
+
+```js
+// Minerals -> Explore Map
+store.set({ pendingFocus: { state: 'Zamfara', site: null, from: 'minerals' } });
+location.hash = '#/explore';
+```
+
+### Cache busting
+
+GitHub Pages serves assets with `cache-control: max-age=600` and no
+fingerprinting, so a deploy can be masked by a stale browser cache. Every local
+asset URL carries `?v=<short sha>`, including the relative `import` specifiers
+inside `js/**.js` — ES modules are fetched by their own URL, so stamping
+`main.js` alone would leave submodules cached. Run before committing a deploy:
+
+```bash
+python3 tools/stamp-version.py
 ```
 
 ### The SPA guarantee
@@ -116,6 +153,8 @@ Expected endpoints (response shapes already match the fixtures):
 | `getDeposits()`         | `GET /geo/deposits`      | Occurrence markers |
 | `getStateProfile(name)` | `GET /geo/states/:code`  | Single state profile |
 | `getSystemHealth()`     | `GET /system/health`     | Status pill + sidebar readouts |
+| `getCommodities()`      | `GET /minerals`          | Commodity register: counts, trend, sites, states, geology notes |
+| `getCommodity(id)`      | `GET /minerals/:id`      | Single commodity dossier |
 
 Each state feature carries: `name, code, region, centroid, commodities[],
 occurrences, prospectivity (0–100), risk, titles, petroleum, coverage`.

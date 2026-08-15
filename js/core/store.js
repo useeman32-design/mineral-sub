@@ -42,6 +42,8 @@ export const store = new Store({
   drill: { level: 'nation', nation: 'Nigeria', state: null, lga: null, prospect: null },
   selectedState: null,
   hoveredState: null,
+  /** Cross-module navigation request, consumed by the receiving module. */
+  pendingFocus: null,
 
   // map view
   basemap: 'vector',          // 'vector' | 'satellite'

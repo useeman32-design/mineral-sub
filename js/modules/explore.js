@@ -13,22 +13,22 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js?v=5b08fd6';
-import { store } from '../core/store.js?v=5b08fd6';
-import { icon } from '../core/icons.js?v=5b08fd6';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=5b08fd6';
-import { NigeriaMap, zoomBand } from '../components/map.js?v=5b08fd6';
-import { RESOURCE_META } from '../data/fixtures.js?v=5b08fd6';
-import { toast } from './dashboard.js?v=5b08fd6';
-import { DrawEngine, TOOL_META } from '../components/draw.js?v=5b08fd6';
-import { History } from '../core/history.js?v=5b08fd6';
-import { projects } from '../data/projects.js?v=5b08fd6';
-import { measureShape } from '../core/geo.js?v=5b08fd6';
-import { loadPrefs } from './settings.js?v=5b08fd6';
-import { LAYER_GROUPS } from '../data/layers.js?v=5b08fd6';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=5b08fd6';
-import { createStatusBar } from '../components/statusbar.js?v=5b08fd6';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=5b08fd6';
+import { api } from '../data/api.js?v=c142985';
+import { store } from '../core/store.js?v=c142985';
+import { icon } from '../core/icons.js?v=c142985';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=c142985';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=c142985';
+import { RESOURCE_META } from '../data/fixtures.js?v=c142985';
+import { toast } from './dashboard.js?v=c142985';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=c142985';
+import { History } from '../core/history.js?v=c142985';
+import { projects } from '../data/projects.js?v=c142985';
+import { measureShape } from '../core/geo.js?v=c142985';
+import { loadPrefs } from './settings.js?v=c142985';
+import { LAYER_GROUPS } from '../data/layers.js?v=c142985';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=c142985';
+import { createStatusBar } from '../components/statusbar.js?v=c142985';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=c142985';
 
 const RESOURCES = LEGEND_RESOURCES;
 
@@ -1206,9 +1206,42 @@ export function createExplore() {
     if (el) el.innerHTML = drillNav();
   }
 
+  /**
+   * Another module (e.g. Minerals) asked for a state or site to be opened
+   * here. Consume the request once so a later revisit does not re-trigger it.
+   */
+  function consumeFocus() {
+    const req = store.get('pendingFocus');
+    if (!req || !nmap) return;
+    store.set({ pendingFocus: null });
+
+    if (req.site) {
+      const d = nmap.deposits?.find((x) => x.id === req.site.id);
+      const ll = d ? [d.lat, d.lng] : [req.site.lat, req.site.lng];
+      nmap.map.flyTo(ll, 11, { duration: 1 });
+      lastGeo = { kind: 'deposit', data: d || req.site };
+      setInspectorTab('geo');
+      renderInspector();
+      return;
+    }
+
+    if (req.state) {
+      const layer = nmap.stateLayers.get(req.state);
+      if (layer) {
+        nmap.selectState(req.state);
+        nmap.map.flyToBounds(layer.getBounds(), { padding: [40, 40], duration: 1 });
+      }
+    }
+  }
+
   return {
     mount,
-    onShow() { requestAnimationFrame(() => nmap?.invalidate()); },
+    onShow() {
+      requestAnimationFrame(() => {
+        nmap?.invalidate();
+        consumeFocus();
+      });
+    },
     onHide() { draw?.setTool(null); syncToolButtons(); },
     destroy() { unsub.forEach((f) => f()); draw?.destroy(); nmap?.destroy(); },
   };
