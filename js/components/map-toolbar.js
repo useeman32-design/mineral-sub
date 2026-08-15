@@ -292,14 +292,37 @@ export function mapToolbar(stage, nmap) {
       nmap.setLabels(on);
       b.classList.toggle('is-on', !on);
     }
-    if (t === 'measure') { b.classList.toggle('is-on'); toast('Measurement tool ships with the Explore Map module'); }
+    if (t === 'measure') {
+      // Not implemented yet — flash, don't latch into an active state.
+      b.classList.add('is-pending');
+      setTimeout(() => b.classList.remove('is-pending'), 600);
+      toast('Measurement tool ships with the Explore Map module');
+    }
     if (t === 'full') {
-      const stageEl = stage;
-      if (!document.fullscreenElement) stageEl.requestFullscreen?.().then(() => nmap.invalidate());
-      else document.exitFullscreen?.().then(() => nmap.invalidate());
-      b.classList.toggle('is-on');
+      // Request/exit only — the active state is driven by fullscreenchange
+      // below, so ESC or an OS-level exit can't leave the button stuck on.
+      if (!document.fullscreenElement) {
+        (stage.requestFullscreen?.() || Promise.reject()).catch(() => {
+          toast('Fullscreen was blocked by the browser');
+        });
+      } else {
+        document.exitFullscreen?.();
+      }
     }
   });
+
+  /* ---------- fullscreen: reflect the real document state ---------- */
+  const fullBtn = $('[data-tool="full"]', tools);
+  function syncFullscreen() {
+    const on = document.fullscreenElement === stage;
+    fullBtn.classList.toggle('is-on', on);
+    fullBtn.title = on ? 'Exit fullscreen' : 'Fullscreen map';
+    stage.classList.toggle('is-fullscreen', on);
+    // Leaflet must remeasure after the viewport changes
+    setTimeout(() => nmap.invalidate(), 60);
+  }
+  document.addEventListener('fullscreenchange', syncFullscreen);
+  syncFullscreen();
 
   /* ---------- legend ---------- */
   function syncLegend(list) {
