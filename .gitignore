@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build / cache
+dist/
+build/
+.cache/
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets — never commit credentials
+.env
+.env.*
+*.pem
+.netrc
+.git-credentials

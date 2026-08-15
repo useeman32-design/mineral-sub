@@ -1,0 +1,109 @@
+/* ============================================================
+   Leaflet theming, boot splash, toast — loaded last
+   ============================================================ */
+
+/* ---- Boot splash ---- */
+#boot {
+  position: fixed; inset: 0; z-index: 9999;
+  display: grid; place-items: center;
+  background: var(--bg-void);
+  transition: opacity 420ms var(--ease);
+}
+#boot.is-out { opacity: 0; pointer-events: none; }
+#boot .boot-in { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+#boot svg { filter: drop-shadow(0 0 16px rgba(0,230,118,.55)); animation: boot-pulse 2s var(--ease) infinite; }
+@keyframes boot-pulse { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
+#boot .boot-t {
+  font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--text-hi);
+}
+#boot .boot-s {
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-faint);
+}
+#boot .boot-bar {
+  width: 170px; height: 2px; border-radius: 99px; overflow: hidden;
+  background: rgba(255,255,255,.06); margin-top: 5px;
+}
+#boot .boot-bar > i {
+  display: block; height: 100%; width: 38%; border-radius: 99px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  animation: boot-slide 1.15s var(--ease) infinite;
+}
+@keyframes boot-slide { from { transform: translateX(-100%) } to { transform: translateX(360%) } }
+
+/* ---- Leaflet overrides ---- */
+.leaflet-container a { color: var(--cyan); }
+.leaflet-fade-anim .leaflet-tile { will-change: opacity; }
+.leaflet-marker-icon, .leaflet-marker-shadow { border: none; background: none; }
+
+/* Deposit tooltip */
+.leaflet-tooltip.dep-tip {
+  background: rgba(8,12,14,.96);
+  border: 1px solid rgba(45,216,195,.28);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg), 0 0 22px -8px rgba(45,216,195,.5);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 9px 11px;
+  color: var(--text-hi);
+  font-family: var(--font-ui);
+  white-space: nowrap;
+}
+.leaflet-tooltip.dep-tip::before { display: none; }
+.dt-hd { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+.dt-sw { width: 8px; height: 8px; border-radius: 50%; flex: none; box-shadow: 0 0 7px currentColor; }
+.dt-name { font-size: var(--fs-base); font-weight: 600; }
+.dt-rows { display: flex; flex-direction: column; gap: 3px; }
+.dt-r { display: flex; justify-content: space-between; gap: 18px; font-size: var(--fs-xs); }
+.dt-r span { color: var(--text-low); }
+.dt-r b { color: var(--text-hi); font-weight: 500; }
+.dt-ft {
+  margin-top: 7px; padding-top: 6px; border-top: 1px solid var(--line-faint);
+  font-family: var(--font-mono); font-size: 8.5px; color: var(--text-faint);
+  letter-spacing: .06em;
+}
+
+/* Satellite mode: dim the synthetic styling so imagery reads */
+.map-stage.is-satellite { background: #0a0d0e; }
+.map-stage.is-satellite .state-label { color: rgba(232,242,242,.8); }
+
+/* Offline satellite fallback — synthetic terrain so the toggle still reads */
+.map-stage.sat-fallback::before {
+  content: "";
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background:
+    radial-gradient(520px 380px at 26% 30%, rgba(120,110,70,.2), transparent 62%),
+    radial-gradient(600px 420px at 72% 62%, rgba(60,95,75,.2), transparent 66%),
+    radial-gradient(420px 300px at 45% 82%, rgba(40,80,90,.18), transparent 64%),
+    repeating-linear-gradient(52deg, rgba(255,255,255,.014) 0 2px, transparent 2px 7px);
+  mix-blend-mode: screen;
+}
+
+/* ---- Toast ---- */
+#nmi-toast {
+  position: fixed;
+  bottom: 22px; left: 50%;
+  transform: translate(-50%, 14px);
+  z-index: var(--z-toast);
+  padding: 9px 15px;
+  border-radius: var(--r-pill);
+  background: rgba(10,15,17,.95);
+  border: 1px solid rgba(0,230,118,.26);
+  box-shadow: var(--shadow-lg), 0 0 26px -10px rgba(0,230,118,.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  font-size: var(--fs-sm);
+  color: var(--text-hi);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease-out);
+  max-width: min(92vw, 520px);
+  text-align: center;
+}
+#nmi-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---- Print ---- */
+@media print {
+  body::before, body::after, .sidebar, .topbar { display: none !important; }
+  .app { display: block; }
+}
