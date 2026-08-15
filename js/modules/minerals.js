@@ -10,10 +10,10 @@
  * so the two data modules feel like the same product.
  */
 
-import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=b9c6490';
-import { icon } from '../core/icons.js?v=b9c6490';
-import { api } from '../data/api.js?v=b9c6490';
-import { store } from '../core/store.js?v=b9c6490';
+import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=a404c97';
+import { icon } from '../core/icons.js?v=a404c97';
+import { api } from '../data/api.js?v=a404c97';
+import { store } from '../core/store.js?v=a404c97';
 
 const CATEGORIES = ['All', 'Metallic', 'Industrial', 'Energy'];
 

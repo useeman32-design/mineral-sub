@@ -9,13 +9,13 @@
  * file is presentation and interaction only.
  */
 
-import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=b9c6490';
-import { icon } from '../core/icons.js?v=b9c6490';
-import { api } from '../data/api.js?v=b9c6490';
-import { store } from '../core/store.js?v=b9c6490';
+import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=a404c97';
+import { icon } from '../core/icons.js?v=a404c97';
+import { api } from '../data/api.js?v=a404c97';
+import { store } from '../core/store.js?v=a404c97';
 import {
   CRITERIA, TIERS, runModel, defaultWeights, explain,
-} from '../core/scoring.js?v=b9c6490';
+} from '../core/scoring.js?v=a404c97';
 
 const WEIGHTS_KEY = 'nmi.prosWeights';
 const COMMODITY_OPTS = [
