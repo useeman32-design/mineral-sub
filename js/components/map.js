@@ -38,6 +38,7 @@ export class NigeriaMap {
     this.uid = 'nmap-' + (++MAP_SEQ);
     container.dataset.nmap = this.uid;
     this.interceptClicks = null;
+    this.suppressSelection = false;
     this.root = container;
     this.api = api;
     this.onSelect = onSelect || (() => {});
@@ -97,6 +98,9 @@ export class NigeriaMap {
     this.map.on('mousemove', (e) => this._moveTip(e));
     this.map.on('click', (e) => {
       if (this.interceptClicks) { this.interceptClicks(e.latlng); return; }
+      // While a draw tool is armed, background clicks must not wipe the
+      // current state/LGA selection.
+      if (this.suppressSelection) return;
       if (!e.originalEvent._stateHit) this.clearSelection();
     });
 
@@ -173,6 +177,7 @@ export class NigeriaMap {
         layer.getElement?.();
 
         layer.on('mouseover', (e) => {
+          if (this.suppressSelection) return;
           if (this.selected !== name) {
             layer.setStyle(this._stateStyle(f, 'hover'));
             layer.bringToFront();
@@ -200,6 +205,7 @@ export class NigeriaMap {
             L.DomEvent.stopPropagation(e);
             return;
           }
+          if (this.suppressSelection) { L.DomEvent.stopPropagation(e); return; }
           e.originalEvent._stateHit = true;
           L.DomEvent.stopPropagation(e);
           this.selectState(name, { zoom: true });
@@ -629,6 +635,17 @@ export class NigeriaMap {
   }
 
   zoomBy(d) { this.map.setZoom(this.map.getZoom() + d); }
+
+  /** Serialisable camera position — stored with saved projects. */
+  getView() {
+    const c = this.map.getCenter();
+    return { lat: +c.lat.toFixed(5), lng: +c.lng.toFixed(5), zoom: +this.map.getZoom().toFixed(2) };
+  }
+
+  setView(v) {
+    if (!v) return;
+    this.map.setView([v.lat, v.lng], v.zoom, { animate: false });
+  }
   invalidate() { this.map?.invalidateSize({ animate: false }); }
 
 
@@ -687,6 +704,7 @@ export class NigeriaMap {
         });
         layer.on('click', (e) => {
           if (this.interceptClicks) { this.interceptClicks(e.latlng); L.DomEvent.stopPropagation(e); return; }
+          if (this.suppressSelection) { L.DomEvent.stopPropagation(e); return; }
           e.originalEvent._stateHit = true;
           L.DomEvent.stopPropagation(e);
           this.selectLga(f.properties, layer);
