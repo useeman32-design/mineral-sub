@@ -6,19 +6,19 @@
  * shell, design system and navigation need no changes.
  */
 
-import { buildShell } from './components/shell.js?v=d9b944a';
-import { Router } from './core/router.js?v=d9b944a';
-import { store } from './core/store.js?v=d9b944a';
-import { api } from './data/api.js?v=d9b944a';
-import { $ } from './core/utils.js?v=d9b944a';
-import { createDashboard, toast } from './modules/dashboard.js?v=d9b944a';
-import { createStub } from './modules/stub.js?v=d9b944a';
-import { createSettings } from './modules/settings.js?v=d9b944a';
-import { createMinerals } from './modules/minerals.js?v=d9b944a';
-import { createProspectivity } from './modules/prospectivity.js?v=d9b944a';
-import { createExplore } from './modules/explore.js?v=d9b944a';
-import { theme } from './core/theme.js?v=d9b944a';
-import { applyPrefs } from './modules/settings.js?v=d9b944a';
+import { buildShell } from './components/shell.js?v=e0ff5e1';
+import { Router } from './core/router.js?v=e0ff5e1';
+import { store } from './core/store.js?v=e0ff5e1';
+import { api } from './data/api.js?v=e0ff5e1';
+import { $ } from './core/utils.js?v=e0ff5e1';
+import { createDashboard, toast } from './modules/dashboard.js?v=e0ff5e1';
+import { createStub } from './modules/stub.js?v=e0ff5e1';
+import { createSettings } from './modules/settings.js?v=e0ff5e1';
+import { createMinerals } from './modules/minerals.js?v=e0ff5e1';
+import { createProspectivity } from './modules/prospectivity.js?v=e0ff5e1';
+import { createExplore } from './modules/explore.js?v=e0ff5e1';
+import { theme } from './core/theme.js?v=e0ff5e1';
+import { applyPrefs } from './modules/settings.js?v=e0ff5e1';
 
 const MODULES = [
   {

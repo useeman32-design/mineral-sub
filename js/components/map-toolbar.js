@@ -4,14 +4,14 @@
  * so the Explore Map module can reuse it with a different configuration.
  */
 
-import { icon } from '../core/icons.js?v=d9b944a';
-import { store } from '../core/store.js?v=d9b944a';
-import { $, $$ } from '../core/utils.js?v=d9b944a';
-import { RESOURCE_META } from '../data/fixtures.js?v=d9b944a';
-import { LAYER_GROUPS, applyLayer } from '../data/layers.js?v=d9b944a';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=d9b944a';
-import { createStatusBar } from '../components/statusbar.js?v=d9b944a';
-import { toast } from '../modules/dashboard.js?v=d9b944a';
+import { icon } from '../core/icons.js?v=e0ff5e1';
+import { store } from '../core/store.js?v=e0ff5e1';
+import { $, $$ } from '../core/utils.js?v=e0ff5e1';
+import { RESOURCE_META } from '../data/fixtures.js?v=e0ff5e1';
+import { LAYER_GROUPS, applyLayer } from '../data/layers.js?v=e0ff5e1';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=e0ff5e1';
+import { createStatusBar } from '../components/statusbar.js?v=e0ff5e1';
+import { toast } from '../modules/dashboard.js?v=e0ff5e1';
 
 const RESOURCES = LEGEND_RESOURCES;
 
@@ -51,8 +51,6 @@ export function mapToolbar(stage, nmap) {
     <div class="glass-bar tool-stack">
       <button class="tool-btn" data-tool="in"    title="Zoom in">${icon('plus', { size: 15 })}</button>
       <button class="tool-btn" data-tool="out"   title="Zoom out">${icon('minus', { size: 15 })}</button>
-      <div class="tool-sep"></div>
-      <div class="zoom-readout"><span class="zl" id="zoom-lvl">6.1</span><span class="zt" id="zoom-band">nation</span></div>
     </div>
     <div class="glass-bar tool-stack">
       <button class="tool-btn" data-tool="reset"  title="Reset to national view">${icon('crosshair', { size: 15 })}</button>
@@ -264,7 +262,7 @@ export function mapToolbar(stage, nmap) {
     if (t === 'labels') {
       const on = !store.get('showLabels');
       nmap.setLabels(on);
-      b.classList.toggle('is-on', !on);
+      b.classList.toggle('is-off', !on);
     }
     if (t === 'measure') {
       // Not implemented yet — flash, don't latch into an active state.

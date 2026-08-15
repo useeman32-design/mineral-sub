@@ -10,8 +10,8 @@
  *   await api.getDashboardSummary();   ->  GET /api/v1/dashboard/summary
  */
 
-import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=d9b944a';
-import { seeded } from '../core/utils.js?v=d9b944a';
+import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=e0ff5e1';
+import { seeded } from '../core/utils.js?v=e0ff5e1';
 
 /* Descriptive reference copy for the commodity register. Replaced by the
    geological survey's own text once the minerals endpoint is live. */

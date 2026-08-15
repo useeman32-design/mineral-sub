@@ -248,12 +248,6 @@
 .tool-sep { height: 1px; background: var(--line-faint); margin: 2px 3px; }
 
 /* --- Zoom scale readout --- */
-.zoom-readout {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 6px 4px;
-}
-.zoom-readout .zl { font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--cyan-300); }
-.zoom-readout .zt { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); }
 
 /* --- Breadcrumb / drill path (top-left under toolbar) --- */
 .drill-path {
@@ -1854,3 +1848,15 @@ body.is-panel-dragging .leaflet-container { pointer-events: none; }
    pointer-events:none while individual paths opt back in. Our custom panes get
    their own <svg>, so the LGA paths must opt in explicitly. */
 .leaflet-lgas-pane path.ng-lga { pointer-events: visiblePainted !important; }
+
+
+/* ============================================================
+   Map tool button: "off" state for toggles that start enabled
+   (e.g. place labels). Distinct from .is-on, which highlights a
+   tool that is actively engaged.
+   ============================================================ */
+.tool-btn.is-off {
+  color: var(--text-faint);
+  opacity: .55;
+}
+.tool-btn.is-off:hover { color: var(--text-mid); opacity: .85; }

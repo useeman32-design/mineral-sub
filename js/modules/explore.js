@@ -13,22 +13,22 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js?v=d9b944a';
-import { store } from '../core/store.js?v=d9b944a';
-import { icon } from '../core/icons.js?v=d9b944a';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=d9b944a';
-import { NigeriaMap, zoomBand } from '../components/map.js?v=d9b944a';
-import { RESOURCE_META } from '../data/fixtures.js?v=d9b944a';
-import { toast } from './dashboard.js?v=d9b944a';
-import { DrawEngine, TOOL_META } from '../components/draw.js?v=d9b944a';
-import { History } from '../core/history.js?v=d9b944a';
-import { projects } from '../data/projects.js?v=d9b944a';
-import { measureShape } from '../core/geo.js?v=d9b944a';
-import { loadPrefs } from './settings.js?v=d9b944a';
-import { LAYER_GROUPS } from '../data/layers.js?v=d9b944a';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=d9b944a';
-import { createStatusBar } from '../components/statusbar.js?v=d9b944a';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=d9b944a';
+import { api } from '../data/api.js?v=e0ff5e1';
+import { store } from '../core/store.js?v=e0ff5e1';
+import { icon } from '../core/icons.js?v=e0ff5e1';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=e0ff5e1';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=e0ff5e1';
+import { RESOURCE_META } from '../data/fixtures.js?v=e0ff5e1';
+import { toast } from './dashboard.js?v=e0ff5e1';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=e0ff5e1';
+import { History } from '../core/history.js?v=e0ff5e1';
+import { projects } from '../data/projects.js?v=e0ff5e1';
+import { measureShape } from '../core/geo.js?v=e0ff5e1';
+import { loadPrefs } from './settings.js?v=e0ff5e1';
+import { LAYER_GROUPS } from '../data/layers.js?v=e0ff5e1';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=e0ff5e1';
+import { createStatusBar } from '../components/statusbar.js?v=e0ff5e1';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=e0ff5e1';
 
 const RESOURCES = LEGEND_RESOURCES;
 
@@ -404,6 +404,7 @@ export function createExplore() {
               <button class="tool-btn" data-tool="in" title="Zoom in">${icon('plus', { size: 15 })}</button>
               <button class="tool-btn" data-tool="out" title="Zoom out">${icon('minus', { size: 15 })}</button>
               <div class="tool-sep-v"></div>
+              <button class="tool-btn" data-tool="labels" title="Toggle place labels">${icon('eye', { size: 15 })}</button>
               <button class="tool-btn" data-tool="measure-toggle" title="Measure & draw tools">${icon('ruler', { size: 15 })}</button>
               <button class="tool-btn" data-tool="full" title="Fullscreen">${icon('fullscreen', { size: 15 })}</button>
             </div>
@@ -490,6 +491,8 @@ export function createExplore() {
     });
     await nmap.init();
     $('#map-loading', view).classList.add('is-hidden');
+    // Seed the labels eye from stored state so a persisted "off" is visible.
+    setLabels(store.get('showLabels'));
 
     // --- drawing / measurement ---
     history = new History({ onChange: renderHistoryButtons });
@@ -568,6 +571,7 @@ export function createExplore() {
       if (t === 'in') nmap.zoomBy(1);
       if (t === 'out') nmap.zoomBy(-1);
       if (t === 'reset') nmap.resetView();
+      if (t === 'labels') setLabels(!store.get('showLabels'));
       if (t === 'measure-toggle') setMeasureDock(!isMeasureDockOpen());
       if (t === 'full') {
         if (!document.fullscreenElement) $('#ex-map', root).requestFullscreen?.();
@@ -662,6 +666,21 @@ export function createExplore() {
       if (e.target.closest('#db-finish')) draw.commitDraft();
       if (e.target.closest('#db-cancel')) { draw.setTool(null); syncToolButtons(); }
     });
+  }
+
+  /**
+   * Labels are reachable from two places — the quick-tool eye and the Layers
+   * panel row. Route both through here so they can never disagree.
+   */
+  function setLabels(on) {
+    nmap.setLabels(on);
+    const eye = $('#ex-quick [data-tool="labels"]', root);
+    if (eye) eye.classList.toggle('is-off', !on);
+    const row = $('#layer-tree [data-layer="labels"]', root);
+    if (row) {
+      row.classList.toggle('is-on', on);
+      row.setAttribute('aria-checked', String(on));
+    }
   }
 
   function syncToolButtons() {
@@ -1058,7 +1077,7 @@ export function createExplore() {
       b.classList.toggle('is-on', next);
       b.setAttribute('aria-checked', String(next));
 
-      if (id === 'labels') nmap.setLabels(next);
+      if (id === 'labels') setLabels(next);
       else if (id === 'lgas') {
         const st = store.get('selectedState');
         if (!st) { toast('Select a state first'); b.classList.remove('is-on'); return; }
@@ -1074,7 +1093,7 @@ export function createExplore() {
         const on = id !== 'lgas';
         b.classList.toggle('is-on', on);
         b.setAttribute('aria-checked', String(on));
-        if (id === 'labels') nmap.setLabels(on);
+        if (id === 'labels') setLabels(on);
         else if (id === 'lgas') nmap.hideLgas();
         else nmap.toggleLayer(id, on);
       });

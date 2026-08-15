@@ -3,9 +3,9 @@
  * Collapses to a compact pill; state persists per module scope.
  */
 
-import { icon } from '../core/icons.js?v=d9b944a';
-import { RESOURCE_META } from '../data/fixtures.js?v=d9b944a';
-import { $, $$ } from '../core/utils.js?v=d9b944a';
+import { icon } from '../core/icons.js?v=e0ff5e1';
+import { RESOURCE_META } from '../data/fixtures.js?v=e0ff5e1';
+import { $, $$ } from '../core/utils.js?v=e0ff5e1';
 
 export const LEGEND_RESOURCES = ['gold', 'lithium', 'tin', 'iron', 'lead', 'barite', 'oil', 'gas'];
 
