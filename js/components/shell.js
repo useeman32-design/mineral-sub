@@ -58,6 +58,10 @@ export function buildShell(mountPoint) {
 
           <span class="tb-divider"></span>
 
+          <button class="icon-btn theme-btn" title="Toggle light / dark theme" id="btn-theme" aria-label="Toggle theme">
+            <span class="ico-moon">${icon('moon', { size: 16 })}</span>
+            <span class="ico-sun">${icon('sun', { size: 16 })}</span>
+          </button>
           <button class="icon-btn has-dot" title="Notifications" id="btn-bell">
             ${icon('bell', { size: 17 })}<span class="dot"></span>
           </button>

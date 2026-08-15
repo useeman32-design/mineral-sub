@@ -13,6 +13,9 @@ import { api } from './data/api.js';
 import { $ } from './core/utils.js';
 import { createDashboard, toast } from './modules/dashboard.js';
 import { createStub } from './modules/stub.js';
+import { createSettings } from './modules/settings.js';
+import { theme } from './core/theme.js';
+import { applyPrefs } from './modules/settings.js';
 
 const MODULES = [
   {
@@ -84,16 +87,16 @@ const MODULES = [
     }),
   },
   {
-    id: 'settings', title: 'Settings', keepAlive: false,
-    factory: createStub({
-      title: 'Settings', glyph: 'settings', tag: 'In development',
-      blurb: 'Workspace configuration — organisation profile, user roles and permissions, map defaults, unit systems, API keys and data-source bindings.',
-      features: ['Organisation profile', 'Roles & permissions', 'Map defaults', 'Units & projection', 'API keys', 'Audit log'],
-    }),
+    id: 'settings', title: 'Settings', keepAlive: true,
+    factory: () => createSettings(),
   },
 ];
 
 function boot() {
+  // Theme + saved preferences must apply before the first paint of the shell
+  theme.init();
+  applyPrefs();
+
   const shell = buildShell(document.getElementById('root'));
   const router = new Router(shell.stage, shell.routeBar);
 
@@ -114,6 +117,10 @@ function boot() {
   });
 
   // Topbar affordances
+  document.getElementById('btn-theme')?.addEventListener('click', () => {
+    const t = theme.toggle();
+    toast(`${t === 'light' ? 'Light' : 'Dark'} theme`);
+  });
   document.getElementById('btn-bell')?.addEventListener('click', () => toast('3 unread advisories · notification centre coming soon'));
   document.getElementById('btn-user')?.addEventListener('click', () => toast('Account menu arrives with the auth service'));
   document.getElementById('nav-profile')?.addEventListener('click', () => toast('Sign-out requires the auth service'));

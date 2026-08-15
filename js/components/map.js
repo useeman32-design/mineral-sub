@@ -65,7 +65,7 @@ export class NigeriaMap {
     });
 
     // Pane order: graticule < halo < states < heat < deposits < labels
-    ['graticule', 'halo', 'states', 'heat', 'deposits', 'labels'].forEach((p, i) => {
+    ['graticule', 'halo', 'states', 'lgas', 'heat', 'deposits', 'labels'].forEach((p, i) => {
       this.map.createPane(p);
       this.map.getPane(p).style.zIndex = 400 + i * 40;
     });
@@ -107,7 +107,17 @@ export class NigeriaMap {
     });
     this._ro.observe(this.root);
 
+    // Restyle vectors when the colour theme flips
+    this._onTheme = () => {
+      this.refreshStateStyles();
+      const gcol = getComputedStyle(document.documentElement).getPropertyValue('--map-grid').trim();
+      this.layers.graticule?.eachLayer((l) => l.setStyle?.({ color: gcol }));
+      if (this._lgaShown) { const c = this._lgaShown; this.hideLgas({ keepRequest: true }); this.showLgas(c); }
+    };
+    addEventListener('nmi:theme', this._onTheme);
+
     this._ready = true;
+    requestAnimationFrame(() => this.refreshStateStyles());
     return this;
   }
 
@@ -118,7 +128,8 @@ export class NigeriaMap {
   /** Graticule — fine coordinate grid, a GIS workstation cue. */
   _buildGraticule() {
     const g = L.layerGroup([], { pane: 'graticule' });
-    const style = { color: '#2dd8c3', weight: 0.5, opacity: 0.1, interactive: false };
+    const gcol = getComputedStyle(document.documentElement).getPropertyValue('--map-grid').trim();
+    const style = { color: gcol || 'rgba(45,216,195,.1)', weight: 0.5, opacity: 1, interactive: false };
     for (let lat = 4; lat <= 14; lat += 1) {
       L.polyline([[lat, 1.5], [lat, 16]], style).addTo(g);
     }
@@ -190,32 +201,55 @@ export class NigeriaMap {
   _stateStyle(f, mode) {
     const p = f.properties;
     const sat = store.get('basemap') === 'satellite';
+    const z = this._ready ? this.map.getZoom() : 6;
     const pros = p.prospectivity ?? 40;
     const t = Math.min(1, Math.max(0, (pros - 25) / 70));
 
-    // Landmass stays near-black charcoal; prospectivity only warms it very
-    // slightly so heat blooms and deposit markers own the colour budget.
-    const r = Math.round(11 + t * 26);
-    const g = Math.round(19 + t * 20);
-    const b = Math.round(22 + t * 6);
+    // Fills recede as you zoom in so imagery / detail is never tinted.
+    // Above the LGA band the polygon becomes outline-only.
+    const detail = z >= 9.5 ? 0 : z >= 8 ? 0.45 : 1;
+
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    const cs = getComputedStyle(document.documentElement);
+    const land = cs.getPropertyValue('--map-land').trim() || (light ? '232, 240, 240' : '11, 19, 22');
+    const [lr, lg, lb] = land.split(',').map((n) => +n);
+    // Light theme: prospectivity darkens the land; dark theme: it lightens it.
+    const dir = light ? -1 : 1;
+
+    const r = Math.round(lr + dir * t * 26);
+    const g = Math.round(lg + dir * t * 20);
+    const b = Math.round(lb + dir * t * 6);
+
+    const stroke = getComputedStyle(document.documentElement)
+      .getPropertyValue('--map-stroke').trim() || 'rgba(45,216,195,.5)';
 
     const base = {
-      color: sat ? 'rgba(0,230,118,.5)' : 'rgba(45,216,195,.5)',
+      color: sat ? 'rgba(120, 220, 190, .5)' : stroke,
       weight: 0.85,
-      opacity: 0.85,
+      opacity: sat ? 0.6 : 0.85,
       fillColor: `rgb(${r},${g},${b})`,
-      fillOpacity: sat ? 0.1 : 0.9,
+      fillOpacity: sat ? 0 : 0.9 * detail,
       lineJoin: 'round',
       className: 'ng-state',
     };
 
     if (mode === 'hover') {
-      return { ...base, color: '#5eead4', weight: 1.8, opacity: 1,
-               fillColor: '#16262a', fillOpacity: sat ? 0.3 : 0.96 };
+      return { ...base,
+        color: light ? '#0d9488' : '#5eead4',
+        weight: 1.8, opacity: 1,
+        fillColor: getComputedStyle(document.documentElement).getPropertyValue('--map-land-hi').trim() || '#16262a',
+        fillOpacity: sat ? 0.18 : Math.max(0.22, 0.96 * detail) };
     }
     if (mode === 'selected') {
-      return { ...base, color: '#00e676', weight: 2.3, opacity: 1,
-               fillColor: '#09201a', fillOpacity: sat ? 0.34 : 0.92 };
+      // Selection reads as a glowing OUTLINE once zoomed in or over imagery —
+      // the green wash never obscures satellite detail.
+      const outlineOnly = sat || z >= 8.4 || detail === 0;
+      return { ...base,
+        color: light ? '#00964e' : '#00e676',
+        weight: outlineOnly ? 2.6 : 2.3,
+        opacity: 1,
+        fillColor: light ? '#c9ecd9' : '#09201a',
+        fillOpacity: outlineOnly ? 0 : 0.92 * detail };
     }
     return base;
   }
@@ -277,20 +311,18 @@ export class NigeriaMap {
       const meta = RESOURCE_META[d.resource] || {};
       const hex = meta.hex || '#f5b942';
       const major = d.tier === 'major';
-      const size = major ? 9 : 6.5;
 
       const html = `
         <div class="dep-marker ${major ? 'is-major' : ''}" style="color:${hex}">
           ${major ? `<span class="dep-ring"></span><span class="dep-ring"></span>` : ''}
-          <span class="dep-core" style="width:${size}px;height:${size}px;background:${hex};
-            box-shadow:0 0 ${major ? 12 : 7}px ${hex}"></span>
+          <span class="dep-core" style="background:${hex}"></span>
           <span class="dep-label">${d.name}</span>
         </div>`;
 
       const m = L.marker([d.lat, d.lng], {
         pane: 'deposits',
         riseOnHover: true,
-        icon: L.divIcon({ className: '', html, iconSize: [size, size], iconAnchor: [size / 2, size / 2] }),
+        icon: L.divIcon({ className: '', html, iconSize: [0, 0], iconAnchor: [0, 0] }),
       });
 
       m._dep = d;
@@ -334,6 +366,28 @@ export class NigeriaMap {
       const elx = m.getElement?.();
       if (elx) elx.style.opacity = store.get('showLabels') ? (z >= 5.6 ? 1 : 0) : 0;
     });
+
+    // Marker scale: restrained at national extent, full size when zoomed in
+    const mscale = z <= 6.2 ? 0.62 : z <= 7 ? 0.74 : z <= 8 ? 0.88 : 1;
+    this.root.style.setProperty('--dep-scale', mscale.toFixed(2));
+    this.root.classList.toggle('pulse-off', z <= 6.4);
+
+    // Fills recede with zoom, so restyle states whenever the band changes
+    if (this._lastDetailBand !== band) {
+      this._lastDetailBand = band;
+      this.refreshStateStyles();
+    }
+
+    // Reveal LGA (ADM2) polygons inside the LGA band for the active state.
+    // An explicit drill request keeps them visible even if the fitted zoom
+    // lands slightly outside the band.
+    const st = store.get('selectedState');
+    const inLgaBand = band === 'lga' || band === 'local' || band === 'prospect';
+    if (st?.code && (inLgaBand || this._lgaRequested === st.code)) {
+      this.showLgas(st.code);
+    } else if (this._lgaShown && !this._lgaRequested) {
+      this.hideLgas();
+    }
 
     this._declutterLabels();
 
@@ -437,6 +491,7 @@ export class NigeriaMap {
   }
 
   clearSelection() {
+    this.hideLgas();
     if (this.selected && this.stateLayers.has(this.selected)) {
       const prev = this.stateLayers.get(this.selected);
       prev.setStyle(this._stateStyle(prev.feature));
@@ -482,6 +537,7 @@ export class NigeriaMap {
 
     this.root.classList.toggle('is-satellite', kind === 'satellite');
     this.refreshStateStyles();
+    if (this._lgaShown) { const c = this._lgaShown; this.hideLgas({ keepRequest: true }); this.showLgas(c); }
   }
 
   toggleLayer(id, on) {
@@ -557,6 +613,125 @@ export class NigeriaMap {
   zoomBy(d) { this.map.setZoom(this.map.getZoom() + d); }
   invalidate() { this.map?.invalidateSize({ animate: false }); }
 
+
+  /* ------------------------------------------------------------------
+     LGA (ADM2) layer — lazily fetched per state, cached in memory
+     ------------------------------------------------------------------ */
+
+  async loadLgas(stateCode) {
+    if (!stateCode) return null;
+    if (this._lgaCache?.[stateCode]) return this._lgaCache[stateCode];
+    this._lgaCache = this._lgaCache || {};
+    try {
+      const res = await fetch(`data/lga/${stateCode}.geojson`);
+      if (!res.ok) throw new Error('LGA fetch ' + res.status);
+      const geo = await res.json();
+      this._lgaCache[stateCode] = geo;
+      return geo;
+    } catch (err) {
+      console.warn('[NMI] LGA layer unavailable for', stateCode, err);
+      return null;
+    }
+  }
+
+  async showLgas(stateCode, { explicit = false } = {}) {
+    if (explicit) this._lgaRequested = stateCode;
+    if (this._lgaShown === stateCode) return;
+    const geo = await this.loadLgas(stateCode);
+    this.hideLgas({ keepRequest: true });
+    if (!geo) return;
+
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    const sat = store.get('basemap') === 'satellite';
+
+    this.layers.lgas = L.geoJSON(geo, {
+      pane: 'lgas',
+      style: () => ({
+        color: light ? 'rgba(13,148,136,.62)' : 'rgba(94,234,212,.5)',
+        weight: 0.7,
+        opacity: 0.85,
+        dashArray: '2,3',
+        fillColor: light ? '#dcebe8' : '#0e191d',
+        fillOpacity: sat ? 0 : 0.34,
+        className: 'ng-lga',
+      }),
+      onEachFeature: (f, layer) => {
+        layer.on('mouseover', (e) => {
+          layer.setStyle({ weight: 1.5, dashArray: null,
+            color: light ? '#00964e' : '#00e676',
+            fillOpacity: sat ? 0.14 : 0.5 });
+          layer.bringToFront();
+          this._showLgaTip(f.properties, e);
+        });
+        layer.on('mouseout', () => {
+          this.layers.lgas.resetStyle(layer);
+          this._hideTip();
+        });
+        layer.on('click', (e) => {
+          e.originalEvent._stateHit = true;
+          L.DomEvent.stopPropagation(e);
+          this.selectLga(f.properties, layer);
+        });
+      },
+    }).addTo(this.map);
+
+    // LGA name labels
+    this.layers.lgaLabels = L.layerGroup([], { pane: 'labels' });
+    geo.features.forEach((f) => {
+      const c = f.properties.centroid;
+      if (!c) return;
+      L.marker(c, {
+        pane: 'labels', interactive: false,
+        icon: L.divIcon({ className: '', iconSize: [0, 0],
+          html: `<div class="lga-label">${f.properties.name}</div>` }),
+      }).addTo(this.layers.lgaLabels);
+    });
+    this.layers.lgaLabels.addTo(this.map);
+
+    this._lgaShown = stateCode;
+    this.root.dispatchEvent(new CustomEvent('map:lgas', {
+      detail: { code: stateCode, count: geo.features.length }, bubbles: true }));
+  }
+
+  hideLgas({ keepRequest = false } = {}) {
+    if (!keepRequest) this._lgaRequested = null;
+    if (this.layers.lgas) { this.map.removeLayer(this.layers.lgas); this.layers.lgas = null; }
+    if (this.layers.lgaLabels) { this.map.removeLayer(this.layers.lgaLabels); this.layers.lgaLabels = null; }
+    this._lgaShown = null;
+    this._selectedLga = null;
+  }
+
+  selectLga(props, layer) {
+    this._selectedLga = props.name;
+    if (this._lgaSelLayer) this.layers.lgas?.resetStyle(this._lgaSelLayer);
+    this._lgaSelLayer = layer;
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    layer.setStyle({ weight: 2.2, dashArray: null,
+      color: light ? '#00964e' : '#00e676', fillOpacity: 0 });
+    layer.bringToFront();
+
+    const d = store.get('drill');
+    store.set({ drill: { ...d, level: 'lga', lga: props.name } });
+    this.map.flyToBounds(layer.getBounds(), { padding: [60, 60], maxZoom: 11, duration: .7 });
+  }
+
+  _showLgaTip(props, e) {
+    if (!this.tip) {
+      this.tip = document.createElement('div');
+      this.tip.className = 'state-tip';
+      this.root.appendChild(this.tip);
+    }
+    this.tip.innerHTML = `
+      <div class="st-name">${props.name}<span class="st-code">LGA</span></div>
+      <div class="st-rows">
+        <div class="st-row"><span class="k">State</span><span class="v">${props.state}</span></div>
+        <div class="st-row"><span class="k">Centroid</span><span class="v t-mono">${fmt.coord(props.centroid[0], props.centroid[1])}</span></div>
+      </div>
+      <div class="st-hint">Click to focus this LGA</div>`;
+    this.tip.classList.add('is-on');
+    this._moveTip(e);
+  }
+
   /* ------------------------------------------------------------------
      Hover tooltip
      ------------------------------------------------------------------ */
@@ -600,5 +775,10 @@ export class NigeriaMap {
 
   _hideTip() { this.tip?.classList.remove('is-on'); }
 
-  destroy() { this._ro?.disconnect(); clearTimeout(this._rt); this.map?.remove(); }
+  destroy() {
+    this._ro?.disconnect();
+    removeEventListener('nmi:theme', this._onTheme);
+    clearTimeout(this._rt);
+    this.map?.remove();
+  }
 }

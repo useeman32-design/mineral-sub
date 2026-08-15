@@ -12,29 +12,31 @@ import { $, $$, fmt, sparkline, bars, ring, donut, countUp } from '../core/utils
 import { NigeriaMap } from '../components/map.js';
 import { RESOURCE_META } from '../data/fixtures.js';
 import { mapToolbar } from '../components/map-toolbar.js';
+import { initRail } from '../components/rail.js';
+import { loadPrefs } from './settings.js';
 
 export function createDashboard() {
-  let root, nmap, data, unsub = [];
+  let root, nmap, data, rail, unsub = [];
 
   /* ---------------- templates ---------------- */
 
   const kpiCard = (k) => `
-    <article class="panel kpi" data-kpi="${k.id}">
-      <div class="kpi-ico" style="color:${k.color}">
-        ${icon(k.id === 'occurrences' ? 'minerals' : k.id === 'blocks' ? 'oil' : k.id === 'titles' ? 'titles' : 'risk', { size: 17 })}
+    <article class="panel kpi" data-kpi="${k.id}" style="--kpi-c:${k.color}">
+      <div class="kpi-top">
+        <span class="kpi-ico">
+          ${icon(k.id === 'occurrences' ? 'minerals' : k.id === 'blocks' ? 'oil' : k.id === 'titles' ? 'titles' : 'risk', { size: 15 })}
+        </span>
+        <span class="kpi-label">${k.label}</span>
+        <span class="delta ${k.delta > 0 ? 'up' : k.delta < 0 ? 'down' : 'flat'}">
+          ${icon(k.delta >= 0 ? 'chevron' : 'chevron', { size: 9, cls: k.delta >= 0 ? 'd-up' : 'd-down', sw: 3 })}${Math.abs(k.delta).toFixed(1)}%
+        </span>
       </div>
-      <div class="kpi-body">
-        <div class="kpi-label">${k.label}</div>
-        <div class="kpi-val">
-          <span class="n" style="color:${k.color}" data-count="${k.value}">0</span>
-          <span class="u">${k.unit}</span>
-        </div>
-        <div class="kpi-foot">
-          <span class="delta ${k.delta > 0 ? 'up' : k.delta < 0 ? 'down' : 'flat'}">${fmt.delta(k.delta)}</span>
-          <span class="ctx">${k.ctx}</span>
-        </div>
+      <div class="kpi-mid">
+        <span class="kpi-n" data-count="${k.value}">0</span>
+        <span class="kpi-u">${k.unit}</span>
+        <span class="kpi-spark">${sparkline(k.series, { color: k.color, w: 66, h: 26 })}</span>
       </div>
-      <div class="kpi-spark">${sparkline(k.series, { color: k.color, w: 58, h: 30 })}</div>
+      <div class="kpi-foot"><span class="ctx">${k.ctx}</span></div>
     </article>`;
 
   const mineralCard = (m) => `
@@ -44,41 +46,34 @@ export function createDashboard() {
         <span class="t-label">National</span>
       </header>
       <div class="panel-bd">
-        <div class="row gap-12" style="align-items:center">
-          <div style="flex:1">
-            <div class="mrow" style="border:0;padding-top:0">
-              <div class="mrow-body">
-                <div class="mrow-k">Total Mineral Occurrences</div>
-                <div class="mrow-v"><span class="n" style="color:var(--green)" data-count="${m.occurrences}">0</span><span class="u">sites</span></div>
-              </div>
-            </div>
-            <div class="mrow">
-              <div class="mrow-body">
-                <div class="mrow-k">Tracked Commodities</div>
-                <div class="mrow-v"><span class="n" style="color:var(--cyan)" data-count="${m.commodities}">0</span><span class="u">types</span></div>
-              </div>
-              <div class="mrow-chart">${bars([12, 18, 15, 22, 19, 26, 24, 31], { color: 'var(--cyan)', w: 54, h: 24 })}</div>
-            </div>
-            <div class="mrow">
-              <div class="mrow-body">
-                <div class="mrow-k">High Prospectivity Zones</div>
-                <div class="mrow-v"><span class="n" style="color:var(--gold)" data-count="${m.highProspectivity}">0</span><span class="u">zones</span></div>
-              </div>
-              <div class="mrow-chart">${bars([8, 14, 11, 19, 24, 21, 29, 33], { color: 'var(--gold)', w: 54, h: 24 })}</div>
-            </div>
+        <div class="stat-trio">
+          <div class="st3">
+            <span class="st3-n" style="color:var(--green)" data-count="${m.occurrences}">0</span>
+            <span class="st3-k">Occurrences</span>
           </div>
-          <div class="col" style="align-items:center;gap:7px">
-            ${donut(m.split, { size: 62, sw: 7 })}
-            <span class="t-label" style="font-size:8px">By class</span>
+          <div class="st3">
+            <span class="st3-n" style="color:var(--cyan)" data-count="${m.commodities}">0</span>
+            <span class="st3-k">Commodities</span>
+          </div>
+          <div class="st3">
+            <span class="st3-n" style="color:var(--gold)" data-count="${m.highProspectivity}">0</span>
+            <span class="st3-k">High Zones</span>
           </div>
         </div>
-        <div class="row gap-8" style="flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--line-faint)">
-          ${m.split.map((s) => `
-            <span class="row gap-6" style="font-size:var(--fs-micro);color:var(--text-low)">
-              <i style="width:6px;height:6px;border-radius:50%;background:${s.color};display:block"></i>${s.label}
-              <b class="t-mono" style="color:var(--text-mid)">${s.value}</b>
-            </span>`).join('')}
-        </div>
+        <details class="more">
+          <summary>Breakdown by class ${icon('chevron', { size: 11 })}</summary>
+          <div class="row gap-12" style="align-items:center;margin-top:9px">
+            ${donut(m.split, { size: 58, sw: 7 })}
+            <div class="col gap-4" style="flex:1">
+              ${m.split.map((x) => `
+                <span class="row gap-6" style="font-size:var(--fs-xs);color:var(--text-mid)">
+                  <i style="width:6px;height:6px;border-radius:50%;background:${x.color};display:block;flex:none"></i>
+                  <span style="flex:1">${x.label}</span>
+                  <b class="t-mono" style="color:var(--text-hi)">${x.value}</b>
+                </span>`).join('')}
+            </div>
+          </div>
+        </details>
       </div>
     </article>`;
 
@@ -89,32 +84,37 @@ export function createDashboard() {
         <span class="t-label">Upstream</span>
       </header>
       <div class="panel-bd">
-        <div class="sel-grid" style="margin-top:0">
-          <div class="sel-cell"><div class="k">Oil Fields</div>
-            <div class="v" style="color:var(--green)" data-count="${p.oilFields}">0</div></div>
-          <div class="sel-cell"><div class="k">Gas Fields</div>
-            <div class="v" style="color:#37d6ff" data-count="${p.gasFields}">0</div></div>
-          <div class="sel-cell"><div class="k">Active Blocks</div>
-            <div class="v" style="color:var(--cyan)" data-count="${p.activeBlocks}">0</div></div>
-          <div class="sel-cell"><div class="k">Oil Reserves</div>
-            <div class="v" style="color:var(--gold)">${p.reservesOil}<span style="font-size:9px;color:var(--text-faint)"> Bbbl</span></div></div>
+        <div class="stat-trio">
+          <div class="st3"><span class="st3-n" style="color:var(--green)" data-count="${p.oilFields}">0</span><span class="st3-k">Oil Fields</span></div>
+          <div class="st3"><span class="st3-n" style="color:#37d6ff" data-count="${p.gasFields}">0</span><span class="st3-k">Gas Fields</span></div>
+          <div class="st3"><span class="st3-n" style="color:var(--cyan)" data-count="${p.activeBlocks}">0</span><span class="st3-k">Blocks</span></div>
         </div>
-        <div class="row gap-10" style="margin-top:10px;padding-top:9px;border-top:1px solid var(--line-faint)">
+        <div class="row gap-10" style="margin-top:9px;padding-top:8px;border-top:1px solid var(--line-faint)">
           <div style="flex:1">
-            <div class="t-label" style="margin-bottom:3px">Production Trend</div>
+            <div class="t-label" style="margin-bottom:3px">Production</div>
             <div class="row gap-6">
               <b class="t-mono" style="font-size:var(--fs-md);color:var(--green-300)">${p.production.at(-1)}</b>
               <span style="font-size:9px;color:var(--text-faint)">mbpd</span>
-              <span class="delta up">${fmt.delta(2.1)}</span>
+              <span class="delta up">+2.1%</span>
             </div>
           </div>
-          ${sparkline(p.production, { color: 'var(--green)', w: 82, h: 30 })}
+          ${sparkline(p.production, { color: 'var(--green)', w: 76, h: 28 })}
         </div>
-        <div class="row gap-6" style="margin-top:8px">
-          <span class="t-label" style="flex:none">Gas Reserves</span>
-          <div class="meter" style="flex:1"><i style="width:78%;background:linear-gradient(90deg,#2dd8c3,#37d6ff);box-shadow:0 0 8px #37d6ff"></i></div>
-          <span class="t-mono" style="font-size:var(--fs-xs);color:#37d6ff">${p.reservesGas} TCF</span>
-        </div>
+        <details class="more">
+          <summary>Reserves ${icon('chevron', { size: 11 })}</summary>
+          <div class="col gap-8" style="margin-top:8px">
+            <div class="row gap-6">
+              <span class="t-label" style="flex:none;width:60px">Oil</span>
+              <div class="meter" style="flex:1"><i style="width:64%;background:linear-gradient(90deg,var(--gold-600),var(--gold))"></i></div>
+              <span class="t-mono" style="font-size:var(--fs-xs);color:var(--gold)">${p.reservesOil} Bbbl</span>
+            </div>
+            <div class="row gap-6">
+              <span class="t-label" style="flex:none;width:60px">Gas</span>
+              <div class="meter" style="flex:1"><i style="width:78%;background:linear-gradient(90deg,var(--cyan-600),#37d6ff)"></i></div>
+              <span class="t-mono" style="font-size:var(--fs-xs);color:#37d6ff">${p.reservesGas} TCF</span>
+            </div>
+          </div>
+        </details>
       </div>
     </article>`;
 
@@ -125,7 +125,7 @@ export function createDashboard() {
         <span class="pill" style="height:19px;font-size:8.5px;padding:0 7px;border-color:rgba(255,77,94,.28);color:var(--red);background:rgba(255,77,94,.08)">4 CLASSES</span>
       </header>
       <div class="panel-bd">
-        ${rows.map((r) => `
+        ${rows.slice(0, 2).map((r) => `
           <div class="risk-row">
             <div class="risk-top">
               <span class="risk-name">${r.label}</span>
@@ -137,6 +137,21 @@ export function createDashboard() {
             <div class="meter"><i style="width:${r.pct}%;background:${r.sev === 'high' ? 'linear-gradient(90deg,#ff8a3d,#ff4d5e)' : r.sev === 'med' ? 'linear-gradient(90deg,#f5b942,#ff8a3d)' : 'linear-gradient(90deg,#2dd8c3,#00e676)'};box-shadow:0 0 8px ${r.sev === 'high' ? '#ff4d5e' : r.sev === 'med' ? '#ff8a3d' : '#00e676'}"></i></div>
             <div class="cov-sub"><span>${r.note}</span></div>
           </div>`).join('')}
+        <details class="more">
+          <summary>${rows.length - 2} more risk classes ${icon('chevron', { size: 11 })}</summary>
+          ${rows.slice(2).map((r) => `
+            <div class="risk-row">
+              <div class="risk-top">
+                <span class="risk-name">${r.label}</span>
+                <span class="risk-val">
+                  <span class="n" style="color:${r.sev === 'high' ? 'var(--red)' : r.sev === 'med' ? 'var(--orange)' : 'var(--green)'}">${r.value}</span>
+                  <span class="sev sev-${r.sev}">${r.sev}</span>
+                </span>
+              </div>
+              <div class="meter"><i style="width:${r.pct}%;background:${r.sev === 'high' ? 'linear-gradient(90deg,#ff8a3d,#ff4d5e)' : r.sev === 'med' ? 'linear-gradient(90deg,#f5b942,#ff8a3d)' : 'linear-gradient(90deg,#2dd8c3,#00e676)'}"></i></div>
+              <div class="cov-sub"><span>${r.note}</span></div>
+            </div>`).join('')}
+        </details>
       </div>
     </article>`;
 
@@ -167,7 +182,7 @@ export function createDashboard() {
       </header>
       <div class="panel-bd">
         <div class="comm-list">
-          ${list.map((c) => {
+          ${list.slice(0, 5).map((c) => {
             const m = RESOURCE_META[c.id] || {};
             return `<div class="comm-row" data-resource="${c.id}">
               <i class="comm-dot" style="background:${m.hex};box-shadow:0 0 6px ${m.hex}"></i>
@@ -177,6 +192,20 @@ export function createDashboard() {
             </div>`;
           }).join('')}
         </div>
+        <details class="more">
+          <summary>${list.length - 5} more commodities ${icon('chevron', { size: 11 })}</summary>
+          <div class="comm-list" style="margin-top:7px">
+            ${list.slice(5).map((c) => {
+              const m = RESOURCE_META[c.id] || {};
+              return `<div class="comm-row" data-resource="${c.id}">
+                <i class="comm-dot" style="background:${m.hex};box-shadow:0 0 6px ${m.hex}"></i>
+                <span class="comm-name">${c.label}</span>
+                <span class="comm-bar"><i style="width:${c.pct}%;background:${m.hex}"></i></span>
+                <span class="comm-n">${c.n}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </details>
       </div>
     </article>`;
 
@@ -188,7 +217,7 @@ export function createDashboard() {
       </header>
       <div class="panel-bd">
         <div class="feed">
-          ${items.map((a) => `
+          ${items.slice(0, 3).map((a) => `
             <div class="feed-item">
               <i class="feed-mark" style="background:${a.color};box-shadow:0 0 6px ${a.color}"></i>
               <div class="feed-body">
@@ -197,6 +226,19 @@ export function createDashboard() {
               </div>
             </div>`).join('')}
         </div>
+        <details class="more">
+          <summary>${items.length - 3} earlier events ${icon('chevron', { size: 11 })}</summary>
+          <div class="feed" style="margin-top:4px">
+            ${items.slice(3).map((a) => `
+              <div class="feed-item">
+                <i class="feed-mark" style="background:${a.color};box-shadow:0 0 6px ${a.color}"></i>
+                <div class="feed-body">
+                  <div class="feed-title">${a.t}</div>
+                  <div class="feed-meta"><span class="fm-src">${a.src}</span><span>${a.time}</span></div>
+                </div>
+              </div>`).join('')}
+          </div>
+        </details>
       </div>
     </article>`;
 
@@ -267,6 +309,7 @@ export function createDashboard() {
         </section>
 
         <aside class="intel-rail" id="intel-rail"></aside>
+        <div class="rail-below" id="rail-below"></div>
       </div>`;
 
     data = await api.getDashboardSummary();
@@ -297,13 +340,35 @@ export function createDashboard() {
     mapToolbar(stage, nmap);
     $('#map-loading', view).classList.add('is-hidden');
 
+    // Resizable / collapsible intel rail (cards reflow below the map when hidden)
+    rail = initRail($('.dash', view), { onResize: () => nmap.invalidate() });
+
+    // Honour saved preferences from Settings
+    const prefs = loadPrefs();
+    if (!prefs.mapLabels) nmap.setLabels(false);
+    stage.classList.toggle('pulse-off', !prefs.pulseMarkers);
+    addEventListener('nmi:prefs', (e) => {
+      nmap.setLabels(e.detail.mapLabels);
+      stage.classList.toggle('pulse-off', !e.detail.pulseMarkers);
+      nmap.invalidate();
+    });
+
     // Rail interactions
     $('#intel-rail', view).addEventListener('click', (e) => {
       const row = e.target.closest('.comm-row');
       if (row) { nmap.filterResources([row.dataset.resource]); flashToolbarResource(stage, row.dataset.resource); return; }
       const act = e.target.closest('[data-act]')?.dataset.act;
       if (act === 'clear-sel') nmap.clearSelection();
-      if (act === 'drill') toast('LGA layer (ADM2) connects in the next milestone');
+      if (act === 'drill') {
+        const st = store.get('selectedState');
+        if (!st) return;
+        const layer = nmap.stateLayers.get(st.name);
+        nmap.map.flyToBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 9.2, duration: .9 });
+        nmap.showLgas(st.code, { explicit: true }).then(() => {
+          const n = nmap.layers.lgas?.getLayers().length || 0;
+          toast(`${st.name}: ${n} local government areas loaded`);
+        });
+      }
       if (act === 'report') toast('Report generation moves in with the Reports module');
     });
 

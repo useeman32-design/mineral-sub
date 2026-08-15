@@ -107,3 +107,79 @@
   body::before, body::after, .sidebar, .topbar { display: none !important; }
   .app { display: block; }
 }
+
+/* ============================================================
+   LIGHT THEME adjustments for surfaces that assume darkness
+   ============================================================ */
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(900px 620px at 22% 8%,  rgba(0, 150, 78, .07), transparent 62%),
+    radial-gradient(1000px 700px at 88% 92%, rgba(13, 148, 136, .06), transparent 64%);
+}
+[data-theme="light"] body::after {
+  background-image:
+    linear-gradient(rgba(14,42,48,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14,42,48,.05) 1px, transparent 1px);
+}
+
+[data-theme="light"] .topbar {
+  background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(248,251,251,.92));
+}
+[data-theme="light"] .sidebar {
+  background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(246,249,249,.92));
+}
+[data-theme="light"] .nav-item.is-active {
+  background: linear-gradient(90deg, rgba(0,150,78,.14), rgba(0,150,78,.03) 62%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(0,150,78,.18);
+  color: #05421f;
+}
+[data-theme="light"] .panel {
+  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.78) 42%), var(--surface-1);
+}
+[data-theme="light"] .panel::before {
+  background: linear-gradient(90deg, transparent, rgba(13,148,136,.3) 22%, rgba(0,150,78,.24) 62%, transparent);
+}
+
+/* Map surface goes light */
+[data-theme="light"] .map-stage {
+  background:
+    radial-gradient(1100px 780px at 44% 40%, rgba(13,148,136,.07), transparent 66%),
+    linear-gradient(180deg, #e8eeee, #dfe8e9);
+}
+[data-theme="light"] .map-stage .reticle { border-color: rgba(13,148,136,.5); }
+[data-theme="light"] .glass-bar,
+[data-theme="light"] .drill-path,
+[data-theme="light"] .map-legend {
+  background: rgba(255,255,255,.9);
+}
+[data-theme="light"] .map-search input,
+[data-theme="light"] .seg { background: rgba(14,42,48,.05); }
+[data-theme="light"] .menu { background: rgba(255,255,255,.98); }
+[data-theme="light"] .state-tip { background: rgba(255,255,255,.97); border-color: rgba(13,148,136,.3); }
+[data-theme="light"] .leaflet-tooltip.dep-tip {
+  background: rgba(255,255,255,.97);
+  border-color: rgba(13,148,136,.3);
+  color: var(--text-hi);
+}
+[data-theme="light"] .dep-label {
+  background: rgba(255,255,255,.88);
+  color: var(--text-hi);
+  border-color: rgba(14,42,48,.12);
+}
+[data-theme="light"] .dep-core { border-color: rgba(255,255,255,.85); }
+[data-theme="light"] #nmi-toast {
+  background: rgba(255,255,255,.97);
+  border-color: rgba(0,150,78,.3);
+  color: var(--text-hi);
+}
+[data-theme="light"] #boot { background: #eef2f3; }
+[data-theme="light"] .stub-glyph { background: rgba(0,150,78,.09); border-color: rgba(0,150,78,.24); }
+[data-theme="light"] .kpi-ico { border-color: color-mix(in srgb, var(--kpi-c) 30%, transparent); }
+
+/* Reduced-motion preference from Settings */
+[data-motion="reduced"] * {
+  animation-duration: .001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 80ms !important;
+}
+[data-motion="reduced"] .live-dot { animation: none !important; }

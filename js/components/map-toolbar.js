@@ -22,17 +22,23 @@ export function mapToolbar(stage, nmap) {
         <span class="s-icon">${icon('search', { size: 13 })}</span>
         <input type="text" id="map-loc-search" placeholder="Search state, LGA or prospect" autocomplete="off" />
       </div>
+      <button class="chip filters-btn" id="filters-btn" title="Show filters">
+        ${icon('filter', { size: 13 })}<span>Filters</span>
+        <span class="filters-count" id="filters-count" hidden></span>
+        <span class="caret">${icon('chevron', { size: 11 })}</span>
+      </button>
     </div>
-    <div class="glass-bar filter-cluster">
+
+    <div class="glass-bar filter-cluster" id="filter-cluster" hidden>
       <button class="chip" data-menu="resource">${icon('minerals', { size: 13 })}<span>Resource</span><span class="caret">${icon('chevron', { size: 11 })}</span></button>
       <button class="chip" data-menu="prospect">${icon('prospectivity', { size: 13 })}<span>Prospectivity</span><span class="caret">${icon('chevron', { size: 11 })}</span></button>
       <button class="chip" data-menu="risk">${icon('risk', { size: 13 })}<span>Risk</span><span class="caret">${icon('chevron', { size: 11 })}</span></button>
       <button class="chip" data-menu="layers">${icon('layers', { size: 13 })}<span>Layers</span><span class="caret">${icon('chevron', { size: 11 })}</span></button>
-    </div>
-    <div class="spacer"></div>
-    <div class="seg" id="basemap-seg">
-      <button data-base="vector" class="is-on">Vector</button>
-      <button data-base="satellite">Satellite</button>
+      <span class="fc-sep"></span>
+      <div class="seg" id="basemap-seg">
+        <button data-base="vector" class="is-on">Vector</button>
+        <button data-base="satellite">Satellite</button>
+      </div>
     </div>`;
   stage.appendChild(bar);
 
@@ -60,10 +66,15 @@ export function mapToolbar(stage, nmap) {
 
   const legend = document.createElement('div');
   legend.className = 'map-ui map-legend glass-bar';
-  legend.style.display = 'block';
+  legend.id = 'map-legend';
   legend.innerHTML = `
-    <div class="lg-hd"><span>Resource Legend</span>
-      <button class="lg-toggle" id="lg-toggle" title="Toggle all">${icon('eye', { size: 12 })}</button></div>
+    <div class="lg-hd">
+      <span>Resource Legend</span>
+      <span class="lg-acts">
+        <button class="lg-toggle" id="lg-all" title="Show / hide all resources">${icon('eye', { size: 12 })}</button>
+        <button class="lg-toggle" id="lg-collapse" title="Hide legend">${icon('minus', { size: 12 })}</button>
+      </span>
+    </div>
     <div class="lg-list" id="lg-list">
       ${RESOURCES.map((r) => {
         const m = RESOURCE_META[r];
@@ -74,6 +85,23 @@ export function mapToolbar(stage, nmap) {
     </div>
     <div class="lg-scale"><span>Low</span><div class="lg-ramp"></div><span>High</span></div>`;
   stage.appendChild(legend);
+
+  // Collapsed affordance — a small pill that restores the legend
+  const legendPill = document.createElement('button');
+  legendPill.className = 'map-ui legend-pill';
+  legendPill.id = 'legend-pill';
+  legendPill.hidden = true;
+  legendPill.innerHTML = `${icon('layers', { size: 12 })}<span>Legend</span>`;
+  stage.appendChild(legendPill);
+
+  const LEGEND_KEY = 'nmi.legendHidden';
+  function setLegend(hidden) {
+    legend.hidden = hidden;
+    legendPill.hidden = !hidden;
+    localStorage.setItem(LEGEND_KEY, hidden ? '1' : '0');
+  }
+  setLegend(localStorage.getItem(LEGEND_KEY) === '1');
+  legendPill.addEventListener('click', () => setLegend(false));
 
   const meta = document.createElement('div');
   meta.className = 'map-ui map-meta';
@@ -195,6 +223,22 @@ export function mapToolbar(stage, nmap) {
     openMenu = { node, btn, key };
   }
 
+  const FILTERS_KEY = 'nmi.filtersOpen';
+  const cluster = $('#filter-cluster', bar);
+  const fBtn = $('#filters-btn', bar);
+
+  function setFilters(open) {
+    cluster.hidden = !open;
+    fBtn.classList.toggle('is-open', open);
+    fBtn.classList.toggle('is-active', open);
+    fBtn.title = open ? 'Hide filters' : 'Show filters';
+    if (!open) closeMenu();
+    localStorage.setItem(FILTERS_KEY, open ? '1' : '0');
+  }
+  setFilters(localStorage.getItem(FILTERS_KEY) === '1');
+
+  fBtn.addEventListener('click', () => setFilters(cluster.hidden));
+
   bar.addEventListener('click', (e) => {
     const chip = e.target.closest('[data-menu]');
     if (chip) {
@@ -220,9 +264,19 @@ export function mapToolbar(stage, nmap) {
 
   function updateChipStates() {
     const f = store.get('filters');
-    $('[data-menu="resource"]', bar).classList.toggle('is-active', f.resources.length !== RESOURCES.length);
-    $('[data-menu="prospect"]', bar).classList.toggle('is-active', f.prospectivity !== 'all');
-    $('[data-menu="risk"]', bar).classList.toggle('is-active', f.risk !== 'all');
+    const rOn = f.resources.length !== RESOURCES.length;
+    const pOn = f.prospectivity !== 'all';
+    const kOn = f.risk !== 'all';
+    $('[data-menu="resource"]', bar).classList.toggle('is-active', rOn);
+    $('[data-menu="prospect"]', bar).classList.toggle('is-active', pOn);
+    $('[data-menu="risk"]', bar).classList.toggle('is-active', kOn);
+
+    // Badge the collapsed Filters button so active filters are never hidden
+    const n = (rOn ? 1 : 0) + (pOn ? 1 : 0) + (kOn ? 1 : 0);
+    const badge = $('#filters-count', bar);
+    badge.hidden = n === 0;
+    badge.textContent = n;
+    fBtn.classList.toggle('has-active', n > 0);
   }
 
   /* ---------- tools ---------- */
@@ -252,7 +306,8 @@ export function mapToolbar(stage, nmap) {
     $$('.lg-row', legend).forEach((r) => r.classList.toggle('is-off', !list.includes(r.dataset.lg)));
   }
   legend.addEventListener('click', (e) => {
-    if (e.target.closest('#lg-toggle')) {
+    if (e.target.closest('#lg-collapse')) { setLegend(true); return; }
+    if (e.target.closest('#lg-all')) {
       const all = store.get('filters').resources.length === RESOURCES.length;
       const list = all ? [] : [...RESOURCES];
       nmap.filterResources(list); syncLegend(list); updateChipStates();

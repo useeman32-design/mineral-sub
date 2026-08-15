@@ -127,3 +127,85 @@
   --c-barite:   #d6c9a8;
   --c-iron:     var(--orange);
 }
+
+/* ============================================================
+   LIGHT THEME
+   Applied via <html data-theme="light">. Every surface, hairline
+   and text token is remapped; brand hues are darkened for contrast
+   on light ground. Component CSS needs no changes.
+   ============================================================ */
+[data-theme="light"] {
+  --bg-void:        #eef2f3;
+  --bg-base:        #f4f7f7;
+  --bg-raise:       #ffffff;
+  --surface-1:      rgba(255, 255, 255, 0.82);
+  --surface-2:      rgba(255, 255, 255, 0.94);
+  --surface-3:      #ffffff;
+  --surface-sunken: rgba(15, 32, 36, 0.045);
+  --surface-hover:  rgba(0, 150, 78, 0.07);
+
+  --line-faint:  rgba(14, 42, 48, 0.10);
+  --line-soft:   rgba(14, 42, 48, 0.17);
+  --line-strong: rgba(14, 42, 48, 0.30);
+
+  --green-100: #06301b;
+  --green-300: #067a41;
+  --green:     #00964e;
+  --green-600: #00713b;
+  --green-dim: rgba(0, 150, 78, 0.13);
+  --green-vdim:rgba(0, 150, 78, 0.07);
+
+  --cyan-100: #06302c;
+  --cyan-300: #0b7a6e;
+  --cyan:     #0d9488;
+  --cyan-600: #0a7167;
+  --cyan-dim: rgba(13, 148, 136, 0.13);
+
+  --gold-300: #7a5306;
+  --gold:     #b57d0a;
+  --gold-600: #8a5f06;
+  --gold-dim: rgba(181, 125, 10, 0.14);
+
+  --orange:   #d4620d;
+  --red:      #d92d3f;
+  --red-dim:  rgba(217, 45, 63, 0.12);
+
+  --purple:   #5b4ddb;
+  --blue:     #1f6fd0;
+  --purple-dim: rgba(91, 77, 219, 0.12);
+
+  --text-hi:   #0d1f23;
+  --text-mid:  #486066;
+  --text-low:  #6b8189;
+  --text-faint:#93a5ab;
+
+  --shadow-sm: 0 1px 2px rgba(14, 42, 48, .07);
+  --shadow-md: 0 6px 20px -8px rgba(14, 42, 48, .20);
+  --shadow-lg: 0 18px 44px -18px rgba(14, 42, 48, .30);
+
+  --glow-green: 0 0 0 1px rgba(0,150,78,.3), 0 0 14px -5px rgba(0,150,78,.4);
+  --glow-cyan:  0 0 0 1px rgba(13,148,136,.28), 0 0 14px -5px rgba(13,148,136,.35);
+  --glow-gold:  0 0 0 1px rgba(181,125,10,.28), 0 0 14px -5px rgba(181,125,10,.35);
+  --glow-text:  0 0 10px rgba(0,150,78,.3);
+}
+
+/* Map cartography tokens — dark defaults first, light overrides after
+   (equal specificity, so source order decides the winner). */
+:root {
+  --map-bg-a: #060a0c;
+  --map-bg-b: #04080a;
+  --map-land: 11, 19, 22;
+  --map-land-hi: #16262a;
+  --map-stroke: rgba(45, 216, 195, .5);
+  --map-grid: rgba(45, 216, 195, .1);
+  --map-label: rgba(147, 168, 171, .62);
+}
+[data-theme="light"] {
+  --map-bg-a: #e4ecec;
+  --map-bg-b: #dbe6e7;
+  --map-land: 226, 236, 235;
+  --map-land-hi: #cfe0dd;
+  --map-stroke: rgba(13, 148, 136, .58);
+  --map-grid: rgba(13, 148, 136, .16);
+  --map-label: rgba(60, 84, 90, .95);
+}

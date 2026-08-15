@@ -13,6 +13,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
 <!-- Vendored (no CDN dependency at runtime) -->
+<!-- Apply theme before first paint to avoid a flash of the wrong palette -->
+<script>
+  (function () {
+    try {
+      var p = localStorage.getItem('nmi.theme') || 'dark';
+      var r = p === 'system'
+        ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+        : p;
+      document.documentElement.setAttribute('data-theme', r);
+      var pr = JSON.parse(localStorage.getItem('nmi.prefs') || '{}');
+      document.documentElement.setAttribute('data-density', pr.density || 'comfortable');
+      document.documentElement.setAttribute('data-motion', pr.motion || 'full');
+    } catch (e) {}
+  })();
+</script>
+
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
 
 <link rel="stylesheet" href="css/tokens.css" />
