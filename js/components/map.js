@@ -33,8 +33,26 @@ export function zoomBand(z) {
 
 let MAP_SEQ = 0;
 
+/** Ray-casting point-in-polygon over GeoJSON geometry. */
+function pointInFeature(x, y, geom) {
+  const rings = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+  for (const poly of rings) {
+    if (!inRing(x, y, poly[0])) continue;
+    if (!poly.slice(1).some((h) => inRing(x, y, h))) return true;
+  }
+  return false;
+}
+function inRing(x, y, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / ((yj - yi) || 1e-15) + xi) inside = !inside;
+  }
+  return inside;
+}
+
 export class NigeriaMap {
-  constructor(container, { api, onSelect, onHover } = {}) {
+  constructor(container, { api, onSelect, onHover, onLgaSelect } = {}) {
     this.uid = 'nmap-' + (++MAP_SEQ);
     container.dataset.nmap = this.uid;
     this.interceptClicks = null;
@@ -43,6 +61,7 @@ export class NigeriaMap {
     this.api = api;
     this.onSelect = onSelect || (() => {});
     this.onHover = onHover || (() => {});
+    this.onLgaSelect = onLgaSelect || null;
     this.layers = {};
     this.stateLayers = new Map();
     this.depMarkers = [];
@@ -71,9 +90,14 @@ export class NigeriaMap {
     });
 
     // Pane order: graticule < halo < states < heat < deposits < labels
-    ['graticule', 'halo', 'states', 'lgas', 'heat', 'deposits', 'labels'].forEach((p, i) => {
+    const PANE_Z = {
+      graticule: 400, halo: 420, states: 440,
+      lgas: 460,          // above states so LGA clicks win
+      heat: 500, deposits: 540, labels: 580,
+    };
+    Object.entries(PANE_Z).forEach(([p, z]) => {
       this.map.createPane(p);
-      this.map.getPane(p).style.zIndex = 400 + i * 40;
+      this.map.getPane(p).style.zIndex = z;
     });
     this.map.getPane('graticule').style.pointerEvents = 'none';
     this.map.getPane('halo').style.pointerEvents = 'none';
@@ -402,13 +426,14 @@ export class NigeriaMap {
       this.refreshStateStyles();
     }
 
-    // Reveal LGA (ADM2) polygons inside the LGA band for the active state.
-    // An explicit drill request keeps them visible even if the fitted zoom
-    // lands slightly outside the band.
-    const st = store.get('selectedState');
-    const inLgaBand = band === 'lga' || band === 'local' || band === 'prospect';
-    if (st?.code && (inLgaBand || this._lgaRequested === st.code)) {
-      this.showLgas(st.code);
+    // Reveal LGA (ADM2) polygons once inside the LGA band. If no state is
+    // selected we resolve whichever state is under the current view centre,
+    // so zooming into any state loads its local governments.
+    const inLgaBand = z >= 8.5;
+    if (inLgaBand) {
+      const st = store.get('selectedState');
+      const code = st?.code || this._stateAtCentre()?.code;
+      if (code) this.showLgas(code);
     } else if (this._lgaShown && !this._lgaRequested) {
       this.hideLgas();
     }
@@ -467,6 +492,18 @@ export class NigeriaMap {
       claimed.push(box);
       node.classList.add('show-label');
     });
+  }
+
+  /** State whose polygon contains the current view centre (for LGA autoload). */
+  _stateAtCentre() {
+    const c = this.map.getCenter();
+    for (const [name, layer] of this.stateLayers) {
+      const b = layer.getBounds();
+      if (!b.contains(c)) continue;
+      const f = layer.feature;
+      if (pointInFeature(c.lng, c.lat, f.geometry)) return f.properties;
+    }
+    return null;
   }
 
   _emitScale() {
@@ -725,7 +762,9 @@ export class NigeriaMap {
     });
     this.layers.lgaLabels.addTo(this.map);
 
+    this.layers.lgas.bringToFront();
     this._lgaShown = stateCode;
+    this.root.classList.add('lga-active');
     this.root.dispatchEvent(new CustomEvent('map:lgas', {
       detail: { code: stateCode, count: geo.features.length }, bubbles: true }));
   }
@@ -736,10 +775,12 @@ export class NigeriaMap {
     if (this.layers.lgaLabels) { this.map.removeLayer(this.layers.lgaLabels); this.layers.lgaLabels = null; }
     this._lgaShown = null;
     this._selectedLga = null;
+    this.root.classList.remove('lga-active');
   }
 
   selectLga(props, layer) {
     this._selectedLga = props.name;
+    this.onLgaSelect?.(props);
     if (this._lgaSelLayer) this.layers.lgas?.resetStyle(this._lgaSelLayer);
     this._lgaSelLayer = layer;
     const light = document.documentElement.getAttribute('data-theme') === 'light';

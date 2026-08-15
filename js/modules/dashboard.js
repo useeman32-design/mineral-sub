@@ -16,7 +16,7 @@ import { initRail } from '../components/rail.js';
 import { loadPrefs } from './settings.js';
 
 export function createDashboard() {
-  let root, nmap, data, rail, unsub = [];
+  let root, nmap, data, rail, lastLga = null, unsub = [];
 
   /* ---------------- templates ---------------- */
 
@@ -242,6 +242,30 @@ export function createDashboard() {
       </div>
     </article>`;
 
+  const lgaCard = (p) => `
+    <article class="panel sel-card" id="sel-card">
+      <header class="panel-hd">
+        <span class="accent-bar accent-cyan"></span><h3>Geographic Selection</h3><span class="spacer"></span>
+        <button class="icon-btn" data-act="clear-sel" title="Clear selection" style="width:22px;height:22px">${icon('crosshair', { size: 13 })}</button>
+      </header>
+      <div class="panel-bd">
+        <div class="sel-head">
+          <div>
+            <div class="sel-name">${p.name}</div>
+            <div class="sel-sub">Local Government · ${p.state} · ${fmt.coord(p.centroid[0], p.centroid[1])}</div>
+          </div>
+          <span class="st-chip" style="color:var(--cyan);background:rgba(45,216,195,.12);border:1px solid rgba(45,216,195,.3)">LGA</span>
+        </div>
+        <div class="empty-sel" style="padding:12px 4px 4px;text-align:left;align-items:flex-start">
+          <p class="es-t" style="text-align:left">LGA-level occurrence counts, mining titles and prospectivity scores arrive with the ADM2 data service.</p>
+        </div>
+        <div class="sel-actions">
+          <button class="btn-ghost btn-primary" data-act="zoom-lga">Zoom to LGA</button>
+          <button class="btn-ghost" data-act="back-state">Back</button>
+        </div>
+      </div>
+    </article>`;
+
   const selectionCard = (p) => {
     if (!p) return `
       <article class="panel sel-card" id="sel-card">
@@ -334,7 +358,8 @@ export function createDashboard() {
     const stage = $('#map-stage', view);
     nmap = new NigeriaMap(stage, {
       api,
-      onSelect: (props) => renderSelection(props),
+      onSelect: (props) => { lastLga = null; renderSelection(props); },
+      onLgaSelect: (props) => { lastLga = props; renderSelection(props, 'lga'); },
     });
     await nmap.init();
     mapToolbar(stage, nmap);
@@ -358,7 +383,18 @@ export function createDashboard() {
       const row = e.target.closest('.comm-row');
       if (row) { nmap.filterResources([row.dataset.resource]); flashToolbarResource(stage, row.dataset.resource); return; }
       const act = e.target.closest('[data-act]')?.dataset.act;
-      if (act === 'clear-sel') nmap.clearSelection();
+      if (act === 'clear-sel') { lastLga = null; nmap.clearSelection(); }
+      if (act === 'zoom-lga' && lastLga) {
+        const l = nmap.layers.lgas?.getLayers().find((x) => x.feature.properties.name === lastLga.name);
+        if (l) nmap.map.flyToBounds(l.getBounds(), { padding: [60, 60], duration: .8 });
+      }
+      if (act === 'back-state') {
+        lastLga = null;
+        const st = store.get('selectedState');
+        renderSelection(st);
+        const layer = st && nmap.stateLayers.get(st.name);
+        if (layer) nmap.map.flyToBounds(layer.getBounds(), { padding: [40, 40], duration: .8 });
+      }
       if (act === 'drill') {
         const st = store.get('selectedState');
         if (!st) return;
@@ -372,13 +408,13 @@ export function createDashboard() {
       if (act === 'report') toast('Report generation moves in with the Reports module');
     });
 
-    unsub.push(store.subscribe('selectedState', (p) => renderSelection(p)));
+    unsub.push(store.subscribe('selectedState', (p) => { if (!lastLga) renderSelection(p); }));
   }
 
-  function renderSelection(props) {
+  function renderSelection(props, kind) {
     const card = $('#sel-card', root);
     if (!card) return;
-    card.outerHTML = selectionCard(props);
+    card.outerHTML = kind === 'lga' ? lgaCard(props) : selectionCard(props);
   }
 
   function animateNumbers(scope) {

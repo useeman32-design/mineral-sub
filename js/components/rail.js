@@ -31,19 +31,13 @@ export function initRail(dash, { onResize } = {}) {
   handle.title = 'Drag to resize · click to hide';
   dash.appendChild(handle);
 
-  /* ---- collapse / restore buttons ---- */
-  const hideBtn = document.createElement('button');
-  hideBtn.className = 'rail-hide';
-  hideBtn.title = 'Hide panel';
-  hideBtn.innerHTML = icon('chevronR', { size: 13 });
-  rail.appendChild(hideBtn);
-
+  /* ---- restore button (the rail handle handles hiding) ---- */
   const showBtn = document.createElement('button');
   showBtn.className = 'rail-show';
   showBtn.id = 'rail-show';
   showBtn.title = 'Show intelligence panel';
   showBtn.hidden = true;
-  showBtn.innerHTML = `${icon('chevronL', { size: 13 })}<span>Intel</span>`;
+  showBtn.innerHTML = `${icon('chevronL', { size: 14 })}<span>Intel</span>`;
   dash.appendChild(showBtn);
 
   const state = {
@@ -72,10 +66,9 @@ export function initRail(dash, { onResize } = {}) {
 
     // Move only the content cards; the hide button always stays on the rail.
     if (c) {
-      [...rail.children].forEach((n) => { if (n !== hideBtn) below.appendChild(n); });
+      [...rail.children].forEach((n) => below.appendChild(n));
     } else {
       [...below.children].forEach((n) => rail.appendChild(n));
-      rail.appendChild(hideBtn); // keep the control last so it sits on top
     }
     requestAnimationFrame(() => onResize?.());
   }
@@ -123,7 +116,6 @@ export function initRail(dash, { onResize } = {}) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyCollapsed(true); }
   });
 
-  hideBtn.addEventListener('click', () => applyCollapsed(true));
   showBtn.addEventListener('click', () => applyCollapsed(false));
 
   return {

@@ -34,11 +34,17 @@ export function createStatusBar(stage, nmap, { onCrumb } = {}) {
       <span class="sb-sep"></span>
       <span class="sb-coord" title="Cursor position">
         ${icon('crosshair', { size: 11 })}<b class="t-mono" data-coord>—</b>
+      </span>
+      <span class="sb-sep"></span>
+      <span class="sb-metric" title="Zoom level">Z <b class="t-mono" data-zoom>—</b></span>
+      <span class="sb-sep"></span>
+      <span class="sb-metric" title="Detail level">
+        <b class="t-mono sb-band" data-band>nation</b>
       </span>`;
   }
 
   render();
-  const unsub = store.subscribe('drill', render);
+  const unsub = store.subscribe('drill', () => { render(); nmap._emitScale?.(); });
 
   bar.addEventListener('click', (e) => {
     const c = e.target.closest('[data-crumb]');
@@ -66,12 +72,27 @@ export function createStatusBar(stage, nmap, { onCrumb } = {}) {
   nmap.map.on('mousemove', onMove);
   nmap.map.on('mouseout', onOut);
 
+  const onScale = (e) => {
+    const z = $('[data-zoom]', bar);
+    const bd = $('[data-band]', bar);
+    if (z) z.textContent = e.detail.zoom.toFixed(1);
+    if (bd) {
+      bd.textContent = e.detail.band;
+      bd.dataset.level = e.detail.band;
+    }
+  };
+  stage.addEventListener('map:scale', onScale);
+
+  // seed immediately so the bar is never blank before the first zoom event
+  requestAnimationFrame(() => nmap._emitScale?.());
+
   return {
     el: bar,
     destroy() {
       unsub();
       nmap.map.off('mousemove', onMove);
       nmap.map.off('mouseout', onOut);
+      stage.removeEventListener('map:scale', onScale);
     },
   };
 }

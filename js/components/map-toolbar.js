@@ -27,7 +27,7 @@ export function mapToolbar(stage, nmap) {
       </div>
       <button class="chip filters-btn" id="filters-btn" title="Show filters">
         ${icon('filter', { size: 13 })}<span>Filters</span>
-        <span class="filters-count" id="filters-count" hidden></span>
+        <span class="filters-count" id="filters-count">0</span>
         <span class="caret">${icon('chevron', { size: 11 })}</span>
       </button>
     </div>
@@ -248,8 +248,8 @@ export function mapToolbar(stage, nmap) {
     // Badge the collapsed Filters button so active filters are never hidden
     const n = (rOn ? 1 : 0) + (pOn ? 1 : 0) + (kOn ? 1 : 0);
     const badge = $('#filters-count', bar);
-    badge.hidden = n === 0;
     badge.textContent = n;
+    badge.classList.toggle('is-zero', n === 0);
     fBtn.classList.toggle('has-active', n > 0);
   }
 

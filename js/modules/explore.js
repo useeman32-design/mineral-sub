@@ -252,6 +252,42 @@ export function createExplore() {
       </div>`;
   };
 
+  const inspectorLga = (p) => {
+    const local = deposits.filter((d) => d.state === p.state);
+    return `
+      <div class="insp-head">
+        <div>
+          <div class="insp-kind" style="color:var(--cyan)">Local Government · ADM2</div>
+          <div class="insp-title">${p.name}</div>
+          <div class="insp-sub">${p.state} State · ${fmt.coord(p.centroid[0], p.centroid[1])}</div>
+        </div>
+        <span class="occ-badge" style="color:var(--cyan);background:rgba(45,216,195,.1);border:1px solid rgba(45,216,195,.3)">LGA</span>
+      </div>
+      <div class="insp-sec" style="margin-top:11px;padding-top:0;border:0">
+        <div class="insp-none">
+          LGA-level occurrence counts, titles and prospectivity scores arrive with
+          the ADM2 data service. State context is shown below.
+        </div>
+      </div>
+      <div class="insp-sec">
+        <div class="insp-sec-hd">${p.state} occurrences <span>${local.length}</span></div>
+        ${local.length ? `<div class="occ-list">
+          ${local.slice(0, 6).map((d) => {
+            const m = RESOURCE_META[d.resource] || {};
+            return `<button class="occ-row" data-fly="${d.id}">
+              <i style="background:${m.hex};box-shadow:0 0 6px ${m.hex}"></i>
+              <span class="occ-n">${d.name}</span>
+              <span class="occ-s">${d.status}</span>
+            </button>`;
+          }).join('')}
+        </div>` : '<div class="insp-none">No catalogued occurrences.</div>'}
+      </div>
+      <div class="sel-actions">
+        <button class="btn-ghost btn-primary" data-lga-zoom="1">Zoom to LGA</button>
+        <button class="btn-ghost" data-act="back-state">Back to state</button>
+      </div>`;
+  };
+
   const inspectorEmpty = () => `
     <div class="empty-sel" style="padding:26px 12px">
       <span class="es-ico">${icon('target', { size: 28 })}</span>
@@ -347,8 +383,8 @@ export function createExplore() {
             ${panel('drill', 'Drill Path', 'target', `<div id="drill-nav">${drillNav()}</div>`)}
           </div>
         </aside>
-        <button class="dock-show dock-show-l" id="show-left" hidden title="Show tools">
-          ${icon('layers', { size: 13 })}<span>Tools</span></button>
+        <button class="dock-show dock-show-l" id="show-left" hidden title="Show tools panel">
+          ${icon('chevronR', { size: 14 })}<span>Tools</span></button>
 
         <section class="ex-map" id="ex-map">
           <div id="map-canvas"></div>
@@ -374,7 +410,7 @@ export function createExplore() {
             <div class="glass-bar">
               <button class="chip" id="ex-filters-btn" title="Filters &amp; basemap">
                 ${icon('filter', { size: 13 })}<span>Filters</span>
-                <span class="filters-count" id="ex-filters-count" hidden></span>
+                <span class="filters-count" id="ex-filters-count">0</span>
                 <span class="caret">${icon('chevron', { size: 11 })}</span>
               </button>
             </div>
@@ -431,8 +467,8 @@ export function createExplore() {
             ${panel('projects', 'Saved Work', 'data', `<div id="prj-panel">${projectPanel()}</div>`)}
           </div>
         </aside>
-        <button class="dock-show dock-show-r" id="show-right" hidden title="Show inspector">
-          ${icon('info', { size: 13 })}<span>Intel</span></button>
+        <button class="dock-show dock-show-r" id="show-right" hidden title="Show inspector panel">
+          ${icon('chevronL', { size: 14 })}<span>Intel</span></button>
       </div>`;
 
     deposits = await api.getDeposits();
@@ -443,6 +479,12 @@ export function createExplore() {
       onSelect: (props) => {
         lastGeo = props ? { kind: 'state', data: props } : null;
         if (inspectorMode === 'geo') renderInspector();
+        renderDrill();
+      },
+      onLgaSelect: (props) => {
+        lastGeo = { kind: 'lga', data: props };
+        setInspectorTab('geo');
+        renderInspector();
         renderDrill();
       },
     });
@@ -523,8 +565,8 @@ export function createExplore() {
       const b = ev.target.closest('[data-tool]');
       if (!b) return;
       const t = b.dataset.tool;
-      if (t === 'in') nmap.zoomBy(0.6);
-      if (t === 'out') nmap.zoomBy(-0.6);
+      if (t === 'in') nmap.zoomBy(1);
+      if (t === 'out') nmap.zoomBy(-1);
       if (t === 'reset') nmap.resetView();
       if (t === 'measure-toggle') setMeasureDock(!isMeasureDockOpen());
       if (t === 'full') {
@@ -897,8 +939,8 @@ export function createExplore() {
     const n = (f.prospectivity !== 'all' ? 1 : 0) + (f.risk !== 'all' ? 1 : 0);
     const badge = $('#ex-filters-count', root);
     if (!badge) return;
-    badge.hidden = n === 0;
     badge.textContent = n;
+    badge.classList.toggle('is-zero', n === 0);
     $('#ex-filters-btn', root)?.classList.toggle('has-active', n > 0);
   }
 
@@ -1089,8 +1131,20 @@ export function createExplore() {
       const del = e.target.closest('[data-shape-del]');
       if (del) { draw.remove(del.dataset.shapeDel); return; }
 
+      if (e.target.closest('[data-lga-zoom]') && lastGeo?.kind === 'lga') {
+        const l = nmap.layers.lgas?.getLayers().find((x) => x.feature.properties.name === lastGeo.data.name);
+        if (l) nmap.map.flyToBounds(l.getBounds(), { padding: [60, 60], duration: .8 });
+        return;
+      }
       const act = e.target.closest('[data-act]')?.dataset.act;
       const st = store.get('selectedState');
+      if (act === 'back-state' && st) {
+        lastGeo = { kind: 'state', data: st };
+        renderInspector();
+        const layer = nmap.stateLayers.get(st.name);
+        if (layer) nmap.map.flyToBounds(layer.getBounds(), { padding: [40, 40], duration: .8 });
+        return;
+      }
       if (act === 'drill-lga' && st) {
         nmap.showLgas(st.code, { explicit: true }).then(() => {
           const n = nmap.layers.lgas?.getLayers().length || 0;
@@ -1142,8 +1196,8 @@ export function createExplore() {
     }
 
     if (!lastGeo) { el.innerHTML = inspectorEmpty(); return; }
-    el.innerHTML = lastGeo.kind === 'state'
-      ? inspectorState(lastGeo.data)
+    el.innerHTML = lastGeo.kind === 'state' ? inspectorState(lastGeo.data)
+      : lastGeo.kind === 'lga' ? inspectorLga(lastGeo.data)
       : inspectorDeposit(lastGeo.data);
   }
 

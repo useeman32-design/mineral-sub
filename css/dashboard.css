@@ -1771,3 +1771,86 @@ body.is-panel-dragging .leaflet-container { pointer-events: none; }
 .ex-map.is-dragging-shape .draw-handle,
 .map-stage.is-dragging-shape .draw-handle { cursor: grabbing; }
 .leaflet-pane .draw-handle:hover { stroke-width: 2.6; }
+
+/* ============================================================
+   Status bar: zoom + detail level readouts
+   ============================================================ */
+.sb-metric {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: var(--fs-micro); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+}
+.sb-metric b { color: var(--cyan-300); font-weight: 600; letter-spacing: 0; font-size: 10px; }
+.sb-band {
+  text-transform: uppercase !important;
+  letter-spacing: .08em !important;
+  font-size: 9px !important;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(45,216,195,.1);
+  border: 1px solid rgba(45,216,195,.24);
+}
+.sb-band[data-level="lga"], .sb-band[data-level="local"], .sb-band[data-level="prospect"] {
+  color: var(--green) !important;
+  background: var(--green-dim);
+  border-color: rgba(0,230,118,.3);
+}
+
+/* Filter badge always visible, dimmed at zero (matches Overview) */
+.filters-count.is-zero {
+  background: rgba(255,255,255,.09);
+  color: var(--text-faint);
+}
+[data-theme="light"] .filters-count.is-zero { background: rgba(14,42,48,.1); }
+
+/* ============================================================
+   Explore: show tabs clear of the floating toolbar
+   ============================================================ */
+.dock-show {
+  z-index: 600;               /* above the floating measure dock */
+}
+/* Left tab clears the measure dock, which also lives at the map's top-left */
+.dock-show-l { left: 0; top: 50%; transform: translateY(-50%); }
+.dock-show-r { right: 0; top: 50%; transform: translateY(-50%); }
+
+/* Filter menu must clear the right dock */
+.ex-filter-menu { right: 18px; }
+
+/* ============================================================
+   Overview rail: smooth collapse / restore
+   ============================================================ */
+.dash {
+  transition: grid-template-columns var(--t-med) var(--ease);
+}
+.intel-rail {
+  transition: opacity var(--t-fast) var(--ease);
+}
+.dash.rail-hidden .rail-below > .panel {
+  animation: panel-in var(--t-med) var(--ease-out) both;
+}
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.rail-show {
+  animation: tab-in var(--t-med) var(--ease-out) both;
+}
+@keyframes tab-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+
+/* ============================================================
+   Hit-testing: once LGAs are on screen they own the pointer, so a state
+   polygon whose fill has faded out cannot swallow clicks meant for the
+   LGA under the cursor. Leaflet sets pointer-events inline per path, so
+   the paths must be targeted directly.
+   ============================================================ */
+.map-stage.lga-active .leaflet-states-pane path.ng-state,
+.ex-map.lga-active   .leaflet-states-pane path.ng-state { pointer-events: none !important; }
+
+/* Leaflet renders every vector into the shared overlay <svg>, whose root is
+   pointer-events:none while individual paths opt back in. Our custom panes get
+   their own <svg>, so the LGA paths must opt in explicitly. */
+.leaflet-lgas-pane path.ng-lga { pointer-events: visiblePainted !important; }
