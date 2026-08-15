@@ -10,10 +10,10 @@
  * so the two data modules feel like the same product.
  */
 
-import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=c142985';
-import { icon } from '../core/icons.js?v=c142985';
-import { api } from '../data/api.js?v=c142985';
-import { store } from '../core/store.js?v=c142985';
+import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=d9b944a';
+import { icon } from '../core/icons.js?v=d9b944a';
+import { api } from '../data/api.js?v=d9b944a';
+import { store } from '../core/store.js?v=d9b944a';
 
 const VIEW_KEY = 'nmi.mineralsView';
 const CATEGORIES = ['All', 'Metallic', 'Industrial', 'Energy'];

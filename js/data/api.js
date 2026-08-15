@@ -10,8 +10,8 @@
  *   await api.getDashboardSummary();   ->  GET /api/v1/dashboard/summary
  */
 
-import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=c142985';
-import { seeded } from '../core/utils.js?v=c142985';
+import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=d9b944a';
+import { seeded } from '../core/utils.js?v=d9b944a';
 
 /* Descriptive reference copy for the commodity register. Replaced by the
    geological survey's own text once the minerals endpoint is live. */
@@ -246,6 +246,17 @@ export class Api {
   async getCommodity(id) {
     const all = await this.getCommodities();
     return all.find((c) => c.id === id) || null;
+  }
+
+  /**
+   * GET /prospectivity/inputs — the scoring model's input table.
+   * The model itself runs client-side today so criteria weights respond
+   * instantly; once Laravel hosts it, POST the weights and return scored
+   * targets from here instead.
+   */
+  getProspectivityInputs() {
+    return this._req('/prospectivity/inputs', () =>
+      Object.entries(STATES).map(([name, s]) => ({ name, ...s })));
   }
 
   /** GET /system/health */

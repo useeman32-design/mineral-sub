@@ -36,7 +36,7 @@
 
 .mn-kpi {
   min-width: 112px; padding: 9px 13px;
-  background: var(--surface-1); border: 1px solid var(--line);
+  background: var(--surface-1); border: 1px solid var(--line-soft);
   border-radius: var(--r-md);
 }
 .mn-kpi-l {
@@ -64,22 +64,22 @@
 /* ---------- dock ---------- */
 .mn-dock {
   display: flex; flex-direction: column; min-height: 0; height: 100%;
-  background: var(--surface-1); border: 1px solid var(--line);
+  background: var(--surface-1); border: 1px solid var(--line-soft);
   border-radius: var(--r-lg); overflow: hidden;
 }
 .mn-tools {
   flex: 0 0 auto; padding: 11px; display: flex; flex-direction: column; gap: 9px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--line-soft);
   background: var(--surface-2);
 }
 .mn-search {
   display: flex; align-items: center; gap: 8px;
   padding: 0 10px; height: 32px;
-  background: var(--surface-0); border: 1px solid var(--line);
+  background: var(--surface-sunken); border: 1px solid var(--line-soft);
   border-radius: var(--r-sm); color: var(--text-faint);
   transition: border-color var(--t-fast) var(--ease);
 }
-.mn-search:focus-within { border-color: var(--green-line); }
+.mn-search:focus-within { border-color: rgba(0, 230, 118, 0.32); }
 .mn-search input {
   flex: 1; min-width: 0; background: none; border: 0; outline: none;
   color: var(--text-hi); font: inherit; font-size: var(--fs-sm);
@@ -90,16 +90,16 @@
 .mn-cats { display: flex; gap: 4px; }
 .mn-cat {
   flex: 1; height: 26px; padding: 0 6px;
-  background: var(--surface-0); border: 1px solid var(--line);
+  background: var(--surface-sunken); border: 1px solid var(--line-soft);
   border-radius: var(--r-sm);
   color: var(--text-mid); font-size: var(--fs-micro); font-weight: 600;
   letter-spacing: .04em; cursor: pointer;
   transition: all var(--t-fast) var(--ease);
 }
-.mn-cat:hover { color: var(--text-hi); border-color: var(--line-hi); }
+.mn-cat:hover { color: var(--text-hi); border-color: var(--line-strong); }
 .mn-cat.is-on {
   color: var(--green); background: var(--green-dim);
-  border-color: var(--green-line);
+  border-color: rgba(0, 230, 118, 0.32);
 }
 
 .mn-sortrow { display: flex; align-items: center; gap: 8px; }
@@ -110,23 +110,23 @@
 }
 .mn-sort select {
   flex: 1; height: 26px; padding: 0 6px;
-  background: var(--surface-0); border: 1px solid var(--line);
+  background: var(--surface-sunken); border: 1px solid var(--line-soft);
   border-radius: var(--r-sm); color: var(--text-hi);
   font: inherit; font-size: var(--fs-micro); text-transform: none;
   letter-spacing: 0; cursor: pointer; outline: none;
 }
-.mn-sort select:focus { border-color: var(--green-line); }
+.mn-sort select:focus { border-color: rgba(0, 230, 118, 0.32); }
 
 .mn-layout { display: flex; gap: 3px; flex: none; }
 .mn-layout button {
   width: 26px; height: 26px; display: grid; place-items: center;
-  background: var(--surface-0); border: 1px solid var(--line);
+  background: var(--surface-sunken); border: 1px solid var(--line-soft);
   border-radius: var(--r-sm); color: var(--text-faint); cursor: pointer;
   transition: all var(--t-fast) var(--ease);
 }
 .mn-layout button:hover { color: var(--text-hi); }
 .mn-layout button.is-on {
-  color: var(--green); background: var(--green-dim); border-color: var(--green-line);
+  color: var(--green); background: var(--green-dim); border-color: rgba(0, 230, 118, 0.32);
 }
 
 /* ---------- list region ---------- */
@@ -146,14 +146,14 @@
   position: relative; overflow: hidden;
   display: flex; flex-direction: column; gap: 6px;
   padding: 10px 11px 9px; text-align: left;
-  background: var(--surface-2); border: 1px solid var(--line);
+  background: var(--surface-2); border: 1px solid var(--line-soft);
   border-radius: var(--r-md); cursor: pointer;
   transition: border-color var(--t-fast) var(--ease),
               background var(--t-fast) var(--ease),
               transform var(--t-fast) var(--ease);
 }
 .mn-card > * { flex: 0 0 auto; }
-.mn-card:hover { border-color: var(--line-hi); transform: translateY(-1px); }
+.mn-card:hover { border-color: var(--line-strong); transform: translateY(-1px); }
 .mn-card.is-on {
   border-color: color-mix(in srgb, var(--cm) 55%, transparent);
   background: color-mix(in srgb, var(--cm) 8%, var(--surface-2));
@@ -181,7 +181,7 @@
   display: flex; align-items: baseline; gap: 5px;
 }
 .mn-card-v em {
-  font-family: var(--font-sans); font-style: normal;
+  font-family: var(--font-ui); font-style: normal;
   font-size: var(--fs-micro); color: var(--text-faint); font-weight: 500;
 }
 .mn-bar {
@@ -211,18 +211,18 @@
   background: none; border: 1px solid transparent; border-radius: var(--r-sm);
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
-.mn-row:hover { background: var(--surface-2); border-color: var(--line); }
+.mn-row:hover { background: var(--surface-2); border-color: var(--line-soft); }
 .mn-row.is-on {
   background: color-mix(in srgb, var(--cm) 9%, var(--surface-2));
   border-color: color-mix(in srgb, var(--cm) 45%, transparent);
 }
 .mn-row-h {
   cursor: default; padding-bottom: 5px; margin-bottom: 3px;
-  border-bottom: 1px solid var(--line); border-radius: 0;
+  border-bottom: 1px solid var(--line-soft); border-radius: 0;
   font-size: var(--fs-micro); letter-spacing: .08em; text-transform: uppercase;
   color: var(--text-faint); font-weight: 600;
 }
-.mn-row-h:hover { background: none; border-color: transparent; border-bottom-color: var(--line); }
+.mn-row-h:hover { background: none; border-color: transparent; border-bottom-color: var(--line-soft); }
 .mn-row-n {
   font-size: var(--fs-sm); color: var(--text-hi); font-weight: 500;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -245,13 +245,13 @@
 .mn-empty {
   flex: 1; display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 8px; text-align: center;
-  background: var(--surface-1); border: 1px solid var(--line);
+  background: var(--surface-1); border: 1px solid var(--line-soft);
   border-radius: var(--r-lg); padding: 40px;
 }
 .mn-empty-g {
   width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center;
   color: var(--green); background: var(--green-dim);
-  border: 1px solid var(--green-line); margin-bottom: 4px;
+  border: 1px solid rgba(0, 230, 118, 0.32); margin-bottom: 4px;
 }
 .mn-empty-t { font-size: var(--fs-md); color: var(--text-hi); font-weight: 600; margin: 0; }
 .mn-empty-s { font-size: var(--fs-sm); color: var(--text-mid); margin: 0; max-width: 34ch; line-height: 1.55; }
@@ -264,7 +264,7 @@
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--cm) 12%, transparent), transparent 62%),
     var(--surface-1);
-  border: 1px solid var(--line); border-radius: var(--r-lg);
+  border: 1px solid var(--line-soft); border-radius: var(--r-lg);
   position: relative; overflow: hidden;
 }
 .mn-dh::before {
@@ -320,7 +320,7 @@
   background: none; border: 1px solid transparent; border-radius: var(--r-sm);
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
-.mn-state:hover { background: var(--surface-2); border-color: var(--line); }
+.mn-state:hover { background: var(--surface-2); border-color: var(--line-soft); }
 .mn-state-c { font-size: var(--fs-micro); color: var(--text-faint); }
 .mn-state-n {
   font-size: var(--fs-sm); color: var(--text-hi);
@@ -341,14 +341,14 @@
   font-size: var(--fs-sm); color: var(--text-mid);
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
-.mn-site:hover { background: var(--surface-2); border-color: var(--line); }
+.mn-site:hover { background: var(--surface-2); border-color: var(--line-soft); }
 .mn-site-h {
   cursor: default; padding-bottom: 6px; margin-bottom: 3px;
-  border-bottom: 1px solid var(--line); border-radius: 0;
+  border-bottom: 1px solid var(--line-soft); border-radius: 0;
   font-size: var(--fs-micro); letter-spacing: .08em; text-transform: uppercase;
   color: var(--text-faint); font-weight: 600;
 }
-.mn-site-h:hover { background: none; border-color: transparent; border-bottom-color: var(--line); }
+.mn-site-h:hover { background: none; border-color: transparent; border-bottom-color: var(--line-soft); }
 .mn-site-n {
   display: flex; align-items: center; gap: 7px; min-width: 0;
   color: var(--text-hi); font-weight: 500;
@@ -371,7 +371,7 @@
   border: 1px solid transparent;
 }
 .mn-st-producing {
-  color: var(--green); background: var(--green-dim); border-color: var(--green-line);
+  color: var(--green); background: var(--green-dim); border-color: rgba(0, 230, 118, 0.32);
 }
 .mn-st-appraisal {
   color: var(--gold); background: rgba(245, 185, 66, .1);

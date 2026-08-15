@@ -10,9 +10,9 @@
  * register another layer in LAYER_SPECS and give it a zoom band.
  */
 
-import { store } from '../core/store.js?v=c142985';
-import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=c142985';
-import { fmt } from '../core/utils.js?v=c142985';
+import { store } from '../core/store.js?v=d9b944a';
+import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=d9b944a';
+import { fmt } from '../core/utils.js?v=d9b944a';
 
 const NG_CENTER = [9.06, 8.68];
 const NG_BOUNDS = L.latLngBounds([3.6, 2.4], [14.3, 15.2]);

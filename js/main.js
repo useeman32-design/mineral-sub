@@ -6,18 +6,19 @@
  * shell, design system and navigation need no changes.
  */
 
-import { buildShell } from './components/shell.js?v=c142985';
-import { Router } from './core/router.js?v=c142985';
-import { store } from './core/store.js?v=c142985';
-import { api } from './data/api.js?v=c142985';
-import { $ } from './core/utils.js?v=c142985';
-import { createDashboard, toast } from './modules/dashboard.js?v=c142985';
-import { createStub } from './modules/stub.js?v=c142985';
-import { createSettings } from './modules/settings.js?v=c142985';
-import { createMinerals } from './modules/minerals.js?v=c142985';
-import { createExplore } from './modules/explore.js?v=c142985';
-import { theme } from './core/theme.js?v=c142985';
-import { applyPrefs } from './modules/settings.js?v=c142985';
+import { buildShell } from './components/shell.js?v=d9b944a';
+import { Router } from './core/router.js?v=d9b944a';
+import { store } from './core/store.js?v=d9b944a';
+import { api } from './data/api.js?v=d9b944a';
+import { $ } from './core/utils.js?v=d9b944a';
+import { createDashboard, toast } from './modules/dashboard.js?v=d9b944a';
+import { createStub } from './modules/stub.js?v=d9b944a';
+import { createSettings } from './modules/settings.js?v=d9b944a';
+import { createMinerals } from './modules/minerals.js?v=d9b944a';
+import { createProspectivity } from './modules/prospectivity.js?v=d9b944a';
+import { createExplore } from './modules/explore.js?v=d9b944a';
+import { theme } from './core/theme.js?v=d9b944a';
+import { applyPrefs } from './modules/settings.js?v=d9b944a';
 
 const MODULES = [
   {
@@ -33,12 +34,8 @@ const MODULES = [
     factory: () => createMinerals(),
   },
   {
-    id: 'prospectivity', title: 'Prospectivity', keepAlive: false,
-    factory: createStub({
-      title: 'Prospectivity', glyph: 'prospectivity',
-      blurb: 'Weighted-overlay and machine-learning prospectivity modelling with editable criteria, confidence surfaces and exportable target rankings.',
-      features: ['Weighted overlay', 'ML target scoring', 'Confidence surfaces', 'Criteria editor', 'Target ranking', 'Model versioning'],
-    }),
+    id: 'prospectivity', title: 'Prospectivity', keepAlive: true,
+    factory: () => createProspectivity(),
   },
   {
     id: 'risk', title: 'Risk Intelligence', keepAlive: false,

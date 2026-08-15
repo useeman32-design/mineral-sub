@@ -38,6 +38,7 @@ nmi/
 └── js/
     ├── main.js                 # entry: boots shell, registers modules
     ├── core/
+    │   ├── scoring.js          # weighted-overlay prospectivity model (no DOM)
     │   ├── router.js           # hash SPA router with keep-alive modules
     │   ├── store.js            # observable cross-module state
     │   ├── icons.js            # inline SVG icon registry
@@ -53,6 +54,7 @@ nmi/
         ├── dashboard.js        # the Overview module (fully implemented)
         ├── explore.js          # Explore Map: docks, drawing, measurement
         ├── minerals.js         # Minerals: commodity register + dossier
+        ├── prospectivity.js    # Prospectivity: criteria editor + ranked targets
         ├── settings.js         # workspace preferences
         └── stub.js             # "coming soon" factory for pending modules
 ```
@@ -64,8 +66,28 @@ nmi/
 | Overview | Implemented |
 | Explore Map | Implemented |
 | Minerals | Implemented |
+| Prospectivity | Implemented |
 | Settings | Implemented |
-| Prospectivity, Risk, Oil & Gas, Mining Titles, Reports, Data Center | Placeholder via `createStub` |
+| Risk Intelligence, Oil & Gas, Mining Titles, Reports, Data Center | Placeholder via `createStub` |
+
+### The prospectivity model
+
+`core/scoring.js` implements a weighted overlay, the standard first-pass
+targeting technique:
+
+```
+score(state) = Σ(weightᵢ × evidenceᵢ) / Σ(weightᵢ)
+```
+
+Each criterion maps a raw metric to a normalised 0–100 evidence score. Weights
+are relative, so only their proportions matter. The module runs it client-side
+so the criteria editor re-scores instantly; when Laravel hosts the real model,
+POST the weights and return scored targets from `getProspectivityInputs()`'s
+replacement. The file has no DOM or fixture imports, so it is unit-testable as
+is.
+
+Adding a criterion means appending one entry to `CRITERIA` — the editor, the
+evidence breakdown and the weight maths all pick it up automatically.
 
 ### Cross-module navigation
 
@@ -155,6 +177,7 @@ Expected endpoints (response shapes already match the fixtures):
 | `getSystemHealth()`     | `GET /system/health`     | Status pill + sidebar readouts |
 | `getCommodities()`      | `GET /minerals`          | Commodity register: counts, trend, sites, states, geology notes |
 | `getCommodity(id)`      | `GET /minerals/:id`      | Single commodity dossier |
+| `getProspectivityInputs()` | `GET /prospectivity/inputs` | Scoring-model input table (model runs client-side) |
 
 Each state feature carries: `name, code, region, centroid, commodities[],
 occurrences, prospectivity (0–100), risk, titles, petroleum, coverage`.

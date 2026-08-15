@@ -4,16 +4,16 @@
  * touch them.
  */
 
-import { icon, brandMark } from '../core/icons.js?v=c142985';
-import { store } from '../core/store.js?v=c142985';
-import { $, $$ } from '../core/utils.js?v=c142985';
+import { icon, brandMark } from '../core/icons.js?v=d9b944a';
+import { store } from '../core/store.js?v=d9b944a';
+import { $, $$ } from '../core/utils.js?v=d9b944a';
 
 export const NAV = [
   { group: 'Intelligence', items: [
     { id: 'overview',      label: 'Overview',          ico: 'overview',      badge: 'live' },
     { id: 'explore',       label: 'Explore Map',       ico: 'map',           badge: 'live' },
     { id: 'minerals',      label: 'Minerals',          ico: 'minerals',      badge: 'live' },
-    { id: 'prospectivity', label: 'Prospectivity',     ico: 'prospectivity', badge: 'soon' },
+    { id: 'prospectivity', label: 'Prospectivity',     ico: 'prospectivity', badge: 'live' },
     { id: 'risk',          label: 'Risk Intelligence', ico: 'risk',          badge: 'soon' },
   ]},
   { group: 'Assets', items: [
