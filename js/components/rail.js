@@ -27,7 +27,8 @@ export function initRail(dash, { onResize } = {}) {
   handle.setAttribute('aria-orientation', 'vertical');
   handle.setAttribute('tabindex', '0');
   handle.setAttribute('aria-label', 'Resize intelligence panel');
-  handle.innerHTML = `<span class="rh-grip"></span>`;
+  handle.innerHTML = `<span class="rh-grip"></span><span class="rh-arrow"></span>`;
+  handle.title = 'Drag to resize · click to hide';
   dash.appendChild(handle);
 
   /* ---- collapse / restore buttons ---- */
@@ -82,36 +83,44 @@ export function initRail(dash, { onResize } = {}) {
   applyWidth(state.width);
   applyCollapsed(state.collapsed);
 
-  /* ---- drag to resize ---- */
-  let dragging = false;
+  /* ---- drag to resize, click to hide ---- */
+  let dragging = false, moved = false, startX = 0;
+
   const onMove = (e) => {
     if (!dragging) return;
     const x = e.touches ? e.touches[0].clientX : e.clientX;
+    if (Math.abs(x - startX) > 3) moved = true;
     applyWidth(dash.getBoundingClientRect().right - x);
     onResize?.();
   };
+
   const stop = () => {
     if (!dragging) return;
     dragging = false;
     document.body.classList.remove('is-resizing');
     removeEventListener('pointermove', onMove);
     removeEventListener('pointerup', stop);
-    onResize?.();
+    // A click with no movement collapses the rail.
+    if (!moved) applyCollapsed(true);
+    else onResize?.();
   };
+
   handle.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     dragging = true;
+    moved = false;
+    startX = e.clientX;
     document.body.classList.add('is-resizing');
     addEventListener('pointermove', onMove);
     addEventListener('pointerup', stop);
   });
+
   handle.addEventListener('dblclick', () => { applyWidth(324); onResize?.(); });
 
-  // keyboard resize for accessibility
   handle.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft')  { applyWidth(state.width + 24); onResize?.(); }
     if (e.key === 'ArrowRight') { applyWidth(state.width - 24); onResize?.(); }
-    if (e.key === 'Enter')      { applyCollapsed(true); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyCollapsed(true); }
   });
 
   hideBtn.addEventListener('click', () => applyCollapsed(true));

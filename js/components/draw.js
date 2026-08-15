@@ -52,10 +52,14 @@ export class DrawEngine {
     this._draftLayers = [];
 
     this.map.createPane('draw');
-    this.map.getPane('draw').style.zIndex = 620;
+    this.map.getPane('draw').style.zIndex = 700;
     this.map.createPane('draw-labels');
-    this.map.getPane('draw-labels').style.zIndex = 640;
+    this.map.getPane('draw-labels').style.zIndex = 720;
     this.map.getPane('draw-labels').style.pointerEvents = 'none';
+
+    // Dedicated renderer, otherwise Leaflet shares one SVG root and the data
+    // layers keep intercepting pointer events aimed at drawn shapes.
+    this.renderer = L.svg({ pane: 'draw' });
 
     this._bind();
   }
@@ -132,7 +136,7 @@ export class DrawEngine {
     if (this.tool === 'circle' && this.draft.length === 1 && cursor) {
       const r = haversine(this.draft[0], [cursor.lat, cursor.lng]);
       this._draftLayers.push(L.circle(this.draft[0], {
-        pane: 'draw', radius: r, color, weight: 1.6, dashArray: '5,4',
+        pane: 'draw', renderer: this.renderer, radius: r, color, weight: 1.6, dashArray: '5,4',
         fillColor: color, fillOpacity: .07, interactive: false,
       }).addTo(this.map));
       this._pushDraftLabel(this.draft[0], measureShape(
@@ -140,14 +144,14 @@ export class DrawEngine {
       ).primary);
     } else if (this.tool === 'polygon' && pts.length >= 3) {
       this._draftLayers.push(L.polygon(pts, {
-        pane: 'draw', color, weight: 1.6, dashArray: '5,4',
+        pane: 'draw', renderer: this.renderer, color, weight: 1.6, dashArray: '5,4',
         fillColor: color, fillOpacity: .1, interactive: false,
       }).addTo(this.map));
       this._pushDraftLabel(centroid(pts),
         measureShape({ type: 'polygon', latlngs: pts }, this.getUnits()).primary);
     } else if (pts.length >= 2) {
       this._draftLayers.push(L.polyline(pts, {
-        pane: 'draw', color, weight: 2, dashArray: '5,4', interactive: false,
+        pane: 'draw', renderer: this.renderer, color, weight: 2, dashArray: '5,4', interactive: false,
       }).addTo(this.map));
       if (this.tool === 'line') {
         this._pushDraftLabel(pts.at(-1),
@@ -158,7 +162,7 @@ export class DrawEngine {
     // vertex handles
     this.draft.forEach((p) => {
       this._draftLayers.push(L.circleMarker(p, {
-        pane: 'draw', radius: 3.5, color, fillColor: color, fillOpacity: 1,
+        pane: 'draw', renderer: this.renderer, radius: 3.5, color, fillColor: color, fillOpacity: 1,
         weight: 2, interactive: false,
       }).addTo(this.map));
     });
@@ -216,15 +220,14 @@ export class DrawEngine {
      ------------------------------------------------------------------ */
 
   render() {
-    this._layers.forEach((g) => this.map.removeLayer(g));
+    this._layers.forEach((rec) => this.map.removeLayer(rec.group));
     this._layers.clear();
 
     this.shapes.forEach((s) => {
-      const g = L.layerGroup([], { pane: 'draw' });
+      const group = L.layerGroup([], { pane: 'draw' });
       const on = this.selectedId === s.id;
-      const w = on ? 3 : 2;
-      const opts = { pane: 'draw', color: s.color, weight: w, fillColor: s.color };
       const m = measureShape(s, this.getUnits());
+      const opts = { pane: 'draw', renderer: this.renderer, color: s.color, weight: on ? 3 : 2, fillColor: s.color };
       let main;
 
       if (s.type === 'line') {
@@ -232,184 +235,153 @@ export class DrawEngine {
       } else if (s.type === 'polygon') {
         main = L.polygon(s.latlngs, { ...opts, fillOpacity: on ? .2 : .13 });
       } else if (s.type === 'circle') {
-        const r = haversine(s.latlngs[0], s.latlngs[1]);
-        main = L.circle(s.latlngs[0], { ...opts, radius: r, fillOpacity: on ? .16 : .09 });
+        main = L.circle(s.latlngs[0], { ...opts, radius: haversine(s.latlngs[0], s.latlngs[1]),
+          fillOpacity: on ? .16 : .09 });
       } else {
         main = L.circleMarker(s.latlngs[0], { ...opts, radius: on ? 7 : 5.5, fillOpacity: 1 });
       }
+      main.addTo(group);
 
-      main.on('click', (e) => { L.DomEvent.stopPropagation(e); this.select(s.id); });
-      this._makeDraggable(main, s);
-      main.addTo(g);
+      // Vertex handles are always present (not just when selected) so a shape
+      // can be grabbed by its dots as well as its body.
+      // A circle's second point is its radius handle; dragging the centre
+      // must move the whole shape so the radius is preserved.
+      const handles = s.latlngs.map((p, i) => {
+        const h = L.circleMarker(p, {
+          pane: 'draw', renderer: this.renderer,
+          radius: on ? 4.5 : 3.5,
+          color: on ? '#fff' : s.color,
+          fillColor: s.color,
+          fillOpacity: 1,
+          weight: on ? 1.8 : 1.4,
+          opacity: on ? 1 : .85,
+          className: 'draw-handle',
+        });
+        h._vtx = i;
+        h.addTo(group);
+        return h;
+      });
 
-      if (on) {
-        s.latlngs.forEach((p) => L.circleMarker(p, {
-          pane: 'draw', radius: 3.5, color: '#fff', fillColor: s.color,
-          fillOpacity: 1, weight: 1.6,
-        }).addTo(g));
-      }
-
-      const at = s.type === 'polygon' ? centroid(s.latlngs)
-        : s.type === 'circle' ? s.latlngs[0]
-        : s.type === 'point' ? s.latlngs[0]
-        : s.latlngs.at(-1);
-
-      L.marker(at, {
+      const label = L.marker(this._labelAt(s), {
         pane: 'draw-labels', interactive: false,
         icon: L.divIcon({
           className: '', iconSize: [0, 0],
           html: `<div class="draw-label ${on ? 'is-on' : ''}" style="--dc:${s.color}">
                    <b>${s.label}</b><span>${m.primary}</span></div>`,
         }),
-      }).addTo(g);
+      }).addTo(group);
 
-      g.addTo(this.map);
-      this._layers.set(s.id, g);
+      const rec = { group, main, handles, label, shape: s };
+      group.addTo(this.map);
+      this._layers.set(s.id, rec);
+
+      // Body and every handle can start a move; handles also support
+      // per-vertex editing when the shape is selected.
+      this._bindDrag(main, s, null);
+      handles.forEach((h) => {
+        // circle centre behaves as a move, every other handle edits its vertex
+        const asMove = s.type === 'circle' && h._vtx === 0;
+        this._bindDrag(h, s, asMove ? null : h._vtx);
+      });
+      main.on('click', (e) => { L.DomEvent.stopPropagation(e); this.select(s.id); });
     });
   }
 
+  _labelAt(s) {
+    return s.type === 'polygon' ? centroid(s.latlngs)
+      : (s.type === 'circle' || s.type === 'point') ? s.latlngs[0]
+      : s.latlngs.at(-1);
+  }
 
   /* ------------------------------------------------------------------
-     Dragging — a committed shape can be repositioned wholesale
+     Dragging — whole shape, or a single vertex when selected
      ------------------------------------------------------------------ */
 
-  _makeDraggable(layer, shape) {
-    let dragging = false, origin = null, before = null;
+  /**
+   * @param {L.Layer} layer  the grabbable layer
+   * @param {object} shape
+   * @param {number|null} vtx  vertex index, or null to move the whole shape
+   */
+  _bindDrag(layer, shape, vtx) {
+    let dragging = false, origin = null, before = null, moved = false;
 
-    const move = (e) => {
+    const onMove = (e) => {
       if (!dragging) return;
-      const dLat = e.latlng.lat - origin.lat;
-      const dLng = e.latlng.lng - origin.lng;
-      const moved = before.map(([la, lo]) => [la + dLat, lo + dLng]);
       const s = this.shapes.find((x) => x.id === shape.id);
       if (!s) return;
-      s.latlngs = moved;
-      this._redrawShape(s);
+      moved = true;
+
+      if (vtx === null) {
+        const dLat = e.latlng.lat - origin.lat;
+        const dLng = e.latlng.lng - origin.lng;
+        s.latlngs = before.map(([la, lo]) => [la + dLat, lo + dLng]);
+      } else {
+        // Editing one vertex; for a circle, vertex 1 is the radius handle.
+        s.latlngs = before.map((p, i) => (i === vtx ? [e.latlng.lat, e.latlng.lng] : [...p]));
+      }
+      this._syncShape(s);
     };
 
-    const up = () => {
+    const onUp = () => {
       if (!dragging) return;
       dragging = false;
       this.map.dragging.enable();
-      this.map.off('mousemove', move);
-      this.map.off('mouseup', up);
+      this.map.off('mousemove', onMove);
+      this.map.off('mouseup', onUp);
       this.nmap.root.classList.remove('is-dragging-shape');
+
       const s = this.shapes.find((x) => x.id === shape.id);
-      if (s) {
+      if (s && moved) {
         s.latlngs = s.latlngs.map(([la, lo]) => [+la.toFixed(6), +lo.toFixed(6)]);
         this.render();
         this.onSelect(s);
-        this.onChange(this.shapes, `Move ${s.label}`);
+        this.onChange(this.shapes, vtx === null ? `Move ${s.label}` : `Edit ${s.label}`);
       }
     };
 
     layer.on('mousedown', (e) => {
-      if (this.tool) return;                  // drawing takes priority
+      // A shape stays movable even while a draw tool is armed — grabbing an
+      // existing shape should never start a new one.
       if (this.selectedId !== shape.id) this.select(shape.id);
       dragging = true;
+      moved = false;
       origin = e.latlng;
       before = this.shapes.find((x) => x.id === shape.id).latlngs.map((p) => [...p]);
       this.map.dragging.disable();
-      this.map.on('mousemove', move);
-      this.map.on('mouseup', up);
+      this.map.on('mousemove', onMove);
+      this.map.on('mouseup', onUp);
       this.nmap.root.classList.add('is-dragging-shape');
-      L.DomEvent.stopPropagation(e);
+      L.DomEvent.stop(e);
     });
-  }
 
-  /** Cheap in-place geometry update while dragging (no full re-render). */
-  _redrawShape(s) {
-    const g = this._layers.get(s.id);
-    if (!g) return;
-    const layers = g.getLayers();
-    const main = layers[0];
-    if (s.type === 'circle') main.setLatLng(s.latlngs[0]);
-    else if (s.type === 'point') main.setLatLng(s.latlngs[0]);
-    else main.setLatLngs(s.latlngs);
-
-    // vertex handles + label follow
-    const at = s.type === 'polygon' ? centroid(s.latlngs)
-      : s.type === 'circle' || s.type === 'point' ? s.latlngs[0]
-      : s.latlngs.at(-1);
-    layers.forEach((l) => {
-      if (l instanceof L.Marker) l.setLatLng(at);
-    });
-    if (s.type !== 'circle' && s.type !== 'point') {
-      let i = 0;
-      layers.forEach((l) => {
-        if (l instanceof L.CircleMarker && l !== main) { l.setLatLng(s.latlngs[i]); i++; }
-      });
-    }
-  }
-
-  /* ------------------------------------------------------------------
-     Clipboard — copy / cut / paste / duplicate
-     ------------------------------------------------------------------ */
-
-  copy(id = this.selectedId) {
-    const s = this.shapes.find((x) => x.id === id);
-    if (!s) return null;
-    this._clipboard = JSON.parse(JSON.stringify(s));
-    return this._clipboard;
-  }
-
-  cut(id = this.selectedId) {
-    const s = this.copy(id);
-    if (s) this.remove(id);
-    return s;
+    // Suppress the click that follows a drag so it can't arm/commit a tool.
+    layer.on('click', (e) => { if (moved) L.DomEvent.stop(e); });
   }
 
   /**
-   * Paste the clipboard. Without a target the copy is nudged south-east so it
-   * doesn't hide under the original; with one it lands at that point.
+   * Update geometry, handles and label together in one frame, so the body and
+   * its vertices never visibly lag behind each other while dragging.
    */
-  paste(at = null) {
-    if (!this._clipboard) return null;
-    const src = this._clipboard;
-    let pts;
+  _syncShape(s) {
+    const rec = this._layers.get(s.id);
+    if (!rec) return;
 
-    if (at) {
-      const anchor = src.latlngs[0];
-      const dLat = at.lat - anchor[0];
-      const dLng = at.lng - anchor[1];
-      pts = src.latlngs.map(([la, lo]) => [+(la + dLat).toFixed(6), +(lo + dLng).toFixed(6)]);
+    if (s.type === 'circle') {
+      rec.main.setLatLng(s.latlngs[0]);
+      rec.main.setRadius(haversine(s.latlngs[0], s.latlngs[1]));
+    } else if (s.type === 'point') {
+      rec.main.setLatLng(s.latlngs[0]);
     } else {
-      const off = this._pasteOffset();
-      pts = src.latlngs.map(([la, lo]) => [+(la - off).toFixed(6), +(lo + off).toFixed(6)]);
+      rec.main.setLatLngs(s.latlngs);
     }
 
-    const shape = {
-      ...JSON.parse(JSON.stringify(src)),
-      id: uid(),
-      latlngs: pts,
-      label: this._copyName(src.label),
-      created: Date.now(),
-    };
-    this.shapes.push(shape);
-    this.render();
-    this.select(shape.id);
-    this.onChange(this.shapes, `Paste ${shape.label}`);
-    return shape;
-  }
+    rec.handles.forEach((h, i) => { if (s.latlngs[i]) h.setLatLng(s.latlngs[i]); });
+    rec.label.setLatLng(this._labelAt(s));
 
-  duplicate(id = this.selectedId) {
-    if (!this.copy(id)) return null;
-    return this.paste();
+    // keep the readout live during the drag
+    const el = rec.label.getElement?.()?.querySelector('.draw-label span');
+    if (el) el.textContent = measureShape(s, this.getUnits()).primary;
   }
-
-  /** Offset scaled to the current view so a paste is always visible. */
-  _pasteOffset() {
-    const b = this.map.getBounds();
-    return Math.abs(b.getNorth() - b.getSouth()) * 0.06;
-  }
-
-  _copyName(label) {
-    const base = label.replace(/ \(copy( \d+)?\)$/, '');
-    const existing = this.shapes.filter((s) => s.label.startsWith(base)).length;
-    return existing ? `${base} (copy${existing > 1 ? ' ' + existing : ''})` : `${base} (copy)`;
-  }
-
-  get clipboard() { return this._clipboard || null; }
 
   /* ------------------------------------------------------------------
      Selection + mutation
@@ -488,7 +460,7 @@ export class DrawEngine {
     this.map.off('mousemove', this._onMove);
     this.map.off('dblclick', this._onDbl);
     this._clearDraftLayers();
-    this._layers.forEach((g) => this.map.removeLayer(g));
+    this._layers.forEach((rec) => this.map.removeLayer(rec.group));
     this._layers.clear();
   }
 }

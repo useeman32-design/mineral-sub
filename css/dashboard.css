@@ -1646,3 +1646,128 @@ body.is-resizing iframe, body.is-resizing .leaflet-container { pointer-events: n
   .map-statusbar { max-width: calc(100% - 24px); }
   .measure-dock { top: 104px; }
 }
+
+/* ============================================================
+   Draggable floating panel
+   ============================================================ */
+.measure-dock { cursor: default; }
+.measure-dock .md-hd { cursor: grab; user-select: none; }
+.measure-dock.is-dragging { cursor: grabbing; box-shadow: var(--shadow-lg), 0 0 30px -8px rgba(0,230,118,.5); }
+.measure-dock.is-dragging .md-hd { cursor: grabbing; }
+.md-hd::before {
+  content: "";
+  width: 9px; height: 12px;
+  flex: none;
+  opacity: .5;
+  background-image: radial-gradient(circle, var(--text-faint) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+body.is-panel-dragging { user-select: none; }
+body.is-panel-dragging .leaflet-container { pointer-events: none; }
+
+/* ============================================================
+   Dock resize rail (Explore) — drag to resize, click to hide
+   ============================================================ */
+.dock-rail {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 11px;
+  z-index: 30;
+  cursor: col-resize;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  transition: background var(--t-fast) var(--ease);
+}
+.dock-rail-left  { right: -5px; }
+.dock-rail-right { left: -5px; }
+.dock-rail:hover { background: linear-gradient(90deg, transparent, rgba(0,230,118,.08), transparent); }
+
+.dr-grip {
+  width: 3px; height: 42px;
+  border-radius: 99px;
+  background: var(--line-soft);
+  transition: all var(--t-fast) var(--ease);
+}
+.dock-rail:hover .dr-grip,
+.dock-rail:focus-visible .dr-grip {
+  background: var(--green);
+  height: 66px;
+  box-shadow: 0 0 12px var(--green);
+}
+
+/* Small chevron marking the rail as clickable */
+.dr-arrow {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  display: grid; place-items: center;
+  background: var(--surface-3);
+  border: 1px solid var(--line-soft);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.dr-arrow::after {
+  content: "";
+  width: 4px; height: 4px;
+  border-right: 1.5px solid var(--text-mid);
+  border-bottom: 1.5px solid var(--text-mid);
+}
+.dock-rail-left  .dr-arrow::after { transform: rotate(-45deg) translate(-1px, -1px); }
+.dock-rail-right .dr-arrow::after { transform: rotate(135deg) translate(-1px, -1px); }
+.dock-rail:hover .dr-arrow { opacity: 1; }
+.dock-rail:hover .dr-arrow::after { border-color: var(--green); }
+.ex-dock.is-collapsed .dock-rail { display: none; }
+
+/* ============================================================
+   Overview rail handle — same affordance
+   ============================================================ */
+.rail-handle { gap: 5px; flex-direction: column; }
+.rail-handle .rh-arrow {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  display: grid; place-items: center;
+  background: var(--surface-3);
+  border: 1px solid var(--line-soft);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.rail-handle .rh-arrow::after {
+  content: "";
+  width: 4px; height: 4px;
+  border-right: 1.5px solid var(--text-mid);
+  border-bottom: 1.5px solid var(--text-mid);
+  transform: rotate(-45deg) translate(-1px, -1px);
+}
+.rail-handle:hover .rh-arrow { opacity: 1; }
+.rail-handle:hover .rh-arrow::after { border-color: var(--green); }
+.rail-handle:hover { background: linear-gradient(90deg, transparent, rgba(0,230,118,.07), transparent); }
+
+/* ============================================================
+   Explore filter menu
+   ============================================================ */
+.ex-filter-menu {
+  position: absolute;
+  top: 52px; right: 12px;
+  z-index: var(--z-pop);
+  min-width: 210px;
+  padding: 7px 0;
+}
+.ex-filter-menu[hidden] { display: none !important; }
+.ex-filter-menu .menu-title { padding: 2px 12px 7px; }
+.ex-filter-menu .menu-group { margin: 4px 6px 3px; padding: 7px 6px 4px; }
+.ex-filter-menu .menu-item { margin: 0 6px; width: calc(100% - 12px); }
+.ex-filter-menu .seg { width: calc(100% - 12px); }
+.ex-filter-menu .seg button { flex: 1; }
+#ex-filters-btn.has-active { border-color: rgba(0,230,118,.4); color: var(--green-100); }
+#ex-filters-btn.is-open .caret { transform: rotate(180deg); }
+
+/* ============================================================
+   Draw handles — grabbable vertex dots
+   ============================================================ */
+.draw-handle { cursor: grab; }
+.ex-map.is-dragging-shape .draw-handle,
+.map-stage.is-dragging-shape .draw-handle { cursor: grabbing; }
+.leaflet-pane .draw-handle:hover { stroke-width: 2.6; }

@@ -28,6 +28,7 @@ import { loadPrefs } from './settings.js';
 import { LAYER_GROUPS } from '../data/layers.js';
 import { createLegend, LEGEND_RESOURCES } from '../components/legend.js';
 import { createStatusBar } from '../components/statusbar.js';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js';
 
 const RESOURCES = LEGEND_RESOURCES;
 
@@ -345,7 +346,6 @@ export function createExplore() {
             ${panel('resources', 'Resources', 'minerals', `<div id="res-filter">${resourceFilter()}</div>`)}
             ${panel('drill', 'Drill Path', 'target', `<div id="drill-nav">${drillNav()}</div>`)}
           </div>
-          <button class="dock-tab dock-tab-l" id="tab-left" title="Collapse panel">${icon('chevronL', { size: 13 })}</button>
         </aside>
         <button class="dock-show dock-show-l" id="show-left" hidden title="Show tools">
           ${icon('layers', { size: 13 })}<span>Tools</span></button>
@@ -371,11 +371,33 @@ export function createExplore() {
               <button class="tool-btn" data-tool="measure-toggle" title="Measure & draw tools">${icon('ruler', { size: 15 })}</button>
               <button class="tool-btn" data-tool="full" title="Fullscreen">${icon('fullscreen', { size: 15 })}</button>
             </div>
-            <div class="spacer"></div>
-            <div class="seg" id="ex-basemap">
+            <div class="glass-bar">
+              <button class="chip" id="ex-filters-btn" title="Filters &amp; basemap">
+                ${icon('filter', { size: 13 })}<span>Filters</span>
+                <span class="filters-count" id="ex-filters-count" hidden></span>
+                <span class="caret">${icon('chevron', { size: 11 })}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="ex-filter-menu menu" id="ex-filter-menu" hidden>
+            <div class="menu-title">Basemap</div>
+            <div class="seg" id="ex-basemap" style="margin:0 6px 8px">
               <button data-base="vector" class="is-on">Vector</button>
               <button data-base="satellite">Satellite</button>
             </div>
+            <div class="menu-group">Prospectivity</div>
+            ${[['all','All zones','#93a8ab'],['high','High (75–100)','#f5b942'],['moderate','Moderate (50–74)','#2dd8c3']]
+              .map(([v,l,c]) => `<button class="menu-item ${v === 'all' ? 'is-on' : ''}" data-pros="${v}">
+                <i class="swatch" style="background:${c};box-shadow:0 0 6px ${c}"></i>
+                <span class="mi-label">${l}</span>
+                <span class="tick">${icon('check', { size: 12, sw: 2.4 })}</span></button>`).join('')}
+            <div class="menu-group">Risk</div>
+            ${[['all','All states','#93a8ab'],['high','High risk','#ff4d5e'],['medium','Medium risk','#ff8a3d'],['low','Low risk','#00e676']]
+              .map(([v,l,c]) => `<button class="menu-item ${v === 'all' ? 'is-on' : ''}" data-risk="${v}">
+                <i class="swatch" style="background:${c};box-shadow:0 0 6px ${c}"></i>
+                <span class="mi-label">${l}</span>
+                <span class="tick">${icon('check', { size: 12, sw: 2.4 })}</span></button>`).join('')}
           </div>
 
           <div class="measure-dock glass-bar" id="measure-dock">
@@ -398,7 +420,6 @@ export function createExplore() {
 
         <aside class="ex-dock ex-right" id="ex-right">
           <div class="ex-dock-scroll">
-            ${panel('shapes', 'Measurements', 'grid', `<div id="shape-list">${shapeList()}</div>`)}
             ${panel('inspector', 'Inspector', 'info', `
               <div class="insp-tabs" id="insp-tabs">
                 <button data-itab="geo" class="is-on">Geography</button>
@@ -406,9 +427,9 @@ export function createExplore() {
               </div>
               <div id="inspector">${inspectorEmpty()}</div>`,
               `<button class="ex-mini" id="insp-clear" title="Clear">${icon('crosshair', { size: 12 })}</button>`)}
+            ${panel('shapes', 'Measurements', 'grid', `<div id="shape-list">${shapeList()}</div>`)}
             ${panel('projects', 'Saved Work', 'data', `<div id="prj-panel">${projectPanel()}</div>`)}
           </div>
-          <button class="dock-tab dock-tab-r" id="tab-right" title="Collapse panel">${icon('chevronR', { size: 13 })}</button>
         </aside>
         <button class="dock-show dock-show-r" id="show-right" hidden title="Show inspector">
           ${icon('info', { size: 13 })}<span>Intel</span></button>
@@ -460,7 +481,14 @@ export function createExplore() {
 
     wireMap(stage);
     wireDocks(view);
+    wireFilterMenu(view);
     setMeasureDock(isMeasureDockOpen());
+
+    // The measure panel floats over the map and can be repositioned.
+    makeDraggable($('#measure-dock', view), $('#measure-dock .md-hd', view), {
+      key: 'nmi.measureDockPos',
+      container: stage,
+    });
     wirePanels(view);
     wireLayers(view);
     wireResources(view);
@@ -621,14 +649,18 @@ export function createExplore() {
   function doUndo() {
     const st = history.undo();
     if (!st) return;
+    const keep = draw.selectedId;
     draw.setShapes(st);
+    if (keep && st.some((x) => x.id === keep)) draw.select(keep);
     renderShapeList(); renderInspector(); markDirty(true);
     toast(`Undo${history.redoLabel ? ` · ${history.redoLabel}` : ''}`);
   }
   function doRedo() {
     const st = history.redo();
     if (!st) return;
+    const keep = draw.selectedId;
     draw.setShapes(st);
+    if (keep && st.some((x) => x.id === keep)) draw.select(keep);
     renderShapeList(); renderInspector(); markDirty(true);
     toast('Redo');
   }
@@ -800,16 +832,74 @@ export function createExplore() {
     }
     setDockRef = setDock;
 
+    // Drag the rail to resize, click it to hide.
+    ['left', 'right'].forEach((side) => {
+      makeDockResizer($(`#ex-${side}`, view), {
+        side,
+        min: 210,
+        max: 460,
+        key: `nmi.exDockW.${side}`,
+        onResize: () => nmap.invalidate(),
+        onToggle: () => setDock(side, !$(`#ex-${side}`, view).classList.contains('is-collapsed')),
+      });
+    });
+
     const saved = readDocks();
     setDock('left', !!saved.left);
     setDock('right', !!saved.right);
 
     view.addEventListener('click', (e) => {
-      if (e.target.closest('#tab-left'))   setDock('left',  !$('#ex-left', view).classList.contains('is-collapsed'));
-      if (e.target.closest('#tab-right'))  setDock('right', !$('#ex-right', view).classList.contains('is-collapsed'));
       if (e.target.closest('#show-left'))  setDock('left', false);
       if (e.target.closest('#show-right')) setDock('right', false);
     });
+  }
+
+  /* ---- filters + basemap menu ---- */
+  function wireFilterMenu(view) {
+    const btn = $('#ex-filters-btn', view);
+    const menu = $('#ex-filter-menu', view);
+
+    const close = () => { menu.hidden = true; btn.classList.remove('is-open'); };
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.hidden = !menu.hidden;
+      btn.classList.toggle('is-open', !menu.hidden);
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.hidden && !e.target.closest('#ex-filter-menu') && !e.target.closest('#ex-filters-btn')) close();
+    });
+
+    menu.addEventListener('click', (e) => {
+      const base = e.target.closest('[data-base]');
+      if (base) {
+        $$('#ex-basemap button', menu).forEach((b) => b.classList.toggle('is-on', b === base));
+        nmap.setBasemap(base.dataset.base);
+        return;
+      }
+      const pr = e.target.closest('[data-pros]');
+      if (pr) {
+        $$('[data-pros]', menu).forEach((b) => b.classList.toggle('is-on', b === pr));
+        nmap.filterProspectivity(pr.dataset.pros);
+        updateFilterCount();
+        return;
+      }
+      const rk = e.target.closest('[data-risk]');
+      if (rk) {
+        $$('[data-risk]', menu).forEach((b) => b.classList.toggle('is-on', b === rk));
+        nmap.filterRisk(rk.dataset.risk);
+        updateFilterCount();
+      }
+    });
+  }
+
+  function updateFilterCount() {
+    const f = store.get('filters');
+    const n = (f.prospectivity !== 'all' ? 1 : 0) + (f.risk !== 'all' ? 1 : 0);
+    const badge = $('#ex-filters-count', root);
+    if (!badge) return;
+    badge.hidden = n === 0;
+    badge.textContent = n;
+    $('#ex-filters-btn', root)?.classList.toggle('has-active', n > 0);
   }
 
   /* ---- floating measure dock (stays available in fullscreen) ---- */
@@ -833,14 +923,18 @@ export function createExplore() {
   function doUndo() {
     const st = history.undo();
     if (!st) return;
+    const keep = draw.selectedId;
     draw.setShapes(st);
+    if (keep && st.some((x) => x.id === keep)) draw.select(keep);
     renderShapeList(); renderInspector(); markDirty(true);
     toast(`Undo${history.redoLabel ? ` · ${history.redoLabel}` : ''}`);
   }
   function doRedo() {
     const st = history.redo();
     if (!st) return;
+    const keep = draw.selectedId;
     draw.setShapes(st);
+    if (keep && st.some((x) => x.id === keep)) draw.select(keep);
     renderShapeList(); renderInspector(); markDirty(true);
     toast('Redo');
   }
