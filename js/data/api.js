@@ -10,7 +10,7 @@
  *   await api.getDashboardSummary();   ->  GET /api/v1/dashboard/summary
  */
 
-import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js';
+import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=5b08fd6';
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 

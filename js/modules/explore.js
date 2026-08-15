@@ -13,22 +13,22 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js';
-import { store } from '../core/store.js';
-import { icon } from '../core/icons.js';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js';
-import { NigeriaMap, zoomBand } from '../components/map.js';
-import { RESOURCE_META } from '../data/fixtures.js';
-import { toast } from './dashboard.js';
-import { DrawEngine, TOOL_META } from '../components/draw.js';
-import { History } from '../core/history.js';
-import { projects } from '../data/projects.js';
-import { measureShape } from '../core/geo.js';
-import { loadPrefs } from './settings.js';
-import { LAYER_GROUPS } from '../data/layers.js';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js';
-import { createStatusBar } from '../components/statusbar.js';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js';
+import { api } from '../data/api.js?v=5b08fd6';
+import { store } from '../core/store.js?v=5b08fd6';
+import { icon } from '../core/icons.js?v=5b08fd6';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=5b08fd6';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=5b08fd6';
+import { RESOURCE_META } from '../data/fixtures.js?v=5b08fd6';
+import { toast } from './dashboard.js?v=5b08fd6';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=5b08fd6';
+import { History } from '../core/history.js?v=5b08fd6';
+import { projects } from '../data/projects.js?v=5b08fd6';
+import { measureShape } from '../core/geo.js?v=5b08fd6';
+import { loadPrefs } from './settings.js?v=5b08fd6';
+import { LAYER_GROUPS } from '../data/layers.js?v=5b08fd6';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=5b08fd6';
+import { createStatusBar } from '../components/statusbar.js?v=5b08fd6';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=5b08fd6';
 
 const RESOURCES = LEGEND_RESOURCES;
 

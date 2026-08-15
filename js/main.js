@@ -6,17 +6,17 @@
  * shell, design system and navigation need no changes.
  */
 
-import { buildShell } from './components/shell.js';
-import { Router } from './core/router.js';
-import { store } from './core/store.js';
-import { api } from './data/api.js';
-import { $ } from './core/utils.js';
-import { createDashboard, toast } from './modules/dashboard.js';
-import { createStub } from './modules/stub.js';
-import { createSettings } from './modules/settings.js';
-import { createExplore } from './modules/explore.js';
-import { theme } from './core/theme.js';
-import { applyPrefs } from './modules/settings.js';
+import { buildShell } from './components/shell.js?v=5b08fd6';
+import { Router } from './core/router.js?v=5b08fd6';
+import { store } from './core/store.js?v=5b08fd6';
+import { api } from './data/api.js?v=5b08fd6';
+import { $ } from './core/utils.js?v=5b08fd6';
+import { createDashboard, toast } from './modules/dashboard.js?v=5b08fd6';
+import { createStub } from './modules/stub.js?v=5b08fd6';
+import { createSettings } from './modules/settings.js?v=5b08fd6';
+import { createExplore } from './modules/explore.js?v=5b08fd6';
+import { theme } from './core/theme.js?v=5b08fd6';
+import { applyPrefs } from './modules/settings.js?v=5b08fd6';
 
 const MODULES = [
   {

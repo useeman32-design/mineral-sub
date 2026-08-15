@@ -5,15 +5,15 @@
  * The map owns the majority of the viewport; intel cards flank it.
  */
 
-import { api } from '../data/api.js';
-import { store } from '../core/store.js';
-import { icon } from '../core/icons.js';
-import { $, $$, fmt, sparkline, bars, ring, donut, countUp } from '../core/utils.js';
-import { NigeriaMap } from '../components/map.js';
-import { RESOURCE_META } from '../data/fixtures.js';
-import { mapToolbar } from '../components/map-toolbar.js';
-import { initRail } from '../components/rail.js';
-import { loadPrefs } from './settings.js';
+import { api } from '../data/api.js?v=5b08fd6';
+import { store } from '../core/store.js?v=5b08fd6';
+import { icon } from '../core/icons.js?v=5b08fd6';
+import { $, $$, fmt, sparkline, bars, ring, donut, countUp } from '../core/utils.js?v=5b08fd6';
+import { NigeriaMap } from '../components/map.js?v=5b08fd6';
+import { RESOURCE_META } from '../data/fixtures.js?v=5b08fd6';
+import { mapToolbar } from '../components/map-toolbar.js?v=5b08fd6';
+import { initRail } from '../components/rail.js?v=5b08fd6';
+import { loadPrefs } from './settings.js?v=5b08fd6';
 
 export function createDashboard() {
   let root, nmap, data, rail, lastLga = null, unsub = [];
