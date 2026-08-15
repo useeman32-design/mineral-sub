@@ -50,7 +50,7 @@ export const store = new Store({
   showGraticule: true,
 
   // layer + filter state (drives map rendering; API-ready shape)
-  layers: { deposits: true, prospectivity: true, risk: false, titles: false, infrastructure: false },
+  layers: { deposits: true, prospectivity: true, graticule: true, risk: false, titles: false, infrastructure: false },
   filters: {
     resources: ['gold', 'lithium', 'tin', 'oil', 'gas', 'lead', 'barite', 'iron'],
     prospectivity: 'all',     // 'all' | 'high' | 'moderate'

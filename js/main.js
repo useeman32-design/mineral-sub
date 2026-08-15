@@ -14,6 +14,7 @@ import { $ } from './core/utils.js';
 import { createDashboard, toast } from './modules/dashboard.js';
 import { createStub } from './modules/stub.js';
 import { createSettings } from './modules/settings.js';
+import { createExplore } from './modules/explore.js';
 import { theme } from './core/theme.js';
 import { applyPrefs } from './modules/settings.js';
 
@@ -23,12 +24,8 @@ const MODULES = [
     factory: () => createDashboard(),
   },
   {
-    id: 'explore', title: 'Explore Map', keepAlive: false,
-    factory: createStub({
-      title: 'Explore Map', glyph: 'map',
-      blurb: 'A full-bleed GIS workspace for progressive drill-down from national extent to individual mineral occurrence, with swipe comparison, measurement and multi-layer analysis.',
-      features: ['ADM2 / LGA polygons', 'Satellite basemap switching', 'Geological overlays', 'Measurement tools', 'Split-screen compare', 'Export view'],
-    }),
+    id: 'explore', title: 'Explore Map', keepAlive: true,
+    factory: () => createExplore(),
   },
   {
     id: 'minerals', title: 'Minerals', keepAlive: false,

@@ -929,3 +929,271 @@ body.is-resizing iframe, body.is-resizing .leaflet-container { pointer-events: n
 @media (max-width: 900px) {
   .map-legend, .legend-pill { right: 12px; }
 }
+
+/* ============================================================
+   EXPLORE MAP MODULE — full-bleed GIS workspace
+   ============================================================ */
+
+/* This module wants the entire stage, with no view padding */
+.view.view-flush { padding: 0; overflow: hidden; }
+
+.explore {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  height: 100%;
+  min-height: 0;
+  background: var(--bg-base);
+}
+
+/* ---- docks ---- */
+.ex-dock {
+  position: relative;
+  width: 272px;
+  min-width: 272px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(10,15,17,.92), rgba(7,11,13,.88));
+  border-right: 1px solid var(--line-soft);
+  transition: width var(--t-med) var(--ease), min-width var(--t-med) var(--ease);
+}
+[data-theme="light"] .ex-dock {
+  background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(246,249,249,.9));
+}
+.ex-right { border-right: none; border-left: 1px solid var(--line-soft); }
+.ex-dock.is-collapsed { width: 0; min-width: 0; }
+.ex-dock.is-collapsed .ex-dock-scroll { opacity: 0; pointer-events: none; }
+
+.ex-dock-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  transition: opacity var(--t-fast) var(--ease);
+}
+
+/* collapse tabs sit on the dock's outer edge */
+.dock-tab {
+  position: absolute;
+  top: 14px;
+  width: 17px; height: 42px;
+  display: grid; place-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  color: var(--text-faint);
+  z-index: 30;
+  transition: all var(--t-fast) var(--ease);
+}
+.dock-tab:hover { color: var(--green); border-color: rgba(0,230,118,.34); background: var(--green-dim); }
+.dock-tab-l { right: -18px; border-left: none; border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+.dock-tab-r { left: -18px; border-right: none; border-radius: var(--r-sm) 0 0 var(--r-sm); }
+.ex-dock.is-collapsed .dock-tab svg { transform: rotate(180deg); }
+
+/* ---- dock panels ---- */
+.ex-panel {
+  border: 1px solid var(--line-faint);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+  overflow: hidden;
+}
+.ex-panel-hd {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line-faint);
+  color: var(--green);
+}
+.ex-panel-hd h3 {
+  flex: 1 1 auto;
+  font-size: var(--fs-xs);
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-hi);
+}
+.ex-mini {
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border-radius: 4px;
+  color: var(--text-faint);
+  transition: all var(--t-fast) var(--ease);
+}
+.ex-mini:hover { color: var(--green); background: var(--surface-hover); }
+.ex-panel-bd { padding: 9px 10px 10px; }
+
+/* ---- layer tree ---- */
+.lt-group + .lt-group { margin-top: 10px; }
+.lt-group-hd {
+  font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600; padding: 0 2px 5px;
+}
+.lt-item {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 6px 7px;
+  border-radius: var(--r-sm);
+  color: var(--text-low);
+  font-size: var(--fs-xs);
+  text-align: left;
+  transition: all var(--t-fast) var(--ease);
+}
+.lt-item:hover { background: var(--surface-hover); color: var(--text-mid); }
+.lt-eye { opacity: .3; flex: none; display: grid; place-items: center; transition: opacity var(--t-fast) var(--ease); }
+.lt-item.is-on .lt-eye { opacity: 1; color: var(--green); }
+.lt-swatch { width: 7px; height: 7px; border-radius: 50%; flex: none; opacity: .35; transition: opacity var(--t-fast) var(--ease); }
+.lt-item.is-on .lt-swatch { opacity: 1; }
+.lt-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lt-item.is-on .lt-label { color: var(--text-hi); }
+.lt-tag {
+  font-size: 8px; font-weight: 700; letter-spacing: .08em;
+  padding: 2px 5px; border-radius: 3px;
+  color: var(--gold); background: var(--gold-dim); border: 1px solid rgba(245,185,66,.24);
+}
+.lt-hint { color: var(--text-faint); display: grid; place-items: center; }
+.lt-item.is-soon { opacity: .62; }
+.lt-item.is-soon:hover { opacity: .8; }
+
+/* ---- resource chips ---- */
+.ex-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.ex-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-faint);
+  background: var(--surface-sunken);
+  color: var(--text-faint);
+  font-size: 9.5px; font-weight: 600;
+  letter-spacing: .04em;
+  transition: all var(--t-fast) var(--ease);
+}
+.ex-chip i { width: 6px; height: 6px; border-radius: 50%; opacity: .35; transition: opacity var(--t-fast) var(--ease); }
+.ex-chip.is-on {
+  color: var(--text-hi);
+  border-color: color-mix(in srgb, var(--rc) 42%, transparent);
+  background: color-mix(in srgb, var(--rc) 12%, transparent);
+}
+.ex-chip.is-on i { opacity: 1; box-shadow: 0 0 6px var(--rc); }
+
+/* ---- drill navigator ---- */
+.drill-step {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 7px 4px;
+  position: relative;
+}
+.drill-step + .drill-step::before {
+  content: "";
+  position: absolute; left: 12px; top: -7px; height: 14px; width: 1px;
+  background: var(--line-soft);
+}
+.ds-node {
+  width: 19px; height: 19px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  font-size: 9px; font-weight: 700;
+  color: var(--text-faint);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-faint);
+  transition: all var(--t-med) var(--ease);
+}
+.drill-step.is-done .ds-node {
+  color: #04120a; background: var(--green); border-color: var(--green);
+  box-shadow: 0 0 10px -2px var(--green);
+}
+.drill-step.is-current .ds-node { border-color: var(--green); color: var(--green); }
+.ds-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ds-label {
+  font-size: var(--fs-xs); color: var(--text-mid); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.drill-step.is-done .ds-label { color: var(--text-hi); }
+.ds-sub { font-size: 8.5px; color: var(--text-faint); }
+
+/* ---- map region ---- */
+.ex-map {
+  position: relative;
+  min-width: 0; min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(1100px 780px at 44% 40%, rgba(45,216,195,.05), transparent 66%),
+    linear-gradient(180deg, var(--map-bg-a), var(--map-bg-b));
+}
+.ex-map.is-measuring { cursor: crosshair; }
+.ex-map.is-measuring .leaflet-container { cursor: crosshair; }
+
+.ex-top {
+  position: absolute; top: 11px; left: 11px; right: 11px;
+  z-index: var(--z-map-ui);
+  display: flex; align-items: flex-start; gap: 8px;
+  pointer-events: none;
+}
+.ex-top > * { pointer-events: auto; }
+.tool-sep-v { width: 1px; height: 18px; background: var(--line-faint); margin: 0 2px; }
+
+/* ---- status bar ---- */
+.ex-status {
+  position: absolute; bottom: 11px; left: 11px;
+  z-index: var(--z-map-ui);
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 12px;
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+.exs { display: inline-flex; align-items: center; gap: 5px; }
+.exs b { color: var(--cyan-300); font-weight: 600; letter-spacing: 0; text-transform: none; }
+.exs-sep { width: 1px; height: 12px; background: var(--line-faint); }
+.exs-count b { color: var(--gold); }
+#exs-measure b { color: var(--green); }
+
+/* ---- inspector ---- */
+.insp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.insp-kind {
+  font-size: 8.5px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--cyan); font-weight: 700;
+}
+.insp-title { font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.01em; margin-top: 3px; }
+.insp-sub { font-size: 9.5px; color: var(--text-low); margin-top: 3px; }
+.occ-badge { font-size: 8px; font-weight: 700; letter-spacing: .08em; padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
+
+.insp-sec { margin-top: 13px; padding-top: 10px; border-top: 1px solid var(--line-faint); }
+.insp-sec-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 8.5px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600; margin-bottom: 7px;
+}
+.insp-sec-hd span { color: var(--green); font-family: var(--font-mono); }
+.insp-none { font-size: var(--fs-xs); color: var(--text-low); line-height: 1.5; }
+
+.occ-list { display: flex; flex-direction: column; gap: 1px; }
+.occ-row {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 6px 7px; margin: 0 -7px;
+  border-radius: var(--r-sm);
+  text-align: left;
+  transition: background var(--t-fast) var(--ease);
+}
+.occ-row:hover { background: var(--surface-hover); }
+.occ-row i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.occ-n {
+  flex: 1 1 auto; font-size: var(--fs-xs); color: var(--text-hi);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.occ-s { font-size: 8.5px; color: var(--text-faint); flex: none; text-transform: uppercase; letter-spacing: .06em; }
+.occ-more { font-size: 9px; color: var(--text-faint); padding: 6px 0 0; text-align: center; }
+
+/* ---- responsive ---- */
+@media (max-width: 1280px) {
+  .ex-dock { width: 240px; min-width: 240px; }
+}
+@media (max-width: 1024px) {
+  .ex-right { position: absolute; right: 0; top: 0; bottom: 0; z-index: 40; box-shadow: var(--shadow-lg); }
+  .explore { grid-template-columns: auto 1fr; }
+}
+@media (max-width: 780px) {
+  .ex-left { position: absolute; left: 0; top: 0; bottom: 0; z-index: 40; box-shadow: var(--shadow-lg); }
+  .explore { grid-template-columns: 1fr; }
+  .ex-status { font-size: 8.5px; gap: 7px; padding: 5px 9px; }
+  .ex-status .exs-count { display: none; }
+}

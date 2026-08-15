@@ -160,7 +160,7 @@ export function mapToolbar(stage, nmap) {
         items: [
           { id: 'deposits', label: 'Mineral occurrences', swatch: '#f5b942', on: L.deposits },
           { id: 'prospectivity', label: 'Prospectivity heat', swatch: '#ff8a3d', on: L.prospectivity },
-          { id: 'graticule', label: 'Coordinate grid', swatch: '#2dd8c3', on: true },
+          { id: 'graticule', label: 'Coordinate grid', swatch: '#2dd8c3', on: L.graticule !== false },
           { id: 'risk', label: 'Risk zones', swatch: '#ff4d5e', on: L.risk, soon: true },
           { id: 'titles', label: 'Mining titles', swatch: '#8b7dff', on: L.titles, soon: true },
           { id: 'infrastructure', label: 'Roads & infrastructure', swatch: '#9aa7b0', on: L.infrastructure, soon: true },
@@ -188,7 +188,8 @@ export function mapToolbar(stage, nmap) {
     node.innerHTML = `
       <div class="menu-title">${spec.title}</div>
       ${spec.items.map((it) => `
-        <button class="menu-item ${it.on ? 'is-on' : ''}" data-id="${it.id}">
+        <button class="menu-item ${it.on ? 'is-on' : ''}" data-id="${it.id}"
+          role="menuitemcheckbox" aria-checked="${!!it.on}">
           <i class="swatch" style="background:${it.swatch};box-shadow:0 0 6px ${it.swatch}"></i>
           <span class="mi-label">${it.label}</span>
           ${it.soon ? '<span class="mi-count" style="color:var(--gold)">SOON</span>'
@@ -206,13 +207,20 @@ export function mapToolbar(stage, nmap) {
     node.addEventListener('click', (e) => {
       const b = e.target.closest('.menu-item');
       if (!b) return;
-      const item = spec.items.find((x) => x.id === b.dataset.id) || {};
-      const keep = spec.onPick(b.dataset.id, item);
+
+      // Always read current state — never the snapshot taken at build time.
+      const live = MENUS[key]();
+      const item = live.items.find((x) => x.id === b.dataset.id) || {};
+      const keep = live.onPick(b.dataset.id, item);
+
       if (keep) {
         const fresh = MENUS[key]();
         fresh.items.forEach((it) => {
           const n = node.querySelector(`.menu-item[data-id="${it.id}"]`);
-          if (n) n.classList.toggle('is-on', !!it.on);
+          if (n) {
+            n.classList.toggle('is-on', !!it.on);
+            n.setAttribute('aria-checked', String(!!it.on));
+          }
         });
       } else closeMenu();
       updateChipStates();

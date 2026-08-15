@@ -11,7 +11,7 @@ import { $, $$ } from '../core/utils.js';
 export const NAV = [
   { group: 'Intelligence', items: [
     { id: 'overview',      label: 'Overview',          ico: 'overview',      badge: 'live' },
-    { id: 'explore',       label: 'Explore Map',       ico: 'map',           badge: 'soon' },
+    { id: 'explore',       label: 'Explore Map',       ico: 'map',           badge: 'live' },
     { id: 'minerals',      label: 'Minerals',          ico: 'minerals',      badge: 'soon' },
     { id: 'prospectivity', label: 'Prospectivity',     ico: 'prospectivity', badge: 'soon' },
     { id: 'risk',          label: 'Risk Intelligence', ico: 'risk',          badge: 'soon' },

@@ -31,8 +31,13 @@ export function zoomBand(z) {
   return z < 5 ? 'nation' : 'prospect';
 }
 
+let MAP_SEQ = 0;
+
 export class NigeriaMap {
   constructor(container, { api, onSelect, onHover } = {}) {
+    this.uid = 'nmap-' + (++MAP_SEQ);
+    container.dataset.nmap = this.uid;
+    this.interceptClicks = null;
     this.root = container;
     this.api = api;
     this.onSelect = onSelect || (() => {});
@@ -90,7 +95,10 @@ export class NigeriaMap {
     this.map.on('zoomend', () => this._onZoom());
     this.map.on('moveend', () => this._declutterLabels());
     this.map.on('mousemove', (e) => this._moveTip(e));
-    this.map.on('click', (e) => { if (!e.originalEvent._stateHit) this.clearSelection(); });
+    this.map.on('click', (e) => {
+      if (this.interceptClicks) { this.interceptClicks(e.latlng); return; }
+      if (!e.originalEvent._stateHit) this.clearSelection();
+    });
 
     this.map.fitBounds(NG_BOUNDS, { padding: [26, 26], animate: false });
     this._onZoom();
@@ -186,6 +194,12 @@ export class NigeriaMap {
         });
 
         layer.on('click', (e) => {
+          // A consumer (e.g. the measurement tool) can claim raw map clicks.
+          if (this.interceptClicks) {
+            this.interceptClicks(e.latlng);
+            L.DomEvent.stopPropagation(e);
+            return;
+          }
           e.originalEvent._stateHit = true;
           L.DomEvent.stopPropagation(e);
           this.selectState(name, { zoom: true });
@@ -243,13 +257,13 @@ export class NigeriaMap {
     if (mode === 'selected') {
       // Selection reads as a glowing OUTLINE once zoomed in or over imagery —
       // the green wash never obscures satellite detail.
-      const outlineOnly = sat || z >= 8.4 || detail === 0;
+      const outlineOnly = sat || z >= 7.6 || detail === 0;
       return { ...base,
         color: light ? '#00964e' : '#00e676',
         weight: outlineOnly ? 2.6 : 2.3,
         opacity: 1,
-        fillColor: light ? '#c9ecd9' : '#09201a',
-        fillOpacity: outlineOnly ? 0 : 0.92 * detail };
+        fillColor: light ? '#d8efe2' : '#0a1a16',
+        fillOpacity: outlineOnly ? 0 : 0.55 * detail };
     }
     return base;
   }
@@ -329,7 +343,11 @@ export class NigeriaMap {
       m.bindTooltip(this._depTooltip(d, meta), {
         direction: 'top', offset: [0, -10], className: 'dep-tip', opacity: 1,
       });
-      m.on('click', (e) => { L.DomEvent.stopPropagation(e); e.originalEvent._stateHit = true; });
+      m.on('click', (e) => {
+        if (this.interceptClicks) { this.interceptClicks(e.latlng); L.DomEvent.stopPropagation(e); return; }
+        L.DomEvent.stopPropagation(e);
+        e.originalEvent._stateHit = true;
+      });
       g.addLayer(m);
       this.depMarkers.push(m);
     });
@@ -668,6 +686,7 @@ export class NigeriaMap {
           this._hideTip();
         });
         layer.on('click', (e) => {
+          if (this.interceptClicks) { this.interceptClicks(e.latlng); L.DomEvent.stopPropagation(e); return; }
           e.originalEvent._stateHit = true;
           L.DomEvent.stopPropagation(e);
           this.selectLga(f.properties, layer);
