@@ -10,8 +10,8 @@
  *   await api.getDashboardSummary();   ->  GET /api/v1/dashboard/summary
  */
 
-import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=effc9f2';
-import { seeded } from '../core/utils.js?v=effc9f2';
+import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=11d9f5e';
+import { seeded } from '../core/utils.js?v=11d9f5e';
 
 /* Operator names for the placeholder registry. Real holder records arrive with
    the mining cadastre import. */

@@ -12,10 +12,10 @@
  * the same code works once Laravel is serving real data.
  */
 
-import { $, debounce } from '../core/utils.js?v=effc9f2';
-import { icon } from '../core/icons.js?v=effc9f2';
-import { ctx } from '../core/context.js?v=effc9f2';
-import { RESOURCE_META, STATES, DEPOSITS } from '../data/fixtures.js?v=effc9f2';
+import { $, debounce } from '../core/utils.js?v=11d9f5e';
+import { icon } from '../core/icons.js?v=11d9f5e';
+import { ctx } from '../core/context.js?v=11d9f5e';
+import { RESOURCE_META, STATES, DEPOSITS } from '../data/fixtures.js?v=11d9f5e';
 
 const MODULES = [
   { id: 'overview', label: 'Overview', hint: 'National dashboard' },

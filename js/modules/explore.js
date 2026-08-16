@@ -13,24 +13,24 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js?v=effc9f2';
-import { store } from '../core/store.js?v=effc9f2';
-import { ctx } from '../core/context.js?v=effc9f2';
-import { icon } from '../core/icons.js?v=effc9f2';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=effc9f2';
-import { NigeriaMap, zoomBand } from '../components/map.js?v=effc9f2';
-import { RESOURCE_META } from '../data/fixtures.js?v=effc9f2';
-import { toast } from './dashboard.js?v=effc9f2';
-import { reports } from '../core/reports.js?v=effc9f2';
-import { DrawEngine, TOOL_META } from '../components/draw.js?v=effc9f2';
-import { History } from '../core/history.js?v=effc9f2';
-import { projects } from '../data/projects.js?v=effc9f2';
-import { measureShape } from '../core/geo.js?v=effc9f2';
-import { loadPrefs } from './settings.js?v=effc9f2';
-import { LAYER_GROUPS } from '../data/layers.js?v=effc9f2';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=effc9f2';
-import { createStatusBar } from '../components/statusbar.js?v=effc9f2';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=effc9f2';
+import { api } from '../data/api.js?v=11d9f5e';
+import { store } from '../core/store.js?v=11d9f5e';
+import { ctx } from '../core/context.js?v=11d9f5e';
+import { icon } from '../core/icons.js?v=11d9f5e';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=11d9f5e';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=11d9f5e';
+import { RESOURCE_META } from '../data/fixtures.js?v=11d9f5e';
+import { toast } from './dashboard.js?v=11d9f5e';
+import { reports } from '../core/reports.js?v=11d9f5e';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=11d9f5e';
+import { History } from '../core/history.js?v=11d9f5e';
+import { projects } from '../data/projects.js?v=11d9f5e';
+import { measureShape } from '../core/geo.js?v=11d9f5e';
+import { loadPrefs } from './settings.js?v=11d9f5e';
+import { LAYER_GROUPS } from '../data/layers.js?v=11d9f5e';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=11d9f5e';
+import { createStatusBar } from '../components/statusbar.js?v=11d9f5e';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=11d9f5e';
 
 const RESOURCES = LEGEND_RESOURCES;
 
