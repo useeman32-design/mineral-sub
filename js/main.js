@@ -6,25 +6,25 @@
  * shell, design system and navigation need no changes.
  */
 
-import { buildShell } from './components/shell.js?v=7552589';
-import { createGlobalSearch } from './components/search.js?v=7552589';
-import { Router } from './core/router.js?v=7552589';
-import { store } from './core/store.js?v=7552589';
-import { reports } from './core/reports.js?v=eb3c4a3';
-import { api } from './data/api.js?v=7552589';
-import { $ } from './core/utils.js?v=7552589';
-import { createDashboard, toast } from './modules/dashboard.js?v=7552589';
-import { createSettings } from './modules/settings.js?v=7552589';
-import { createMinerals } from './modules/minerals.js?v=7552589';
-import { createProspectivity } from './modules/prospectivity.js?v=7552589';
-import { createRisk } from './modules/risk.js?v=7552589';
-import { createOilGas } from './modules/oilgas.js?v=eb3c4a3';
-import { createTitles } from './modules/titles.js?v=eb3c4a3';
-import { createReports } from './modules/reports.js?v=eb3c4a3';
-import { createDataCenter } from './modules/data.js?v=eb3c4a3';
-import { createExplore } from './modules/explore.js?v=7552589';
-import { theme } from './core/theme.js?v=7552589';
-import { applyPrefs } from './modules/settings.js?v=7552589';
+import { buildShell } from './components/shell.js?v=effc9f2';
+import { createGlobalSearch } from './components/search.js?v=effc9f2';
+import { Router } from './core/router.js?v=effc9f2';
+import { store } from './core/store.js?v=effc9f2';
+import { reports } from './core/reports.js?v=effc9f2';
+import { api } from './data/api.js?v=effc9f2';
+import { $ } from './core/utils.js?v=effc9f2';
+import { createDashboard, toast } from './modules/dashboard.js?v=effc9f2';
+import { createSettings } from './modules/settings.js?v=effc9f2';
+import { createMinerals } from './modules/minerals.js?v=effc9f2';
+import { createProspectivity } from './modules/prospectivity.js?v=effc9f2';
+import { createRisk } from './modules/risk.js?v=effc9f2';
+import { createOilGas } from './modules/oilgas.js?v=effc9f2';
+import { createTitles } from './modules/titles.js?v=effc9f2';
+import { createReports } from './modules/reports.js?v=effc9f2';
+import { createDataCenter } from './modules/data.js?v=effc9f2';
+import { createExplore } from './modules/explore.js?v=effc9f2';
+import { theme } from './core/theme.js?v=effc9f2';
+import { applyPrefs } from './modules/settings.js?v=effc9f2';
 
 const MODULES = [
   {

@@ -18,7 +18,7 @@
  *   - Excel : SpreadsheetML 2003, which Excel opens natively and needs no library
  */
 
-import { fmt } from './utils.js?v=eb3c4a3';
+import { fmt } from './utils.js?v=effc9f2';
 
 const KEY = 'nmi.reportCart';
 
@@ -204,7 +204,7 @@ async function resolveOne(api, s) {
     }
 
     case 'prospectivity': {
-      const { runModel, defaultWeights } = await import('./scoring.js?v=eb3c4a3');
+      const { runModel, defaultWeights } = await import('./scoring.js?v=effc9f2');
       const states = await api.getProspectivityInputs();
       const { targets } = runModel(states, defaultWeights(), { commodity: s.commodity || null });
       const rows = (s.id ? targets.filter((t) => t.name === s.id) : targets.slice(0, 15));
@@ -219,7 +219,7 @@ async function resolveOne(api, s) {
     }
 
     case 'risk': {
-      const { runRisk, defaultRiskWeights } = await import('./risk.js?v=eb3c4a3');
+      const { runRisk, defaultRiskWeights } = await import('./risk.js?v=effc9f2');
       const states = await api.getProspectivityInputs();
       const { rows: scored } = runRisk(states, defaultRiskWeights());
       const rows = s.id ? scored.filter((r) => r.name === s.id) : scored.slice(0, 15);

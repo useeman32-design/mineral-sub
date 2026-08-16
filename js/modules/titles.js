@@ -6,13 +6,13 @@
  * matter most when reading a title register.
  */
 
-import { fmt } from '../core/utils.js?v=eb3c4a3';
-import { icon } from '../core/icons.js?v=eb3c4a3';
-import { api } from '../data/api.js?v=eb3c4a3';
-import { ctx } from '../core/context.js?v=eb3c4a3';
-import { reports } from '../core/reports.js?v=eb3c4a3';
-import { createRegister } from '../components/register.js?v=eb3c4a3';
-import { toast } from './dashboard.js?v=eb3c4a3';
+import { fmt } from '../core/utils.js?v=effc9f2';
+import { icon } from '../core/icons.js?v=effc9f2';
+import { api } from '../data/api.js?v=effc9f2';
+import { ctx } from '../core/context.js?v=effc9f2';
+import { reports } from '../core/reports.js?v=effc9f2';
+import { createRegister } from '../components/register.js?v=effc9f2';
+import { toast } from './dashboard.js?v=effc9f2';
 
 const STATUS_COLOR = {
   Active: 'var(--green)',
