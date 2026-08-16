@@ -6,19 +6,20 @@
  * shell, design system and navigation need no changes.
  */
 
-import { buildShell } from './components/shell.js?v=a404c97';
-import { Router } from './core/router.js?v=a404c97';
-import { store } from './core/store.js?v=a404c97';
-import { api } from './data/api.js?v=a404c97';
-import { $ } from './core/utils.js?v=a404c97';
-import { createDashboard, toast } from './modules/dashboard.js?v=a404c97';
-import { createStub } from './modules/stub.js?v=a404c97';
-import { createSettings } from './modules/settings.js?v=a404c97';
-import { createMinerals } from './modules/minerals.js?v=a404c97';
-import { createProspectivity } from './modules/prospectivity.js?v=a404c97';
-import { createExplore } from './modules/explore.js?v=a404c97';
-import { theme } from './core/theme.js?v=a404c97';
-import { applyPrefs } from './modules/settings.js?v=a404c97';
+import { buildShell } from './components/shell.js?v=0521807';
+import { Router } from './core/router.js?v=0521807';
+import { store } from './core/store.js?v=0521807';
+import { api } from './data/api.js?v=0521807';
+import { $ } from './core/utils.js?v=0521807';
+import { createDashboard, toast } from './modules/dashboard.js?v=0521807';
+import { createStub } from './modules/stub.js?v=0521807';
+import { createSettings } from './modules/settings.js?v=0521807';
+import { createMinerals } from './modules/minerals.js?v=0521807';
+import { createProspectivity } from './modules/prospectivity.js?v=0521807';
+import { createRisk } from './modules/risk.js?v=0521807';
+import { createExplore } from './modules/explore.js?v=0521807';
+import { theme } from './core/theme.js?v=0521807';
+import { applyPrefs } from './modules/settings.js?v=0521807';
 
 const MODULES = [
   {
@@ -38,12 +39,8 @@ const MODULES = [
     factory: () => createProspectivity(),
   },
   {
-    id: 'risk', title: 'Risk Intelligence', keepAlive: false,
-    factory: createStub({
-      title: 'Risk Intelligence', glyph: 'risk',
-      blurb: 'Composite exploration risk covering security advisories, environmental constraints, accessibility and community land status, scored per licence block.',
-      features: ['Security advisories', 'Protected areas', 'Accessibility index', 'Community disputes', 'Composite scoring', 'Alert subscriptions'],
-    }),
+    id: 'risk', title: 'Risk Intelligence', keepAlive: true,
+    factory: () => createRisk(),
   },
   {
     id: 'oilgas', title: 'Oil & Gas', keepAlive: false,

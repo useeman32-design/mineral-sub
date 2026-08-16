@@ -441,3 +441,114 @@
   .mn-card:hover .mn-shot img { transform: none; }
   .mn-detail:not(:empty) { animation: none; }
 }
+
+/* ============================================================
+   State drill-down: distribution, operators, evidence
+   ============================================================ */
+.mn-drill { border-color: color-mix(in srgb, var(--cm) 34%, var(--line-soft)); }
+.mn-drill .panel-hd h3 { color: var(--text-hi); }
+
+.mn-dgrid2 {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+  gap: 16px; margin-top: 14px;
+}
+.mn-blk { min-width: 0; }
+.mn-blk-h {
+  display: flex; align-items: baseline; gap: 7px;
+  font-size: var(--fs-micro); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+  padding-bottom: 7px; margin-bottom: 9px;
+  border-bottom: 1px solid var(--line-faint);
+}
+.mn-blk-h em {
+  font-style: normal; font-family: var(--font-mono);
+  color: var(--cyan-300); letter-spacing: 0;
+}
+.mn-note {
+  margin: 9px 0 0; font-size: var(--fs-micro);
+  color: var(--text-faint); line-height: 1.5;
+}
+
+/* LGA distribution */
+.mn-lgas { display: flex; flex-direction: column; gap: 2px; }
+.mn-lga {
+  display: grid; grid-template-columns: minmax(0, 1fr) 26px; gap: 6px 9px;
+  width: 100%; padding: 7px 8px; text-align: left; cursor: pointer;
+  background: none; border: 1px solid transparent; border-radius: var(--r-sm);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.mn-lga:hover { background: var(--surface-2); border-color: var(--line-soft); }
+.mn-lga.is-on {
+  background: color-mix(in srgb, var(--cm) 10%, var(--surface-2));
+  border-color: color-mix(in srgb, var(--cm) 45%, transparent);
+}
+.mn-lga-n { font-size: var(--fs-sm); color: var(--text-hi); font-weight: 500; }
+.mn-lga-c {
+  font-size: var(--fs-sm); color: var(--cm); text-align: right;
+}
+.mn-lga-s {
+  grid-column: 1 / -1; font-size: var(--fs-micro); color: var(--text-faint);
+  line-height: 1.45; overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+
+/* operators */
+.mn-ops { display: flex; flex-direction: column; gap: 8px; }
+.mn-op {
+  padding: 8px 9px; border-radius: var(--r-sm);
+  background: var(--surface-2); border: 1px solid var(--line-faint);
+}
+.mn-op-n {
+  display: block; font-size: var(--fs-sm); color: var(--text-hi); font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mn-op-m {
+  display: block; font-size: var(--fs-micro); color: var(--text-faint); margin-top: 1px;
+}
+.mn-op-r {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-top: 6px;
+}
+.mn-op-l { font-size: var(--fs-micro); color: var(--text-faint); }
+.mn-st-development { color: var(--purple); background: rgba(139, 125, 255, .12); border-color: rgba(139, 125, 255, .3); }
+.mn-st-carementenance,
+.mn-st-caremaintenance { color: var(--text-faint); background: rgba(255, 255, 255, .05); border-color: var(--line-soft); }
+
+/* open ground */
+.mn-open { display: flex; flex-direction: column; gap: 1px; max-height: 232px; overflow-y: auto; scrollbar-width: thin; }
+.mn-open-r {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  width: 100%; padding: 6px 8px; text-align: left; cursor: pointer;
+  background: none; border: 1px solid transparent; border-radius: var(--r-sm);
+  transition: background var(--t-fast) var(--ease);
+}
+.mn-open-r:hover { background: var(--surface-2); border-color: var(--line-soft); }
+.mn-open-n { font-size: var(--fs-sm); color: var(--text-mid); }
+.mn-open-r.has-occ .mn-open-n { color: var(--gold); }
+.mn-open-s { font-size: var(--fs-micro); color: var(--text-faint); text-align: right; flex: none; }
+
+/* geoscience evidence */
+.mn-ev { margin-bottom: 11px; }
+.mn-ev:last-child { margin-bottom: 0; }
+.mn-ev-h {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  font-size: var(--fs-sm); color: var(--text-hi); margin-bottom: 5px;
+}
+.mn-ev-h b { font-size: var(--fs-micro); color: var(--text-faint); font-weight: 500; }
+.mn-ev-t {
+  display: block; height: 5px; border-radius: 3px;
+  background: rgba(255, 255, 255, .07); overflow: hidden;
+}
+.mn-ev-t span { display: block; height: 100%; border-radius: 3px; opacity: .85; }
+.mn-ev-f {
+  font-size: var(--fs-micro); color: var(--text-faint);
+  margin-top: 5px; line-height: 1.5;
+}
+
+/* the selected state row in Leading States */
+.mn-state.is-on {
+  background: color-mix(in srgb, var(--cm) 12%, var(--surface-2));
+  border-color: color-mix(in srgb, var(--cm) 45%, transparent);
+}
+
+[data-theme="light"] .mn-ev-t { background: rgba(14, 42, 48, .1); }

@@ -39,6 +39,8 @@ nmi/
     ├── main.js                 # entry: boots shell, registers modules
     ├── core/
     │   ├── scoring.js          # weighted-overlay prospectivity model (no DOM)
+    │   ├── risk.js             # composite exploration-risk model (no DOM)
+    │   ├── context.js          # shared cross-module selection (commodity/state/LGA)
     │   ├── router.js           # hash SPA router with keep-alive modules
     │   ├── store.js            # observable cross-module state
     │   ├── icons.js            # inline SVG icon registry
@@ -55,6 +57,7 @@ nmi/
         ├── explore.js          # Explore Map: docks, drawing, measurement
         ├── minerals.js         # Minerals: commodity register + dossier
         ├── prospectivity.js    # Prospectivity: criteria editor + ranked targets
+        ├── risk.js             # Risk Intelligence: factor editor + risk ranking
         ├── settings.js         # workspace preferences
         └── stub.js             # "coming soon" factory for pending modules
 ```
@@ -67,8 +70,9 @@ nmi/
 | Explore Map | Implemented |
 | Minerals | Implemented |
 | Prospectivity | Implemented |
+| Risk Intelligence | Implemented |
 | Settings | Implemented |
-| Risk Intelligence, Oil & Gas, Mining Titles, Reports, Data Center | Placeholder via `createStub` |
+| Oil & Gas, Mining Titles, Reports, Data Center | Placeholder via `createStub` |
 
 ### The prospectivity model
 
@@ -101,15 +105,27 @@ visible loss at card size. Re-run it after adding any new photograph.
 
 ### Cross-module navigation
 
-A module hands a selection to another through `store.pendingFocus`, then routes.
-The receiving module consumes the request in `onShow()` and clears it, so a
-later revisit does not re-trigger the jump:
+`core/context.js` holds one selection — commodity, state, LGA, occurrence —
+shared by Minerals, Prospectivity, Risk Intelligence and the Map Explorer:
 
 ```js
-// Minerals -> Explore Map
-store.set({ pendingFocus: { state: 'Zamfara', site: null, from: 'minerals' } });
-location.hash = '#/explore';
+ctx.set({ commodity: 'gold', state: 'Zamfara', lga: 'Anka' });
+ctx.go('prospectivity');            // navigate carrying the context
+ctx.go('explore', { layer: 'risk' });
 ```
+
+Receiving modules adopt it in `onShow()`, so a user who drilled to
+Gold → Zamfara → Anka never re-picks any of it. Each module also writes back
+as the user drills, and the Map Explorer's inspector cards carry
+**Mineral / Prospectivity / Risk** buttons so the flow runs in both directions.
+
+The context holds identifiers only, never rendered data — each module resolves
+them against the API itself, so a context could be restored from a URL later
+without changing any module.
+
+Occurrence → LGA assignment is precomputed offline by
+`tools/build-occurrence-lga.py` using point-in-polygon (nearest-centroid gets
+it wrong often enough to matter: Maru Gold Belt resolves to Kaura Namoda).
 
 ### Cache busting
 
@@ -188,6 +204,9 @@ Expected endpoints (response shapes already match the fixtures):
 | `getCommodities()`      | `GET /minerals`          | Commodity register: counts, trend, sites, states, geology notes |
 | `getCommodity(id)`      | `GET /minerals/:id`      | Single commodity dossier |
 | `getProspectivityInputs()` | `GET /prospectivity/inputs` | Scoring-model input table (model runs client-side) |
+| `getCommodityInState(id, state)` | `GET /minerals/:id/states/:state` | LGA spread, operators, open ground, geoscience evidence |
+| `getLgas(code)`         | `GET /geo/states/:code/lgas` | ADM2 list for a state |
+| `getOccurrenceLgas()`   | `GET /geo/occurrences/lga`   | Occurrence → LGA lookup |
 
 Each state feature carries: `name, code, region, centroid, commodities[],
 occurrences, prospectivity (0–100), risk, titles, petroleum, coverage`.

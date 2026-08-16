@@ -1,0 +1,246 @@
+{
+"NMI-0001": {
+"exact": true,
+"lga": "Anka"
+},
+"NMI-0002": {
+"exact": true,
+"lga": "Maru"
+},
+"NMI-0003": {
+"exact": true,
+"lga": "Bukkuyum"
+},
+"NMI-0004": {
+"exact": false,
+"lga": "Birnin Gwari"
+},
+"NMI-0005": {
+"exact": true,
+"lga": "Kaura"
+},
+"NMI-0006": {
+"exact": true,
+"lga": "Ilesha West"
+},
+"NMI-0007": {
+"exact": true,
+"lga": "Oriade"
+},
+"NMI-0008": {
+"exact": false,
+"lga": "Gwandu"
+},
+"NMI-0009": {
+"exact": true,
+"lga": "Kaiama"
+},
+"NMI-0010": {
+"exact": true,
+"lga": "Yagba East"
+},
+"NMI-0011": {
+"exact": true,
+"lga": "Lafia"
+},
+"NMI-0012": {
+"exact": true,
+"lga": "Keffi"
+},
+"NMI-0013": {
+"exact": true,
+"lga": "Wamba"
+},
+"NMI-0014": {
+"exact": true,
+"lga": "Rafi"
+},
+"NMI-0015": {
+"exact": true,
+"lga": "Gbako"
+},
+"NMI-0016": {
+"exact": true,
+"lga": "Ijero"
+},
+"NMI-0017": {
+"exact": true,
+"lga": "Jos North"
+},
+"NMI-0018": {
+"exact": true,
+"lga": "Jos South"
+},
+"NMI-0019": {
+"exact": true,
+"lga": "Doguwa"
+},
+"NMI-0020": {
+"exact": true,
+"lga": "Jema'A"
+},
+"NMI-0021": {
+"exact": true,
+"lga": "Bauchi"
+},
+"NMI-0022": {
+"exact": true,
+"lga": "Adavi"
+},
+"NMI-0023": {
+"exact": true,
+"lga": "Ajaokuta"
+},
+"NMI-0024": {
+"exact": true,
+"lga": "Lokoja"
+},
+"NMI-0025": {
+"exact": true,
+"lga": "Lokoja"
+},
+"NMI-0026": {
+"exact": true,
+"lga": "Akwanga"
+},
+"NMI-0027": {
+"exact": true,
+"lga": "Awe"
+},
+"NMI-0028": {
+"exact": true,
+"lga": "Ibi"
+},
+"NMI-0029": {
+"exact": true,
+"lga": "Katsina-Ala"
+},
+"NMI-0030": {
+"exact": true,
+"lga": "Ushongo"
+},
+"NMI-0031": {
+"exact": true,
+"lga": "Ezza South"
+},
+"NMI-0032": {
+"exact": false,
+"lga": "Ivo"
+},
+"NMI-0033": {
+"exact": true,
+"lga": "Abakaliki"
+},
+"NMI-0034": {
+"exact": true,
+"lga": "Ebonyi"
+},
+"NMI-0035": {
+"exact": true,
+"lga": "Mikang"
+},
+"NMI-0036": {
+"exact": true,
+"lga": "Wukari"
+},
+"NMI-0037": {
+"exact": true,
+"lga": "Akamkpa"
+},
+"NMI-0038": {
+"exact": true,
+"lga": "Ewekoro"
+},
+"NMI-0039": {
+"exact": true,
+"lga": "Etsako East"
+},
+"NMI-0040": {
+"exact": true,
+"lga": "Kabba/Bunu"
+},
+"NMI-0041": {
+"exact": true,
+"lga": "Wamakko"
+},
+"NMI-0042": {
+"exact": true,
+"lga": "Gboko"
+},
+"NMI-0043": {
+"exact": true,
+"lga": "Enugu North"
+},
+"NMI-0044": {
+"exact": true,
+"lga": "Dekina"
+},
+"NMI-0045": {
+"exact": true,
+"lga": "Udenu"
+},
+"NMI-0046": {
+"exact": true,
+"lga": "Olorunsogo"
+},
+"NMI-0047": {
+"exact": true,
+"lga": "Lokoja"
+},
+"NMI-0048": {
+"exact": true,
+"lga": "Okitipupa"
+},
+"NMI-0049": {
+"exact": true,
+"lga": "Irele"
+},
+"NMI-0050": {
+"exact": true,
+"lga": "Bonny"
+},
+"NMI-0051": {
+"exact": true,
+"lga": "Burutu"
+},
+"NMI-0052": {
+"exact": false,
+"lga": "Nembe"
+},
+"NMI-0053": {
+"exact": false,
+"lga": "Ibeno"
+},
+"NMI-0054": {
+"exact": true,
+"lga": "Warri North"
+},
+"NMI-0058": {
+"exact": false,
+"lga": "Mbo"
+},
+"NMI-0059": {
+"exact": true,
+"lga": "Warri South-West"
+},
+"NMI-0060": {
+"exact": true,
+"lga": "Uhunmwonde"
+},
+"NMI-0061": {
+"exact": true,
+"lga": "Bonny"
+},
+"NMI-0062": {
+"exact": true,
+"lga": "Owerri Municipal"
+},
+"NMI-0063": {
+"exact": true,
+"lga": "Ohaji/Egbema"
+},
+"NMI-0064": {
+"exact": true,
+"lga": "Ogbaru"
+}
+}

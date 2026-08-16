@@ -4,7 +4,7 @@
  * identical across the app. Replacing one is a one-line change in main.js.
  */
 
-import { icon } from '../core/icons.js?v=a404c97';
+import { icon } from '../core/icons.js?v=0521807';
 
 export function createStub({ title, glyph, blurb, features = [], tag = 'In development' }) {
   return () => ({

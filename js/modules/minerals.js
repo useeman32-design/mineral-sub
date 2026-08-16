@@ -10,10 +10,11 @@
  * so the two data modules feel like the same product.
  */
 
-import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=a404c97';
-import { icon } from '../core/icons.js?v=a404c97';
-import { api } from '../data/api.js?v=a404c97';
-import { store } from '../core/store.js?v=a404c97';
+import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=0521807';
+import { icon } from '../core/icons.js?v=0521807';
+import { api } from '../data/api.js?v=0521807';
+import { ctx } from '../core/context.js?v=0521807';
+import { RESOURCE_META as RMETA } from '../data/fixtures.js?v=0521807';
 
 const CATEGORIES = ['All', 'Metallic', 'Industrial', 'Energy'];
 
@@ -32,6 +33,8 @@ export function createMinerals() {
   let category = 'All';
   let query = '';
   let sort = 'occurrences';
+  let stateDetail = null;   // resolved commodity-in-state payload
+  let loadingState = null;
 
   /* ------------------------------------------------------------------ *
    * Derived data
@@ -106,6 +109,102 @@ export function createMinerals() {
       </button>`;
   }
 
+  /** Commodity-within-a-state: LGA spread, operators, open ground, evidence. */
+  function stateDrill(d) {
+    const c = d.commodity;
+    const ev = d.evidence;
+    const bar = (v, col) => `<span class="mn-ev-t"><span style="width:${v}%;background:${col}"></span></span>`;
+
+    return `
+      <section class="panel mn-p mn-p-wide mn-drill" style="--cm:${c.hex}">
+        <header class="panel-hd">
+          <span class="accent-bar accent-cyan"></span>
+          <h3>${c.label} in ${d.state.name}</h3>
+          <span class="spacer"></span>
+          <span class="panel-x">${d.sites.length} occurrence${d.sites.length === 1 ? '' : 's'} · ${d.lgas.length} LGAs</span>
+          <button class="mn-close" data-drill-close title="Close">${icon('plus', { size: 14 })}</button>
+        </header>
+        <div class="panel-bd">
+          <div class="ctx-acts">
+            <button class="btn-ghost btn-primary" data-go="explore">${icon('map', { size: 13 })} View on map</button>
+            <button class="btn-ghost" data-go="prospectivity">${icon('prospectivity', { size: 13 })} Prospectivity</button>
+            <button class="btn-ghost" data-go="risk">${icon('risk', { size: 13 })} Risk</button>
+          </div>
+
+          <div class="mn-dgrid2">
+            <div class="mn-blk">
+              <div class="mn-blk-h">Geographical distribution</div>
+              ${d.byLga.length ? `<div class="mn-lgas">
+                ${d.byLga.map((l) => `
+                  <button class="mn-lga" data-lga="${l.name}">
+                    <span class="mn-lga-n">${l.name}</span>
+                    <span class="mn-lga-c t-mono">${l.sites.length}</span>
+                    <span class="mn-lga-s">${l.sites.map((x) => x.name).join(', ')}</span>
+                  </button>`).join('')}
+              </div>` : `<p class="mn-none">No occurrence resolves to an LGA in ${d.state.name} yet.</p>`}
+              <p class="mn-note">${d.state.name} has ${d.lgas.length} local government areas;
+              ${d.byLga.length} record ${c.label.toLowerCase()}.</p>
+            </div>
+
+            <div class="mn-blk">
+              <div class="mn-blk-h">Operators on record <em>${d.operators.length}</em></div>
+              ${d.operators.length ? `<div class="mn-ops">
+                ${d.operators.map((o) => `
+                  <div class="mn-op">
+                    <span class="mn-op-n">${o.name}</span>
+                    <span class="mn-op-m">${o.site}${o.lga ? ` · ${o.lga}` : ''}</span>
+                    <span class="mn-op-r">
+                      <span class="mn-st mn-st-${o.status.toLowerCase().replace(/[^a-z]/g, '')}">${o.status}</span>
+                      <span class="t-mono mn-op-l">${o.licence}</span>
+                    </span>
+                  </div>`).join('')}
+              </div>` : '<p class="mn-none">No titled operator on record.</p>'}
+            </div>
+
+            <div class="mn-blk">
+              <div class="mn-blk-h">Open ground <em>${d.unoperated.length}</em></div>
+              <div class="mn-open">
+                ${d.unoperated.slice(0, 10).map((u) => `
+                  <button class="mn-open-r ${u.hasOccurrence ? 'has-occ' : ''}" data-lga="${u.name}">
+                    <span class="mn-open-n">${u.name}</span>
+                    <span class="mn-open-s">${u.note}</span>
+                  </button>`).join('')}
+              </div>
+              ${d.unoperated.length > 10 ? `<p class="mn-note">+ ${d.unoperated.length - 10} more LGAs with no titled operator.</p>` : ''}
+            </div>
+
+            <div class="mn-blk">
+              <div class="mn-blk-h">Geochemical evidence</div>
+              ${ev.geochemical.map((g) => `
+                <div class="mn-ev">
+                  <div class="mn-ev-h"><span>${g.label}</span><b class="t-mono">${g.anomalies} anomalies</b></div>
+                  ${bar(g.strength, 'var(--gold)')}
+                  <div class="mn-ev-f">${g.coverage}% coverage · signal ${g.strength}/100</div>
+                </div>`).join('')}
+            </div>
+
+            <div class="mn-blk">
+              <div class="mn-blk-h">Geophysical evidence</div>
+              ${ev.geophysical.map((g) => `
+                <div class="mn-ev">
+                  <div class="mn-ev-h"><span>${g.label}</span><b class="t-mono">${g.anomalies} targets</b></div>
+                  ${bar(g.strength, 'var(--purple)')}
+                  <div class="mn-ev-f">${g.coverage}% coverage · signal ${g.strength}/100</div>
+                </div>`).join('')}
+            </div>
+
+            <div class="mn-blk">
+              <div class="mn-blk-h">Geological mapping</div>
+              <div class="mn-ev">
+                ${bar(ev.geological.mapped, 'var(--cyan)')}
+                <div class="mn-ev-f">${ev.geological.summary}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>`;
+  }
+
   function emptyDossier() {
     return `
       <div class="mn-empty">
@@ -170,7 +269,8 @@ export function createMinerals() {
           <div class="panel-bd">
             ${top.length ? `<div class="mn-states">
               ${top.map((s) => `
-                <button class="mn-state" data-state="${s.name}" title="Open ${s.name} on the map">
+                <button class="mn-state ${stateDetail?.state?.name === s.name ? 'is-on' : ''}"
+                        data-state="${s.name}" title="Drill into ${s.name}">
                   <span class="mn-state-c t-mono">${s.code}</span>
                   <span class="mn-state-n">${s.name}</span>
                   <span class="mn-state-b"><span style="width:${(s.prospectivity / maxP) * 100}%;background:${c.hex}"></span></span>
@@ -179,6 +279,8 @@ export function createMinerals() {
             </div>` : '<p class="mn-none">No state-level records yet.</p>'}
           </div>
         </section>
+
+        ${stateDetail && stateDetail.commodity.id === c.id ? stateDrill(stateDetail) : ''}
 
         <section class="panel mn-p mn-p-wide">
           <header class="panel-hd">
@@ -285,9 +387,29 @@ export function createMinerals() {
     if (subs[2]) subs[2].textContent = `of ${t.sites} catalogued`;
   }
 
+  /** Load and show the commodity-in-state breakdown. */
+  async function drillState(name) {
+    if (loadingState === name) return;
+    loadingState = name;
+    ctx.set({ commodity: selectedId, state: name, lga: null });
+    try {
+      stateDetail = await api.getCommodityInState(selectedId, name);
+    } catch (err) {
+      console.error('[minerals] state drill failed', err);
+      stateDetail = null;
+    }
+    loadingState = null;
+    renderDetail();
+    requestAnimationFrame(() => {
+      $('.mn-drill', root)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+  }
+
   function select(id) {
     // Clicking the open commodity again collapses the detail panel.
     selectedId = selectedId === id ? null : id;
+    stateDetail = null;
+    ctx.set({ commodity: selectedId });
     renderList();
     renderDetail();
 
@@ -330,15 +452,51 @@ export function createMinerals() {
         return;
       }
 
-      // Cross-module navigation: open the state or site on the Explore map
-      const st = e.target.closest('[data-state]');
-      if (st) { openOnMap({ state: st.dataset.state }); return; }
+      if (e.target.closest('[data-drill-close]')) {
+        stateDetail = null;
+        ctx.set({ state: null, lga: null });
+        renderDetail();
+        return;
+      }
 
-      const site = e.target.closest('[data-site]');
+      // Drill into a state rather than leaving the page.
+      const st = e.target.closest('[data-state]');
+      if (st) { drillState(st.dataset.state); return; }
+
+      // An LGA row focuses that LGA in the shared context.
+      const lga = e.target.closest('[data-lga]');
+      if (lga) {
+        ctx.set({ lga: lga.dataset.lga });
+        $$('[data-lga]', root).forEach((n) => n.classList.toggle('is-on', n === lga));
+        return;
+      }
+
+      // Context handoff buttons.
+      const go = e.target.closest('[data-go]')?.dataset.go;
+      if (go) {
+        ctx.set({
+          commodity: selectedId,
+          state: stateDetail?.state?.name || ctx.get().state,
+          layer: go === 'explore' ? 'deposits' : null,
+        });
+        ctx.go(go);
+        return;
+      }
+
+      // An occurrence row jumps to that point on the map.
+      const site = e.target.closest('[data-site], [data-fly]');
       if (site) {
+        const id = site.dataset.site || site.dataset.fly;
         const c = all.find((x) => x.id === selectedId);
-        const rec = c?.sites.find((s) => s.id === site.dataset.site);
-        if (rec) openOnMap({ state: rec.state, site: rec });
+        const rec = c?.sites.find((x) => x.id === id);
+        if (rec) {
+          ctx.set({
+            commodity: selectedId, state: rec.state,
+            lga: stateDetail?.sites.find((x) => x.id === id)?.lga || null,
+            occurrence: rec.id, layer: 'deposits',
+          });
+          ctx.go('explore');
+        }
       }
     });
 
@@ -353,15 +511,6 @@ export function createMinerals() {
       sort = e.target.value;
       renderList();
     });
-  }
-
-  /**
-   * Hand a selection to the Explore module. The map owns drill-down, so this
-   * publishes intent to the store and routes — Explore picks it up on show.
-   */
-  function openOnMap({ state, site }) {
-    store.set({ pendingFocus: { state, site: site || null, from: 'minerals' } });
-    location.hash = '#/explore';
   }
 
   /* ------------------------------------------------------------------ *
@@ -381,8 +530,17 @@ export function createMinerals() {
       renderDetail();
     },
 
-    onShow() {
-      // Nothing to recompute: the register is static between API refreshes.
+    async onShow() {
+      const c = ctx.get();
+      if (c.commodity && c.commodity !== selectedId) {
+        selectedId = c.commodity;
+        stateDetail = null;
+        renderList();
+        renderDetail();
+      }
+      if (c.state && selectedId && stateDetail?.state?.name !== c.state) {
+        await drillState(c.state);
+      }
     },
   };
 }

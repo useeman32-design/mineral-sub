@@ -13,22 +13,23 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js?v=a404c97';
-import { store } from '../core/store.js?v=a404c97';
-import { icon } from '../core/icons.js?v=a404c97';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=a404c97';
-import { NigeriaMap, zoomBand } from '../components/map.js?v=a404c97';
-import { RESOURCE_META } from '../data/fixtures.js?v=a404c97';
-import { toast } from './dashboard.js?v=a404c97';
-import { DrawEngine, TOOL_META } from '../components/draw.js?v=a404c97';
-import { History } from '../core/history.js?v=a404c97';
-import { projects } from '../data/projects.js?v=a404c97';
-import { measureShape } from '../core/geo.js?v=a404c97';
-import { loadPrefs } from './settings.js?v=a404c97';
-import { LAYER_GROUPS } from '../data/layers.js?v=a404c97';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=a404c97';
-import { createStatusBar } from '../components/statusbar.js?v=a404c97';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=a404c97';
+import { api } from '../data/api.js?v=0521807';
+import { store } from '../core/store.js?v=0521807';
+import { ctx } from '../core/context.js?v=0521807';
+import { icon } from '../core/icons.js?v=0521807';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=0521807';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=0521807';
+import { RESOURCE_META } from '../data/fixtures.js?v=0521807';
+import { toast } from './dashboard.js?v=0521807';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=0521807';
+import { History } from '../core/history.js?v=0521807';
+import { projects } from '../data/projects.js?v=0521807';
+import { measureShape } from '../core/geo.js?v=0521807';
+import { loadPrefs } from './settings.js?v=0521807';
+import { LAYER_GROUPS } from '../data/layers.js?v=0521807';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=0521807';
+import { createStatusBar } from '../components/statusbar.js?v=0521807';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=0521807';
 
 const RESOURCES = LEGEND_RESOURCES;
 
@@ -37,7 +38,8 @@ export function createExplore() {
   let root, nmap, deposits = [], unsub = [];
   let draw, history, activeProject = null, dirty = false;
   let inspectorMode = 'geo';   // 'geo' | 'shape'
-  let lastGeo = null;          // remembers the geographic selection
+  let lastGeo = null;
+  let lastCtxStamp = 0;          // remembers the geographic selection
   let legend = null, statusBar = null, setDockRef = null, lastCursor = null;
 
   /* ================= helpers ================= */
@@ -285,6 +287,12 @@ export function createExplore() {
       <div class="sel-actions">
         <button class="btn-ghost btn-primary" data-lga-zoom="1">Zoom to LGA</button>
         <button class="btn-ghost" data-act="back-state">Back to state</button>
+      </div>
+      <div class="ctx-acts ctx-acts-insp">
+        <button class="btn-ghost" data-send="prospectivity" data-st="${p.state}" data-lga="${p.name}">
+          ${icon('prospectivity', { size: 12 })} Prospectivity</button>
+        <button class="btn-ghost" data-send="risk" data-st="${p.state}" data-lga="${p.name}">
+          ${icon('risk', { size: 12 })} Risk</button>
       </div>`;
   };
 
@@ -337,6 +345,12 @@ export function createExplore() {
       <div class="sel-actions">
         <button class="btn-ghost btn-primary" data-act="drill-lga">Load LGAs</button>
         <button class="btn-ghost" data-act="zoom-state">Zoom</button>
+      </div>
+      <div class="ctx-acts ctx-acts-insp">
+        <button class="btn-ghost" data-send="prospectivity" data-st="${p.name}">
+          ${icon('prospectivity', { size: 12 })} Prospectivity</button>
+        <button class="btn-ghost" data-send="risk" data-st="${p.name}">
+          ${icon('risk', { size: 12 })} Risk</button>
       </div>`;
   };
 
@@ -365,6 +379,14 @@ export function createExplore() {
       </div>
       <div class="sel-actions">
         <button class="btn-ghost btn-primary" data-fly="${d.id}">Fly to site</button>
+      </div>
+      <div class="ctx-acts ctx-acts-insp">
+        <button class="btn-ghost" data-send="minerals" data-res="${d.resource}" data-st="${d.state}" data-occ="${d.id}">
+          ${icon('minerals', { size: 12 })} Mineral</button>
+        <button class="btn-ghost" data-send="prospectivity" data-res="${d.resource}" data-st="${d.state}">
+          ${icon('prospectivity', { size: 12 })} Prospectivity</button>
+        <button class="btn-ghost" data-send="risk" data-res="${d.resource}" data-st="${d.state}">
+          ${icon('risk', { size: 12 })} Risk</button>
       </div>`;
   };
 
@@ -1150,6 +1172,19 @@ export function createExplore() {
       const del = e.target.closest('[data-shape-del]');
       if (del) { draw.remove(del.dataset.shapeDel); return; }
 
+      const send = e.target.closest('[data-send]');
+      if (send) {
+        const d = send.dataset;
+        ctx.set({
+          commodity: d.res || ctx.get().commodity || null,
+          state: d.st || null,
+          lga: d.lga || null,
+          occurrence: d.occ || null,
+        });
+        ctx.go(d.send);
+        return;
+      }
+
       if (e.target.closest('[data-lga-zoom]') && lastGeo?.kind === 'lga') {
         const l = nmap.layers.lgas?.getLayers().find((x) => x.feature.properties.name === lastGeo.data.name);
         if (l) nmap.map.flyToBounds(l.getBounds(), { padding: [60, 60], duration: .8 });
@@ -1230,27 +1265,84 @@ export function createExplore() {
    * here. Consume the request once so a later revisit does not re-trigger it.
    */
   function consumeFocus() {
-    const req = store.get('pendingFocus');
-    if (!req || !nmap) return;
-    store.set({ pendingFocus: null });
+    if (!nmap) return;
 
-    if (req.site) {
-      const d = nmap.deposits?.find((x) => x.id === req.site.id);
-      const ll = d ? [d.lat, d.lng] : [req.site.lat, req.site.lng];
-      nmap.map.flyTo(ll, 11, { duration: 1 });
-      lastGeo = { kind: 'deposit', data: d || req.site };
-      setInspectorTab('geo');
-      renderInspector();
+    // Legacy single-shot request (kept for any caller still using it).
+    const req = store.get('pendingFocus');
+    if (req) {
+      store.set({ pendingFocus: null });
+      if (req.site) return flyToSite(req.site);
+      if (req.state) return flyToState(req.state);
+    }
+
+    // Shared cross-module context.
+    const c = ctx.get();
+    if (c.stamp === lastCtxStamp) return;
+    lastCtxStamp = c.stamp;
+
+    if (c.layer) enableLayer(c.layer);
+    if (c.commodity) focusCommodity(c.commodity);
+
+    if (c.occurrence) {
+      const d = nmap.deposits?.find((x) => x.id === c.occurrence);
+      if (d) return flyToSite(d);
+    }
+    if (c.lga && c.state) return flyToLga(c.state, c.lga);
+    if (c.state) return flyToState(c.state);
+  }
+
+  function flyToSite(site) {
+    const d = nmap.deposits?.find((x) => x.id === site.id) || site;
+    nmap.map.flyTo([d.lat, d.lng], 11, { duration: 1 });
+    lastGeo = { kind: 'deposit', data: d };
+    setInspectorTab('geo');
+    renderInspector();
+  }
+
+  function flyToState(name) {
+    const layer = nmap.stateLayers.get(name);
+    if (!layer) return;
+    nmap.selectState(name);
+    nmap.map.flyToBounds(layer.getBounds(), { padding: [40, 40], duration: 1 });
+  }
+
+  /** Zoom to an LGA polygon, loading the state's ADM2 layer if needed. */
+  async function flyToLga(stateName, lgaName) {
+    const st = [...nmap.stateLayers.values()]
+      .map((l) => l.feature.properties).find((p) => p.name === stateName);
+    if (!st) return flyToState(stateName);
+
+    nmap.selectState(stateName);
+    await nmap.loadLgas?.(st.code);
+    nmap.showLgas?.(st.code, { explicit: true });
+
+    const target = nmap.layers.lgas?.getLayers()
+      .find((l) => l.feature.properties.name === lgaName);
+    if (target) {
+      nmap.map.flyToBounds(target.getBounds(), { padding: [50, 50], duration: 1 });
+      nmap.selectLga?.(target.feature.properties, target);
+    } else {
+      flyToState(stateName);
+    }
+  }
+
+  /** Show only the requested commodity so the handoff reads clearly. */
+  function focusCommodity(id) {
+    const chip = $(`#res-filter [data-res="${id}"]`, root);
+    if (!chip) return;
+    $$('#res-filter [data-res]', root).forEach((b) =>
+      b.classList.toggle('is-on', b.dataset.res === id));
+    nmap.filterResources([id]);
+  }
+
+  function enableLayer(id) {
+    const row = $(`#layer-tree [data-layer="${id}"]`, root);
+    if (!row) return;
+    if (row.classList.contains('is-soon')) {
+      toast(`${id === 'risk' ? 'Risk zones' : id} layer arrives with the data service — showing the location instead`);
       return;
     }
-
-    if (req.state) {
-      const layer = nmap.stateLayers.get(req.state);
-      if (layer) {
-        nmap.selectState(req.state);
-        nmap.map.flyToBounds(layer.getBounds(), { padding: [40, 40], duration: 1 });
-      }
-    }
+    if (!row.classList.contains('is-on')) row.click();
   }
 
   return {

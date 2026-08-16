@@ -10,8 +10,20 @@
  *   await api.getDashboardSummary();   ->  GET /api/v1/dashboard/summary
  */
 
-import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=a404c97';
-import { seeded } from '../core/utils.js?v=a404c97';
+import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=0521807';
+import { seeded } from '../core/utils.js?v=0521807';
+
+/* Operator names for the placeholder registry. Real holder records arrive with
+   the mining cadastre import. */
+const OPERATORS = [
+  'Segilola Resources Operating Ltd', 'Thor Explorations Nigeria',
+  'Kian Smith Trust & Co.', 'Comet Minerals Ltd', 'Ratel Mining Nigeria',
+  'Symbol Mining', 'Dangote Industries', 'BUA Mining & Cement',
+  'Multiverse Mining & Exploration', 'Rockshield Resources',
+  'Sahelian Mining Company', 'Zamfara Gold Consortium',
+  'Jos Tin Holdings', 'Benue Barite Partners', 'Kogi Iron Nigeria',
+];
+const OPERATOR_STATUS = ['Producing', 'Development', 'Exploration', 'Care & maintenance'];
 
 /* Descriptive reference copy for the commodity register. Replaced by the
    geological survey's own text once the minerals endpoint is live. */
@@ -258,6 +270,139 @@ export class Api {
   getProspectivityInputs() {
     return this._req('/prospectivity/inputs', () =>
       Object.entries(STATES).map(([name, s]) => ({ name, ...s })));
+  }
+
+  /** Occurrence -> LGA lookup, resolved offline by point-in-polygon. */
+  async getOccurrenceLgas() {
+    if (this._cache.has('occlga')) return this._cache.get('occlga');
+    const res = await fetch('data/occurrence-lga.json');
+    const json = res.ok ? await res.json() : {};
+    this._cache.set('occlga', json);
+    return json;
+  }
+
+  /** LGA list for a state, from the ADM2 boundary files. */
+  async getLgas(stateCode) {
+    const key = 'lga:' + stateCode;
+    if (this._cache.has(key)) return this._cache.get(key);
+    const res = await fetch(`data/lga/${stateCode}.geojson`);
+    if (!res.ok) return [];
+    const geo = await res.json();
+    const list = geo.features.map((f) => f.properties)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    this._cache.set(key, list);
+    return list;
+  }
+
+  /**
+   * GET /minerals/:id/states/:state — commodity presence within one state,
+   * broken down by LGA with operator records and geoscience evidence.
+   */
+  async getCommodityInState(commodityId, stateName) {
+    const [all, occLga, meta] = await Promise.all([
+      this.getCommodities(),
+      this.getOccurrenceLgas(),
+      Promise.resolve(STATES[stateName]),
+    ]);
+    const c = all.find((x) => x.id === commodityId);
+    if (!c || !meta) return null;
+
+    const lgas = await this.getLgas(meta.code);
+    const sites = c.sites.filter((s) => s.state === stateName)
+      .map((s) => ({ ...s, lga: occLga[s.id]?.lga || null, lgaExact: !!occLga[s.id]?.exact }));
+
+    const withSites = new Map();
+    sites.forEach((s) => {
+      if (!s.lga) return;
+      if (!withSites.has(s.lga)) withSites.set(s.lga, []);
+      withSites.get(s.lga).push(s);
+    });
+
+    const rnd = seeded(commodityId + stateName);
+    const operators = sites.filter((s) => s.tier === 'major' || rnd() > 0.45).map((s) => {
+      const r = seeded(s.id + 'op');
+      return {
+        site: s.name,
+        lga: s.lga,
+        name: OPERATORS[Math.floor(r() * OPERATORS.length)],
+        status: s.status === 'Producing' ? 'Producing'
+          : OPERATOR_STATUS[Math.floor(r() * OPERATOR_STATUS.length)],
+        since: 2009 + Math.floor(r() * 15),
+        licence: `${meta.code}/${commodityId.slice(0, 2).toUpperCase()}/${1000 + Math.floor(r() * 8999)}`,
+      };
+    });
+
+    // LGAs recording the commodity but with no operator on file — the open ground.
+    const operatedLgas = new Set(operators.map((o) => o.lga));
+    const unoperated = lgas
+      .filter((l) => !operatedLgas.has(l.name))
+      .map((l) => ({
+        ...l,
+        hasOccurrence: withSites.has(l.name),
+        note: withSites.has(l.name)
+          ? 'Occurrence recorded, no titled operator'
+          : 'No catalogued occurrence',
+      }));
+
+    return {
+      commodity: c,
+      state: { name: stateName, ...meta },
+      lgas,
+      sites,
+      byLga: [...withSites.entries()]
+        .map(([name, list]) => ({
+          name,
+          sites: list,
+          centroid: lgas.find((l) => l.name === name)?.centroid || null,
+        }))
+        .sort((a, b) => b.sites.length - a.sites.length),
+      operators,
+      unoperated,
+      evidence: this._evidence(commodityId, stateName, meta),
+    };
+  }
+
+  /**
+   * Geochemical and geophysical evidence for a commodity in a state.
+   * Deterministic placeholders shaped like the survey payloads that replace
+   * them, so the UI does not change when real data lands.
+   */
+  _evidence(commodityId, stateName, meta) {
+    const r = seeded(commodityId + stateName + 'ev');
+    const pick = (arr) => arr[Math.floor(r() * arr.length)];
+    const pct = (lo, hi) => Math.round(lo + r() * (hi - lo));
+
+    const GEOCHEM = {
+      gold: ['Au in stream sediment', 'As pathfinder halo', 'Sb–Ag association'],
+      lithium: ['Li in stream sediment', 'Cs–Rb–Ta indices', 'Be anomaly'],
+      tin: ['Sn–Nb–Ta heavy mineral', 'Cassiterite panning counts', 'W association'],
+      iron: ['Fe₂O₃ whole-rock', 'Magnetic susceptibility', 'Mn co-enrichment'],
+      lead: ['Pb–Zn soil grid', 'Ag pathfinder', 'Ba halo'],
+    };
+    const GEOPHYS = ['Aeromagnetic residual', 'Radiometric K/Th ratio', 'Gravity Bouguer',
+      'Induced polarisation', 'Airborne EM conductor'];
+
+    return {
+      geochemical: [
+        { label: pick(GEOCHEM[commodityId] || ['Multi-element soil survey']),
+          coverage: pct(38, 92), anomalies: pct(3, 34), strength: pct(45, 95) },
+        { label: 'Regional stream sediment', coverage: pct(55, 96),
+          anomalies: pct(6, 48), strength: pct(35, 88) },
+      ].filter((v, i, a) => a.findIndex((x) => x.label === v.label) === i),
+      geophysical: (() => {
+        const pool = [...GEOPHYS];
+        const take = () => pool.splice(Math.floor(r() * pool.length), 1)[0];
+        return [
+          { label: take(), coverage: pct(40, 95), anomalies: pct(2, 22), strength: pct(40, 92) },
+          { label: take(), coverage: pct(25, 80), anomalies: pct(1, 18), strength: pct(30, 84) },
+        ];
+      })(),
+      geological: {
+        mapped: meta.coverage,
+        summary: `${meta.coverage}% of ${stateName} is mapped at 1:100,000 or better. `
+          + `${pct(2, 14)} structural corridors intersect the prospective horizon.`,
+      },
+    };
   }
 
   /** GET /system/health */

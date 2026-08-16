@@ -435,3 +435,95 @@
 [data-theme="light"] .pr-range { background: rgba(14, 42, 48, .1); }
 [data-theme="light"] .pr-range::-webkit-slider-thumb,
 [data-theme="light"] .pr-range::-moz-range-thumb { border-color: #fff; }
+
+/* ============================================================
+   Layout balance
+   The dock was too narrow for a label, hint and weight on one
+   line, so criteria wrapped and read cramped. Widen the dock,
+   give the ranked list room, and let the dossier breathe.
+   ============================================================ */
+.pr-body { grid-template-columns: 392px minmax(0, 1fr); gap: 16px; }
+@media (max-width: 1600px) { .pr-body { grid-template-columns: 368px minmax(0, 1fr); } }
+@media (max-width: 1400px) { .pr-body { grid-template-columns: 344px minmax(0, 1fr); } }
+
+.pr-crits { padding: 10px; gap: 8px; }
+.pr-crit { padding: 11px 12px 13px; }
+.pr-crit-hd { gap: 11px; }
+.pr-crit-n { font-size: var(--fs-md); }
+.pr-crit-h { line-height: 1.5; margin-top: 3px; }
+.pr-crit-w { min-width: 46px; }
+.pr-crit-w span { font-size: 17px; }
+.pr-range { margin-top: 11px; }
+
+/* the ranked list was cut off mid-row at common heights */
+.pr-tlist { max-height: 340px; padding: 9px 11px 11px; gap: 2px; }
+.pr-t { padding: 8px; gap: 12px; grid-template-columns: 26px minmax(0, 1fr) 110px 48px 54px; }
+.pr-t-nm { font-size: var(--fs-md); }
+
+.pr-dh { padding: 15px 17px; }
+.pr-dgrid { gap: 16px; }
+.pr-p .panel-bd { padding: 14px 16px 16px; }
+.pr-evs { gap: 14px; grid-template-columns: repeat(auto-fit, minmax(238px, 1fr)); }
+.pr-why { margin-bottom: 14px; padding-left: 12px; }
+.pr-facts .pr-fact { padding: 7px 0; }
+
+/* LGA picker inside the dossier */
+.pr-lga, .rk-lga {
+  display: flex; align-items: center; gap: 9px; margin-bottom: 12px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--line-faint);
+}
+.pr-lga select, .rk-lga select { flex: 1; }
+
+/* ============================================================
+   Cross-module context bar + action buttons
+   ============================================================ */
+.ctx-bar[hidden] { display: none !important; }
+.ctx-bar {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; background: var(--surface-1);
+  border: 1px solid var(--line-soft); border-left: 2px solid var(--cyan);
+  border-radius: var(--r-md);
+}
+.ctx-l {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: var(--fs-micro); letter-spacing: .09em; text-transform: uppercase;
+  color: var(--cyan); font-weight: 600;
+}
+.ctx-trail {
+  flex: 1; min-width: 0; font-size: var(--fs-sm); color: var(--text-hi);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ctx-clear {
+  width: 22px; height: 22px; flex: none; display: grid; place-items: center;
+  background: none; border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+  color: var(--text-faint); cursor: pointer; transform: rotate(45deg);
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.ctx-clear:hover { color: var(--red); border-color: rgba(255, 77, 94, .4); }
+
+.ctx-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+.ctx-acts .btn-ghost {
+  flex: 0 1 auto; min-width: 132px; max-width: 210px; padding: 0 16px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.ctx-acts-insp { margin-top: 8px; }
+.ctx-acts-insp .btn-ghost { min-width: 0; flex: 1 1 30%; padding: 0 8px; font-size: var(--fs-micro); }
+
+/* mitigation list */
+.rk-mit { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rk-mit li { padding-left: 11px; border-left: 2px solid var(--ac); }
+.rk-mit-h {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  font-size: var(--fs-sm); color: var(--text-hi); font-weight: 600;
+}
+.rk-mit-h b { color: var(--ac); font-weight: 500; font-size: var(--fs-sm); }
+.rk-mit-b {
+  display: block; font-size: var(--fs-sm); color: var(--text-mid);
+  line-height: 1.55; margin-top: 3px;
+}
+.rk-lga-tag {
+  font-style: normal; font-size: var(--fs-sm); color: var(--cyan);
+  padding: 2px 8px; border-radius: 3px; margin-left: 6px;
+  background: rgba(45, 216, 195, .12); border: 1px solid rgba(45, 216, 195, .3);
+  vertical-align: middle;
+}

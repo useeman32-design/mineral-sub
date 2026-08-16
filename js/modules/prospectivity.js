@@ -9,13 +9,14 @@
  * file is presentation and interaction only.
  */
 
-import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=a404c97';
-import { icon } from '../core/icons.js?v=a404c97';
-import { api } from '../data/api.js?v=a404c97';
-import { store } from '../core/store.js?v=a404c97';
+import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=0521807';
+import { icon } from '../core/icons.js?v=0521807';
+import { api } from '../data/api.js?v=0521807';
+import { ctx } from '../core/context.js?v=0521807';
+import { RESOURCE_META } from '../data/fixtures.js?v=0521807';
 import {
   CRITERIA, TIERS, runModel, defaultWeights, explain,
-} from '../core/scoring.js?v=a404c97';
+} from '../core/scoring.js?v=0521807';
 
 const WEIGHTS_KEY = 'nmi.prosWeights';
 const COMMODITY_OPTS = [
@@ -37,6 +38,7 @@ export function createProspectivity() {
   let commodity = '';
   let selectedName = null;
   let result = { targets: [], activeWeight: 0 };
+  let lgas = [];
 
   function loadWeights() {
     try {
@@ -175,8 +177,18 @@ export function createProspectivity() {
               ${fact('Petroleum acreage', t.petroleum ? 'Yes' : 'No')}
               ${fact('Centroid', `<span class="t-mono">${fmt.coord(t.centroid[0], t.centroid[1])}</span>`)}
             </div>
-            <div class="pr-acts">
-              <button class="btn-ghost btn-primary" data-open-map="${t.name}">Open on map</button>
+            ${lgas.length ? `
+              <label class="pr-sel pr-lga">
+                <span>LGA</span>
+                <select id="pr-lga">
+                  <option value="">All LGAs in ${t.name}</option>
+                  ${lgas.map((l) => `<option value="${l.name}"${l.name === ctx.get().lga ? ' selected' : ''}>${l.name}</option>`).join('')}
+                </select>
+              </label>` : ''}
+            <div class="ctx-acts">
+              <button class="btn-ghost btn-primary" data-go="explore">${icon('map', { size: 13 })} View on map</button>
+              <button class="btn-ghost" data-go="risk">${icon('risk', { size: 13 })} Risk</button>
+              ${commodity ? `<button class="btn-ghost" data-go="minerals">${icon('minerals', { size: 13 })} Mineral</button>` : ''}
             </div>
           </div>
         </section>
@@ -242,6 +254,8 @@ export function createProspectivity() {
           </div>
           <div class="pr-head-k" id="pr-head-k"></div>
         </header>
+
+        <div class="ctx-bar" id="pr-ctx" hidden></div>
 
         <div class="pr-body">
           <aside class="pr-dock">
@@ -350,6 +364,43 @@ export function createProspectivity() {
       ${kpi('High confidence', hiConf, `of ${result.targets.length} scored`, 'var(--cyan)')}`;
   }
 
+  async function pickTarget(name, { keepLga = false } = {}) {
+    selectedName = name;
+    const rec = states.find((x) => x.name === name);
+    if (!keepLga) ctx.set({ state: name, lga: null });
+    lgas = rec ? await api.getLgas(rec.code) : [];
+    renderTargets();
+    renderDetail();
+    renderCtxBar();
+    $('#pr-detail', root)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function renderCtxBar() {
+    const bar = $('#pr-ctx', root);
+    if (!bar) return;
+    const c = ctx.get();
+    if (!c.commodity && !c.state) { bar.hidden = true; return; }
+    bar.hidden = false;
+    bar.innerHTML = `
+      <span class="ctx-l">${icon('target', { size: 12 })} Context</span>
+      <span class="ctx-trail">${ctx.label(RESOURCE_META) || 'National'}</span>
+      <button class="ctx-clear" data-ctx-clear title="Clear context">${icon('plus', { size: 12 })}</button>`;
+  }
+
+  /** Adopt context handed over by another module. */
+  async function adopt() {
+    const c = ctx.get();
+    if (c.commodity && c.commodity !== commodity) {
+      commodity = c.commodity;
+      const sel = $('#pr-commodity', root);
+      if (sel) sel.value = commodity;
+      refresh({ criteria: true });
+    }
+    if (c.state && c.state !== selectedName) await pickTarget(c.state, { keepLga: !!c.lga });
+    if (c.lga) { const l = $('#pr-lga', root); if (l) l.value = c.lga; }
+    renderCtxBar();
+  }
+
   function renderDetail() {
     const host = $('#pr-detail', root);
     if (!host) return;
@@ -394,13 +445,7 @@ export function createProspectivity() {
       }
 
       const pick = e.target.closest('[data-target]');
-      if (pick) {
-        selectedName = pick.dataset.target;
-        renderTargets();
-        renderDetail();
-        $('#pr-detail', root)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        return;
-      }
+      if (pick) { pickTarget(pick.dataset.target); return; }
 
       if (e.target.closest('#pr-reset')) {
         weights = defaultWeights();
@@ -409,10 +454,16 @@ export function createProspectivity() {
         return;
       }
 
-      const openMap = e.target.closest('[data-open-map]');
-      if (openMap) {
-        store.set({ pendingFocus: { state: openMap.dataset.openMap, site: null, from: 'prospectivity' } });
-        location.hash = '#/explore';
+      if (e.target.closest('[data-ctx-clear]')) { ctx.clear(); commodity = ''; renderCtxBar(); refresh({ criteria: true }); return; }
+
+      const go = e.target.closest('[data-go]')?.dataset.go;
+      if (go) {
+        ctx.set({
+          commodity: commodity || ctx.get().commodity,
+          state: selectedName,
+          layer: go === 'explore' ? 'prospectivity' : null,
+        });
+        ctx.go(go);
       }
     });
 
@@ -429,7 +480,13 @@ export function createProspectivity() {
     root.addEventListener('change', (e) => {
       if (e.target.id === 'pr-commodity') {
         commodity = e.target.value;
+        ctx.set({ commodity: commodity || null });
+        renderCtxBar();
         refresh({ criteria: true });
+      }
+      if (e.target.id === 'pr-lga') {
+        ctx.set({ lga: e.target.value || null });
+        renderCtxBar();
       }
     });
   }
@@ -451,7 +508,10 @@ export function createProspectivity() {
       renderCriteria();
       renderTargets();
       renderHead();
+      renderCtxBar();
       renderDetail();
+      await adopt();
     },
+    onShow() { adopt(); },
   };
 }

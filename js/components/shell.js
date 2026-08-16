@@ -4,9 +4,9 @@
  * touch them.
  */
 
-import { icon, brandMark } from '../core/icons.js?v=a404c97';
-import { store } from '../core/store.js?v=a404c97';
-import { $, $$ } from '../core/utils.js?v=a404c97';
+import { icon, brandMark } from '../core/icons.js?v=0521807';
+import { store } from '../core/store.js?v=0521807';
+import { $, $$ } from '../core/utils.js?v=0521807';
 
 export const NAV = [
   { group: 'Intelligence', items: [
@@ -14,7 +14,7 @@ export const NAV = [
     { id: 'explore',       label: 'Explore Map',       ico: 'map',           badge: 'live' },
     { id: 'minerals',      label: 'Minerals',          ico: 'minerals',      badge: 'live' },
     { id: 'prospectivity', label: 'Prospectivity',     ico: 'prospectivity', badge: 'live' },
-    { id: 'risk',          label: 'Risk Intelligence', ico: 'risk',          badge: 'soon' },
+    { id: 'risk',          label: 'Risk Intelligence', ico: 'risk',          badge: 'live' },
   ]},
   { group: 'Assets', items: [
     { id: 'oilgas', label: 'Oil & Gas',    ico: 'oil',     badge: 'soon' },
