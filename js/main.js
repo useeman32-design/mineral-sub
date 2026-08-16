@@ -6,20 +6,21 @@
  * shell, design system and navigation need no changes.
  */
 
-import { buildShell } from './components/shell.js?v=0939875';
-import { Router } from './core/router.js?v=0939875';
-import { store } from './core/store.js?v=0939875';
-import { api } from './data/api.js?v=0939875';
-import { $ } from './core/utils.js?v=0939875';
-import { createDashboard, toast } from './modules/dashboard.js?v=0939875';
-import { createStub } from './modules/stub.js?v=0939875';
-import { createSettings } from './modules/settings.js?v=0939875';
-import { createMinerals } from './modules/minerals.js?v=0939875';
-import { createProspectivity } from './modules/prospectivity.js?v=0939875';
-import { createRisk } from './modules/risk.js?v=0939875';
-import { createExplore } from './modules/explore.js?v=0939875';
-import { theme } from './core/theme.js?v=0939875';
-import { applyPrefs } from './modules/settings.js?v=0939875';
+import { buildShell } from './components/shell.js?v=7552589';
+import { createGlobalSearch } from './components/search.js?v=7552589';
+import { Router } from './core/router.js?v=7552589';
+import { store } from './core/store.js?v=7552589';
+import { api } from './data/api.js?v=7552589';
+import { $ } from './core/utils.js?v=7552589';
+import { createDashboard, toast } from './modules/dashboard.js?v=7552589';
+import { createStub } from './modules/stub.js?v=7552589';
+import { createSettings } from './modules/settings.js?v=7552589';
+import { createMinerals } from './modules/minerals.js?v=7552589';
+import { createProspectivity } from './modules/prospectivity.js?v=7552589';
+import { createRisk } from './modules/risk.js?v=7552589';
+import { createExplore } from './modules/explore.js?v=7552589';
+import { theme } from './core/theme.js?v=7552589';
+import { applyPrefs } from './modules/settings.js?v=7552589';
 
 const MODULES = [
   {
@@ -86,6 +87,10 @@ function boot() {
   applyPrefs();
 
   const shell = buildShell(document.getElementById('root'));
+
+  // Global search reaches every module and hands off through core/context.
+  createGlobalSearch(document.getElementById('global-search'), { api });
+
   const router = new Router(shell.stage, shell.routeBar);
 
   MODULES.forEach((m) => router.register(m.id, {

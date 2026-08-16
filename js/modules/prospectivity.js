@@ -9,14 +9,14 @@
  * file is presentation and interaction only.
  */
 
-import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=0939875';
-import { icon } from '../core/icons.js?v=0939875';
-import { api } from '../data/api.js?v=0939875';
-import { ctx } from '../core/context.js?v=0939875';
-import { RESOURCE_META } from '../data/fixtures.js?v=0939875';
+import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=7552589';
+import { icon } from '../core/icons.js?v=7552589';
+import { api } from '../data/api.js?v=7552589';
+import { ctx } from '../core/context.js?v=7552589';
+import { RESOURCE_META } from '../data/fixtures.js?v=7552589';
 import {
   CRITERIA, TIERS, runModel, defaultWeights, explain,
-} from '../core/scoring.js?v=0939875';
+} from '../core/scoring.js?v=7552589';
 
 const WEIGHTS_KEY = 'nmi.prosWeights';
 const COMMODITY_OPTS = [

@@ -13,23 +13,23 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js?v=0939875';
-import { store } from '../core/store.js?v=0939875';
-import { ctx } from '../core/context.js?v=0939875';
-import { icon } from '../core/icons.js?v=0939875';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=0939875';
-import { NigeriaMap, zoomBand } from '../components/map.js?v=0939875';
-import { RESOURCE_META } from '../data/fixtures.js?v=0939875';
-import { toast } from './dashboard.js?v=0939875';
-import { DrawEngine, TOOL_META } from '../components/draw.js?v=0939875';
-import { History } from '../core/history.js?v=0939875';
-import { projects } from '../data/projects.js?v=0939875';
-import { measureShape } from '../core/geo.js?v=0939875';
-import { loadPrefs } from './settings.js?v=0939875';
-import { LAYER_GROUPS } from '../data/layers.js?v=0939875';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=0939875';
-import { createStatusBar } from '../components/statusbar.js?v=0939875';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=0939875';
+import { api } from '../data/api.js?v=7552589';
+import { store } from '../core/store.js?v=7552589';
+import { ctx } from '../core/context.js?v=7552589';
+import { icon } from '../core/icons.js?v=7552589';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=7552589';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=7552589';
+import { RESOURCE_META } from '../data/fixtures.js?v=7552589';
+import { toast } from './dashboard.js?v=7552589';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=7552589';
+import { History } from '../core/history.js?v=7552589';
+import { projects } from '../data/projects.js?v=7552589';
+import { measureShape } from '../core/geo.js?v=7552589';
+import { loadPrefs } from './settings.js?v=7552589';
+import { LAYER_GROUPS } from '../data/layers.js?v=7552589';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=7552589';
+import { createStatusBar } from '../components/statusbar.js?v=7552589';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=7552589';
 
 const RESOURCES = LEGEND_RESOURCES;
 
@@ -426,6 +426,9 @@ export function createExplore() {
                 <span class="rk-k"><i style="background:#ff4d5e"></i>High</span>
                 <span class="rk-k"><i style="background:#ff8a3d"></i>Medium</span>
                 <span class="rk-k"><i style="background:#00e676"></i>Low</span>
+                <button class="rk-close" data-risk-off title="Turn off risk zones">
+                  ${icon('plus', { size: 12 })}
+                </button>
               </div>
               <div class="glass-bar" id="ex-quick">
               <button class="tool-btn" data-tool="reset" title="National extent">${icon('crosshair', { size: 15 })}</button>
@@ -605,6 +608,15 @@ export function createExplore() {
         if (!document.fullscreenElement) $('#ex-map', root).requestFullscreen?.();
         else document.exitFullscreen?.();
       }
+    });
+
+    // Risk legend dismiss — turns the layer off through the layer-tree row so
+    // the row, the overlay and the legend can never disagree.
+    $('#ex-risk-key', root)?.addEventListener('click', (ev) => {
+      if (!ev.target.closest('[data-risk-off]')) return;
+      const row = $('#layer-tree [data-layer="risk"]', root);
+      if (row?.classList.contains('is-on')) row.click();
+      nmap.emphasiseLga?.(null);
     });
 
     const fullBtn = $('[data-tool="full"]', root);
@@ -1286,7 +1298,7 @@ export function createExplore() {
     if (c.stamp === lastCtxStamp) return;
     lastCtxStamp = c.stamp;
 
-    if (c.layer) enableLayer(c.layer);
+    if (c.layer) enableLayer(c.layer, { silent: c.layer === 'lgas' && !!c.lga });
     if (c.commodity) focusCommodity(c.commodity);
 
     if (c.occurrence) {
@@ -1323,13 +1335,20 @@ export function createExplore() {
     nmap.lockView(true);
     nmap.selectState(stateName);
     await nmap.loadLgas?.(st.code);
-    nmap.showLgas?.(st.code, { explicit: true });
+    await nmap.showLgas?.(st.code, { explicit: true });
 
-    const target = nmap.layers.lgas?.getLayers()
-      .find((l) => l.feature.properties.name === lgaName);
+    // The layer may already have been built by the zoom-8.5 auto-load, or a
+    // load may still be settling — poll briefly rather than assume.
+    let target = null;
+    for (let i = 0; i < 12 && !target; i += 1) {
+      target = nmap.layers.lgas?.getLayers()
+        .find((l) => l.feature.properties.name === lgaName) || null;
+      if (!target) await new Promise((r) => setTimeout(r, 60));
+    }
     if (target) {
       nmap.map.flyToBounds(target.getBounds(), { padding: [50, 50], duration: 1 });
       nmap.selectLga?.(target.feature.properties, target);
+      nmap.emphasiseLga?.(lgaName);
     } else {
       flyToState(stateName);
     }
@@ -1344,9 +1363,16 @@ export function createExplore() {
     nmap.filterResources([id]);
   }
 
-  function enableLayer(id) {
+  function enableLayer(id, { silent = false } = {}) {
     const row = $(`#layer-tree [data-layer="${id}"]`, root);
     if (!row) return;
+    // flyToLga owns the LGA layer; clicking the row here would re-fit the
+    // state and cancel the pending zoom.
+    if (silent) {
+      row.classList.add('is-on');
+      row.setAttribute('aria-checked', 'true');
+      return;
+    }
     if (row.classList.contains('is-soon')) {
       toast(`${id === 'risk' ? 'Risk zones' : id} layer arrives with the data service — showing the location instead`);
       return;

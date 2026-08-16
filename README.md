@@ -99,7 +99,7 @@ evidence breakdown and the weight maths all pick it up automatically.
 (17 PNGs), referenced through `api.getCommodities()` so no component hardcodes
 an asset path.
 
-`tools/optimise-minerals.py` centre-crops each generated image to square,
+`tools/optimise-minerals.js (retired — images already optimised)` centre-crops each generated image to square,
 resizes to 480px and palette-quantises it — 12 MB down to 2.6 MB with no
 visible loss at card size. Re-run it after adding any new photograph.
 
@@ -135,7 +135,7 @@ them against the API itself, so a context could be restored from a URL later
 without changing any module.
 
 Occurrence → LGA assignment is precomputed offline by
-`tools/build-occurrence-lga.py` using point-in-polygon (nearest-centroid gets
+`tools/build-occurrence-lga.js` using point-in-polygon (nearest-centroid gets
 it wrong often enough to matter: Maru Gold Belt resolves to Kaura Namoda).
 
 ### Cache busting
@@ -147,7 +147,7 @@ inside `js/**.js` — ES modules are fetched by their own URL, so stamping
 `main.js` alone would leave submodules cached. Run before committing a deploy:
 
 ```bash
-python3 tools/stamp-version.py
+node tools/stamp-version.js
 ```
 
 ### The SPA guarantee

@@ -527,3 +527,81 @@
   background: rgba(45, 216, 195, .12); border: 1px solid rgba(45, 216, 195, .3);
   vertical-align: middle;
 }
+
+
+/* ============================================================
+   Scroll model
+   The dock, the ranked list and the main column each had their own
+   overflow, so Chrome rendered three competing scrollbars and every
+   panel got a sliver of height. The page now scrolls as one column;
+   only the ranked list keeps a bounded scroll because it is a long
+   uniform list, and the dock sticks alongside it.
+   ============================================================ */
+.pr-wrap {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.pr-body {
+  min-height: 0;
+  align-items: start;
+}
+
+/* Dock: no inner scroll, sticks while the page scrolls past it. */
+.pr-dock {
+  position: sticky;
+  top: 0;
+  height: auto;
+  max-height: calc(100vh - var(--topbar-h, 58px) - 40px);
+}
+.pr-crits {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Main column scrolls with the page, not against it. */
+.pr-main {
+  overflow: visible;
+  min-height: 0;
+}
+
+/* Ranked list keeps its own bounded scroll — it is 37 uniform rows. */
+.pr-tlist {
+  max-height: min(46vh, 420px);
+  overscroll-behavior: contain;
+}
+
+/* Give the dossier real room now that it is not fighting for height. */
+.pr-detail { min-height: 0; }
+.pr-dgrid { align-items: start; }
+
+@media (max-width: 1080px) {
+  .pr-dock { position: static; max-height: none; }
+  .pr-crits { max-height: 300px; }
+}
+
+/* The sticky dock only sticks against its own scroll container; the page
+   scrolls .pr-wrap, so the dock must stick to that. Anchoring it at the top of
+   the scrollport keeps the criteria visible while the dossier scrolls past,
+   instead of leaving a tall empty column behind. */
+.pr-wrap { position: relative; }
+.pr-dock { top: 4px; align-self: start; }
+
+/* Keep the criteria list from outgrowing the viewport when it sticks. */
+.pr-crits { max-height: calc(100vh - var(--topbar-h, 58px) - 190px); }
+
+@media (max-width: 1080px) {
+  .pr-crits { max-height: 300px; }
+}
+
+/* `.view` is the page's scroll container. Making .pr-wrap scroll as well
+   created a nested scrollport, which is why the sticky dock never stuck and
+   why Chrome showed two competing scrollbars. Let the view own the scroll. */
+.pr-wrap {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+/* Sticky now resolves against .view, offset by its padding. */
+.pr-dock { top: calc(var(--gutter) * -1 + 4px); }

@@ -10,9 +10,9 @@
  * register another layer in LAYER_SPECS and give it a zoom band.
  */
 
-import { store } from '../core/store.js?v=0939875';
-import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=0939875';
-import { fmt } from '../core/utils.js?v=0939875';
+import { store } from '../core/store.js?v=7552589';
+import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=7552589';
+import { fmt } from '../core/utils.js?v=7552589';
 
 const NG_CENTER = [9.06, 8.68];
 const NG_BOUNDS = L.latLngBounds([3.6, 2.4], [14.3, 15.2]);
@@ -574,6 +574,7 @@ export class NigeriaMap {
 
   resetView() {
     this._viewLocked = false;
+    this.emphasiseLga(null);
     this.clearSelection();
     this.map.flyToBounds(NG_BOUNDS, { padding: [26, 26], duration: 0.8 });
   }
@@ -619,6 +620,24 @@ export class NigeriaMap {
     }
     if (id === 'graticule') this._setLayerVisible(this.layers.graticule, on);
     if (id === 'risk') this.setRiskZones(on);
+  }
+
+  /**
+   * Dim every LGA except one, so a handoff that names a single LGA reads as
+   * "this one" rather than "all of them". Passing null clears the emphasis.
+   */
+  emphasiseLga(name) {
+    this._emphasisedLga = name || null;
+    if (!this.layers.lgas) return;
+    this.layers.lgas.eachLayer((l) => {
+      const isTarget = !name || l.feature.properties.name === name;
+      const el = l.getElement?.();
+      if (el) el.classList.toggle('lga-dim', !isTarget);
+      if (isTarget && name) {
+        l.setStyle({ weight: 2.2, opacity: 1, fillOpacity: 0.4 });
+        l.bringToFront();
+      }
+    });
   }
 
   /**

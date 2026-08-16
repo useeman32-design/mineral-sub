@@ -1885,3 +1885,18 @@ body.is-panel-dragging .leaflet-container { pointer-events: none; }
 .rk-k { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-micro); color: var(--text-mid); }
 .rk-k i { width: 9px; height: 9px; border-radius: 2px; }
 [data-theme="light"] .risk-key { background: rgba(255, 255, 255, .9); }
+
+
+/* Risk legend dismiss */
+.rk-close {
+  width: 18px; height: 18px; flex: none; margin-left: 2px;
+  display: grid; place-items: center; cursor: pointer;
+  background: none; border: 1px solid var(--line-soft);
+  border-radius: 3px; color: var(--text-faint);
+  transform: rotate(45deg);
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.rk-close:hover { color: var(--red); border-color: rgba(255, 77, 94, .45); }
+
+/* A single emphasised LGA: everything else recedes */
+.ng-lga.lga-dim { opacity: .22; }

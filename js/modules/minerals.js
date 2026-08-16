@@ -10,11 +10,11 @@
  * so the two data modules feel like the same product.
  */
 
-import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=0939875';
-import { icon } from '../core/icons.js?v=0939875';
-import { api } from '../data/api.js?v=0939875';
-import { ctx } from '../core/context.js?v=0939875';
-import { RESOURCE_META as RMETA } from '../data/fixtures.js?v=0939875';
+import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=7552589';
+import { icon } from '../core/icons.js?v=7552589';
+import { api } from '../data/api.js?v=7552589';
+import { ctx } from '../core/context.js?v=7552589';
+import { RESOURCE_META as RMETA } from '../data/fixtures.js?v=7552589';
 
 const CATEGORIES = ['All', 'Metallic', 'Industrial', 'Energy'];
 
@@ -505,8 +505,18 @@ export function createMinerals() {
       // An LGA row focuses that LGA in the shared context.
       const lga = e.target.closest('[data-lga]');
       if (lga) {
-        ctx.set({ lga: lga.dataset.lga, occurrence: null });
+        const name = lga.dataset.lga;
+        const already = lga.classList.contains('is-on');
+        ctx.set({
+          commodity: selectedId,
+          state: stateDetail?.state?.name || ctx.get().state,
+          lga: name,
+          occurrence: null,
+          layer: 'lgas',
+        });
         $$('[data-lga]', root).forEach((n) => n.classList.toggle('is-on', n === lga));
+        // Second click on an already-selected LGA opens it on the map.
+        if (already) ctx.go('explore');
         return;
       }
 

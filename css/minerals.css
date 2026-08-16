@@ -559,3 +559,18 @@
   line-height: 1.65; max-width: 96ch;
   padding-left: 11px; border-left: 2px solid color-mix(in srgb, var(--cm) 55%, transparent);
 }
+
+/* Selected open-ground row — matches the distribution rows, and signals that
+   a second click opens it on the map. */
+.mn-open-r.is-on {
+  background: color-mix(in srgb, var(--cm) 12%, var(--surface-2));
+  border-color: color-mix(in srgb, var(--cm) 48%, transparent);
+}
+.mn-open-r.is-on .mn-open-n { color: var(--text-hi); font-weight: 600; }
+.mn-open-r.is-on .mn-open-s::after,
+.mn-lga.is-on .mn-lga-c::after {
+  content: ' · click again for map';
+  color: var(--cm);
+  font-size: var(--fs-micro);
+}
+.mn-lga.is-on .mn-lga-c::after { content: ''; }
