@@ -10,9 +10,9 @@
  * register another layer in LAYER_SPECS and give it a zoom band.
  */
 
-import { store } from '../core/store.js?v=0521807';
-import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=0521807';
-import { fmt } from '../core/utils.js?v=0521807';
+import { store } from '../core/store.js?v=cba4c5d';
+import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=cba4c5d';
+import { fmt } from '../core/utils.js?v=cba4c5d';
 
 const NG_CENTER = [9.06, 8.68];
 const NG_BOUNDS = L.latLngBounds([3.6, 2.4], [14.3, 15.2]);
@@ -137,7 +137,11 @@ export class NigeriaMap {
       clearTimeout(this._rt);
       this._rt = setTimeout(() => {
         this.map.invalidateSize({ animate: false });
-        if (!this.selected) this.map.fitBounds(NG_BOUNDS, { padding: [26, 26], animate: false });
+        // Only reclaim the national extent when nothing else owns the view:
+        // no selected state and no deliberate focus from another module.
+        if (!this.selected && !this._viewLocked) {
+          this.map.fitBounds(NG_BOUNDS, { padding: [26, 26], animate: false });
+        }
         this._declutterLabels();
       }, 140);
     });
@@ -567,6 +571,7 @@ export class NigeriaMap {
   }
 
   resetView() {
+    this._viewLocked = false;
     this.clearSelection();
     this.map.flyToBounds(NG_BOUNDS, { padding: [26, 26], duration: 0.8 });
   }
@@ -684,6 +689,12 @@ export class NigeriaMap {
     this.map.setView([v.lat, v.lng], v.zoom, { animate: false });
   }
   invalidate() { this.map?.invalidateSize({ animate: false }); }
+
+  /**
+   * Pin the current view so the responsive re-fit cannot reclaim it.
+   * Cross-module handoffs use this; resetView() and clearSelection() release it.
+   */
+  lockView(on = true) { this._viewLocked = on; }
 
 
   /* ------------------------------------------------------------------

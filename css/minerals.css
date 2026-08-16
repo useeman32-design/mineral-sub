@@ -552,3 +552,10 @@
 }
 
 [data-theme="light"] .mn-ev-t { background: rgba(14, 42, 48, .1); }
+
+/* State drill summary — sets the scene before the data blocks */
+.mn-desc {
+  margin: 0 0 13px; font-size: var(--fs-sm); color: var(--text-mid);
+  line-height: 1.65; max-width: 96ch;
+  padding-left: 11px; border-left: 2px solid color-mix(in srgb, var(--cm) 55%, transparent);
+}

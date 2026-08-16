@@ -10,11 +10,11 @@
  * so the two data modules feel like the same product.
  */
 
-import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=0521807';
-import { icon } from '../core/icons.js?v=0521807';
-import { api } from '../data/api.js?v=0521807';
-import { ctx } from '../core/context.js?v=0521807';
-import { RESOURCE_META as RMETA } from '../data/fixtures.js?v=0521807';
+import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=cba4c5d';
+import { icon } from '../core/icons.js?v=cba4c5d';
+import { api } from '../data/api.js?v=cba4c5d';
+import { ctx } from '../core/context.js?v=cba4c5d';
+import { RESOURCE_META as RMETA } from '../data/fixtures.js?v=cba4c5d';
 
 const CATEGORIES = ['All', 'Metallic', 'Industrial', 'Energy'];
 
@@ -109,6 +109,44 @@ export function createMinerals() {
       </button>`;
   }
 
+  /**
+   * Plain-language summary of how this commodity presents in this state.
+   * Assembled from the same records the panels below show, so it can never
+   * contradict them.
+   */
+  function stateSummary(d) {
+    const c = d.commodity;
+    const n = d.sites.length;
+    const producing = d.sites.filter((s) => s.status === 'Producing').length;
+    const lgaNames = d.byLga.map((l) => l.name);
+    const rank = c.states.findIndex((s) => s.name === d.state.name) + 1;
+
+    const where = lgaNames.length === 0
+      ? `No occurrence has been resolved to an LGA yet`
+      : lgaNames.length === 1
+        ? `All recorded occurrences sit in ${lgaNames[0]} LGA`
+        : `Occurrences are spread across ${lgaNames.length} LGAs — ${lgaNames.slice(0, 3).join(', ')}${lgaNames.length > 3 ? ` and ${lgaNames.length - 3} more` : ''}`;
+
+    const activity = producing
+      ? `${producing} of ${n} ${n === 1 ? 'site is' : 'sites are'} in production`
+      : n
+        ? `None of the ${n} catalogued ${n === 1 ? 'site is' : 'sites are'} in production yet`
+        : 'No site is catalogued here yet';
+
+    const open = d.unoperated.filter((u) => u.hasOccurrence).length;
+
+    return `${c.label} is ${rank > 0 ? `the ${ordinal(rank)} strongest ${c.label.toLowerCase()} state by prospectivity` : 'recorded'} in ${d.state.name}. `
+      + `${where}. ${activity}. `
+      + (open ? `${open} ${open === 1 ? 'LGA has' : 'LGAs have'} a recorded occurrence but no titled operator. ` : '')
+      + `${c.hostRock}`;
+  }
+
+  const ordinal = (n) => {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
   /** Commodity-within-a-state: LGA spread, operators, open ground, evidence. */
   function stateDrill(d) {
     const c = d.commodity;
@@ -125,6 +163,7 @@ export function createMinerals() {
           <button class="mn-close" data-drill-close title="Close">${icon('plus', { size: 14 })}</button>
         </header>
         <div class="panel-bd">
+          <p class="mn-desc">${stateSummary(d)}</p>
           <div class="ctx-acts">
             <button class="btn-ghost btn-primary" data-go="explore">${icon('map', { size: 13 })} View on map</button>
             <button class="btn-ghost" data-go="prospectivity">${icon('prospectivity', { size: 13 })} Prospectivity</button>
@@ -466,7 +505,7 @@ export function createMinerals() {
       // An LGA row focuses that LGA in the shared context.
       const lga = e.target.closest('[data-lga]');
       if (lga) {
-        ctx.set({ lga: lga.dataset.lga });
+        ctx.set({ lga: lga.dataset.lga, occurrence: null });
         $$('[data-lga]', root).forEach((n) => n.classList.toggle('is-on', n === lga));
         return;
       }
@@ -477,6 +516,7 @@ export function createMinerals() {
         ctx.set({
           commodity: selectedId,
           state: stateDetail?.state?.name || ctx.get().state,
+          occurrence: null,   // state-level intent, not a single point
           layer: go === 'explore' ? 'deposits' : null,
         });
         ctx.go(go);

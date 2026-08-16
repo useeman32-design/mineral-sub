@@ -13,23 +13,23 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js?v=0521807';
-import { store } from '../core/store.js?v=0521807';
-import { ctx } from '../core/context.js?v=0521807';
-import { icon } from '../core/icons.js?v=0521807';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=0521807';
-import { NigeriaMap, zoomBand } from '../components/map.js?v=0521807';
-import { RESOURCE_META } from '../data/fixtures.js?v=0521807';
-import { toast } from './dashboard.js?v=0521807';
-import { DrawEngine, TOOL_META } from '../components/draw.js?v=0521807';
-import { History } from '../core/history.js?v=0521807';
-import { projects } from '../data/projects.js?v=0521807';
-import { measureShape } from '../core/geo.js?v=0521807';
-import { loadPrefs } from './settings.js?v=0521807';
-import { LAYER_GROUPS } from '../data/layers.js?v=0521807';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=0521807';
-import { createStatusBar } from '../components/statusbar.js?v=0521807';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=0521807';
+import { api } from '../data/api.js?v=cba4c5d';
+import { store } from '../core/store.js?v=cba4c5d';
+import { ctx } from '../core/context.js?v=cba4c5d';
+import { icon } from '../core/icons.js?v=cba4c5d';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=cba4c5d';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=cba4c5d';
+import { RESOURCE_META } from '../data/fixtures.js?v=cba4c5d';
+import { toast } from './dashboard.js?v=cba4c5d';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=cba4c5d';
+import { History } from '../core/history.js?v=cba4c5d';
+import { projects } from '../data/projects.js?v=cba4c5d';
+import { measureShape } from '../core/geo.js?v=cba4c5d';
+import { loadPrefs } from './settings.js?v=cba4c5d';
+import { LAYER_GROUPS } from '../data/layers.js?v=cba4c5d';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=cba4c5d';
+import { createStatusBar } from '../components/statusbar.js?v=cba4c5d';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=cba4c5d';
 
 const RESOURCES = LEGEND_RESOURCES;
 
@@ -1293,6 +1293,7 @@ export function createExplore() {
 
   function flyToSite(site) {
     const d = nmap.deposits?.find((x) => x.id === site.id) || site;
+    nmap.lockView(true);
     nmap.map.flyTo([d.lat, d.lng], 11, { duration: 1 });
     lastGeo = { kind: 'deposit', data: d };
     setInspectorTab('geo');
@@ -1302,6 +1303,7 @@ export function createExplore() {
   function flyToState(name) {
     const layer = nmap.stateLayers.get(name);
     if (!layer) return;
+    nmap.lockView(true);
     nmap.selectState(name);
     nmap.map.flyToBounds(layer.getBounds(), { padding: [40, 40], duration: 1 });
   }
@@ -1312,6 +1314,7 @@ export function createExplore() {
       .map((l) => l.feature.properties).find((p) => p.name === stateName);
     if (!st) return flyToState(stateName);
 
+    nmap.lockView(true);
     nmap.selectState(stateName);
     await nmap.loadLgas?.(st.code);
     nmap.showLgas?.(st.code, { explicit: true });
@@ -1350,7 +1353,9 @@ export function createExplore() {
     onShow() {
       requestAnimationFrame(() => {
         nmap?.invalidate();
-        consumeFocus();
+        // A second frame so the invalidated size is applied before we fly;
+        // otherwise Leaflet computes the target against a stale container.
+        requestAnimationFrame(() => consumeFocus());
       });
     },
     onHide() { draw?.setTool(null); syncToolButtons(); },
