@@ -369,10 +369,16 @@ export function createRisk() {
       if (e.target.closest('[data-ctx-clear]')) { ctx.clear(); renderCtxBar(); renderDetail(); return; }
 
       if (e.target.closest('[data-report-item]')) {
-        const n = selectedName || ctx.get().state;
-        const ok = reports.add({ kind: 'risk', id: n, title: `Risk assessment — ${n}` });
-        toast(ok ? `Added ${n} risk assessment to the report`
-                 : `${n} risk assessment is already in the report`);
+        // Report the selected state's risk, and the LGA too when the shared
+        // context has drilled to one — that is the scope the user is looking at.
+        const c = ctx.get();
+        const n = selectedName || c.state;
+        const added = reports.addMany([
+          { kind: 'risk', id: n, title: `Risk assessment — ${n}` },
+          ...(c.lga ? [{ kind: 'lga', id: c.lga, state: n, title: `Local government — ${c.lga}` }] : []),
+        ]);
+        toast(added ? `Added ${c.lga ? `${c.lga}, ` : ''}${n} risk to the report`
+                    : 'Already in the report');
         return;
       }
 

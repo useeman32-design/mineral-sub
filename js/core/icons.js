@@ -33,6 +33,7 @@ const PATHS = {
   target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>',
   grid: '<rect x="3.4" y="3.4" width="7" height="7" rx="1.2"/><rect x="13.6" y="3.4" width="7" height="7" rx="1.2"/><rect x="3.4" y="13.6" width="7" height="7" rx="1.2"/><rect x="13.6" y="13.6" width="7" height="7" rx="1.2"/>',
   refresh: '<path d="M21 11.5A9 9 0 0 0 6.2 5.8L3 8.8"/><path d="M3 4v4.8h4.8"/><path d="M3 12.5A9 9 0 0 0 17.8 18.2L21 15.2"/><path d="M21 20v-4.8h-4.8"/>',
+  print: '<path d="M6.5 9.2V3.2h11v6M6.5 17.5h-2a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="6.5" y="14" width="11" height="6.8" rx="1"/>',
   download: '<path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17.5v1.8a1.7 1.7 0 0 0 1.7 1.7h12.6a1.7 1.7 0 0 0 1.7-1.7v-1.8"/>',
   info: '<circle cx="12" cy="12" r="9.2"/><path d="M12 16.5v-5M12 7.8h.01"/>',
   eye: '<path d="M1.8 12S5.6 4.8 12 4.8 22.2 12 22.2 12 18.4 19.2 12 19.2 1.8 12 1.8 12Z"/><circle cx="12" cy="12" r="3.2"/>',

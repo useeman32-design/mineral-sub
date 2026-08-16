@@ -52,7 +52,8 @@ export function createOilGas() {
       <div class="ctx-acts">
         <button class="btn-ghost btn-primary" data-go-map>${icon('map', { size: 13 })} View on map</button>
         <button class="btn-ghost" data-go-risk>${icon('risk', { size: 13 })} Risk</button>
-        <button class="btn-ghost" data-add-report>${icon('reports', { size: 13 })} Add to report</button>
+        <button class="btn-ghost" data-add-report>${icon('reports', { size: 13 })} Report this block</button>
+        <button class="btn-ghost" data-report-state title="Every block in ${b.state}">${icon('reports', { size: 13 })} All of ${b.state}</button>
       </div>
     </div>`;
 
@@ -128,15 +129,22 @@ export function createOilGas() {
             ctx.set({ state: b.state, lga: null });
             ctx.go('risk');
           }
+          // Selecting one block reports exactly that block.
           if (e.target.closest('[data-add-report]') && b) {
+            const ok = reports.add({ kind: 'block', id: b.id, title: `Licence block — ${b.id}` });
+            toast(ok ? `Added block ${b.id} to the report`
+              : `Block ${b.id} is already in the report`);
+          }
+          // ...and the state roll-up is its own explicit action.
+          if (e.target.closest('[data-report-state]') && b) {
             const ok = reports.add({ kind: 'petroleum', id: b.state, title: `Petroleum blocks — ${b.state}` });
-            toast(ok ? `Added ${b.state} petroleum blocks to the report`
+            toast(ok ? `Added all ${b.state} blocks to the report`
               : `${b.state} petroleum blocks are already in the report`);
           }
           if (e.target.closest('[data-report-all]')) {
             const ok = reports.add({ kind: 'petroleum', id: null, title: 'Petroleum licence blocks — national' });
-            toast(ok ? 'Added national petroleum register to the report'
-              : 'National petroleum register is already in the report');
+            toast(ok ? 'Added the national petroleum register to the report'
+              : 'The national petroleum register is already in the report');
           }
         },
       });

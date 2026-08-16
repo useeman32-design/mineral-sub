@@ -61,7 +61,8 @@ export function createTitles() {
       <div class="ctx-acts">
         <button class="btn-ghost btn-primary" data-go-map>${icon('map', { size: 13 })} View on map</button>
         <button class="btn-ghost" data-go-mineral>${icon('minerals', { size: 13 })} Commodity</button>
-        <button class="btn-ghost" data-add-report>${icon('reports', { size: 13 })} Add to report</button>
+        <button class="btn-ghost" data-add-report>${icon('reports', { size: 13 })} Report this title</button>
+        <button class="btn-ghost" data-report-state title="Every title in ${t.state}">${icon('reports', { size: 13 })} All of ${t.state}</button>
       </div>
     </div>`;
 
@@ -137,9 +138,16 @@ export function createTitles() {
             ctx.set({ commodity: t.commodity, state: t.state, lga: null, occurrence: null });
             ctx.go('minerals');
           }
+          // Selecting one title reports exactly that title.
           if (e.target.closest('[data-add-report]') && t) {
+            const ok = reports.add({ kind: 'title', id: t.id, title: `Mining title — ${t.id}` });
+            toast(ok ? `Added title ${t.id} to the report`
+              : `Title ${t.id} is already in the report`);
+          }
+          if (e.target.closest('[data-report-state]') && t) {
             const ok = reports.add({ kind: 'titles', id: t.state, title: `Mining titles — ${t.state}` });
-            toast(ok ? `Added ${t.state} titles to the report` : `${t.state} titles are already in the report`);
+            toast(ok ? `Added all ${t.state} titles to the report`
+              : `${t.state} titles are already in the report`);
           }
           if (e.target.closest('[data-report-all]')) {
             const ok = reports.add({ kind: 'titles', id: null, title: 'Mining cadastre — national' });

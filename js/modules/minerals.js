@@ -526,14 +526,16 @@ export function createMinerals() {
 
       // Report the selected commodity, scoped to a state when one is chosen.
       if (e.target.closest('[data-report-item]')) {
+        // Report what is actually on screen: the commodity, plus the state
+        // profile only when the user has drilled into one.
         const st = stateDetail?.state?.name;
-        const ok = reports.add({
-          kind: 'commodity', id: selectedId,
-          title: `Commodity register — ${selectedId}`,
-        });
-        if (st) reports.add({ kind: 'state', id: st, title: `State profile — ${st}` });
-        toast(ok ? `Added ${selectedId}${st ? ` and ${st}` : ''} to the report`
-                 : `${selectedId} is already in the report`);
+        const added = reports.addMany([
+          { kind: 'commodity', id: selectedId, title: `Commodity register — ${selectedId}` },
+          ...(st ? [{ kind: 'state', id: st, title: `State profile — ${st}` }] : []),
+        ]);
+        toast(added
+          ? `Added ${selectedId}${st ? ` and ${st}` : ''} to the report`
+          : 'Already in the report');
         return;
       }
 

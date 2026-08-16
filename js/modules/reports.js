@@ -14,7 +14,7 @@ import { icon } from '../core/icons.js?v=effc9f2';
 import { api } from '../data/api.js?v=effc9f2';
 import { store } from '../core/store.js?v=effc9f2';
 import {
-  reports, resolveSections, toCsv, toExcel, download, slug, SECTION_KINDS,
+  reports, resolveSections, toCsv, toXlsx, toPdf, download, slug, SECTION_KINDS,
 } from '../core/reports.js?v=effc9f2';
 import { toast } from './dashboard.js?v=effc9f2';
 
@@ -49,6 +49,9 @@ export function createReports() {
   let building = false;
   let unsub = null;
   let meta = load();
+  let collapsed = (() => {
+    try { return localStorage.getItem('nmi.reportCollapsed') === '1'; } catch { return false; }
+  })();
 
   function load() {
     try {
@@ -84,6 +87,43 @@ export function createReports() {
       </span>
     </li>`;
 
+  /* Charts mirror what the PDF renderer draws, using the same palette. */
+  const chartBlock = (c) => {
+    if (!c?.data?.length) return '';
+    const rows = c.data.slice(0, 12);
+    const peak = c.max || Math.max(...rows.map((d) => d.value), 1);
+    return `
+      <figure class="rp-chart">
+        <figcaption>${c.title}</figcaption>
+        <div class="rp-bars">
+          ${rows.map((d) => `
+            <div class="rp-bar-row">
+              <span class="rp-bar-l" title="${d.label}">${d.label}</span>
+              <span class="rp-bar-t"><i style="width:${Math.max(0.6, (d.value / peak) * 100)}%;background:${d.color}"></i></span>
+              <b class="rp-bar-v t-mono">${(c.fmt || String)(d.value)}</b>
+            </div>`).join('')}
+        </div>
+        ${c.note ? `<p class="rp-chart-n">${c.note}</p>` : ''}
+      </figure>`;
+  };
+
+  const stackBlock = (st) => {
+    if (!st?.segments?.some((x) => x.value)) return '';
+    const total = st.segments.reduce((a, x) => a + x.value, 0) || 1;
+    return `
+      <figure class="rp-chart rp-chart-s">
+        <figcaption>${st.title}</figcaption>
+        <div class="rp-stack">
+          ${st.segments.filter((x) => x.value).map((x) => `
+            <i style="width:${(x.value / total) * 100}%;background:${x.color}" title="${x.label}: ${x.value}"></i>`).join('')}
+        </div>
+        <div class="rp-stack-k">
+          ${st.segments.filter((x) => x.value).map((x) => `
+            <span><i style="background:${x.color}"></i>${x.label} <b class="t-mono">${x.value}</b></span>`).join('')}
+        </div>
+      </figure>`;
+  };
+
   const table = (s) => `
     <table class="rp-table">
       <thead><tr>${s.columns.map((c) => `<th>${c}</th>`).join('')}</tr></thead>
@@ -101,9 +141,13 @@ export function createReports() {
           ${s.subtitle ? `<p>${s.subtitle}</p>` : ''}
         </div>
       </header>
+      ${chartBlock(s.chart)}
+      ${stackBlock(s.stack)}
       ${table(s)}
       ${s.notes ? `<p class="rp-note">${s.notes}</p>` : ''}
-      ${s.rows.length >= 400 ? '<p class="rp-note">Table truncated to the first 400 rows — use the CSV or Excel export for the complete set.</p>' : ''}
+      ${s.extra?.rows.length ? `
+        <h3 class="rp-sub">${s.extra.title}</h3>
+        ${table(s.extra)}` : ''}
     </section>`;
 
   const documentHtml = () => `
@@ -170,7 +214,7 @@ export function createReports() {
           </div>
         </header>
 
-        <div class="rp-body">
+        <div class="rp-body ${collapsed ? 'is-collapsed' : ''}">
           <aside class="rp-side">
             <section class="panel">
               <header class="panel-hd">
@@ -228,14 +272,16 @@ export function createReports() {
 
           <main class="rp-main">
             <div class="rp-bar">
+              <button class="rp-collapse" data-collapse title="Collapse the builder panel"
+                      aria-label="Collapse the builder panel">${icon('chevron', { size: 13 })}</button>
               <span class="rp-bar-t">${items.length ? 'Preview' : 'Report builder'}</span>
               <span class="spacer"></span>
               <button class="btn-ghost" data-export="csv" ${items.length ? '' : 'disabled'}>
                 ${icon('download', { size: 13 })} CSV</button>
-              <button class="btn-ghost" data-export="xls" ${items.length ? '' : 'disabled'}>
+              <button class="btn-ghost" data-export="xlsx" ${items.length ? '' : 'disabled'}>
                 ${icon('download', { size: 13 })} Excel</button>
               <button class="btn-ghost" data-export="print" ${items.length ? '' : 'disabled'}>
-                ${icon('copy', { size: 13 })} Print</button>
+                ${icon('print', { size: 13 })} Print</button>
               <button class="btn-ghost btn-primary" data-export="pdf" ${items.length ? '' : 'disabled'}>
                 ${icon('download', { size: 13 })} PDF</button>
             </div>
@@ -311,17 +357,34 @@ export function createReports() {
     if (!resolved.length) { toast('Add at least one section first'); return; }
     const name = slug(meta.title || 'nmi-report') || 'nmi-report';
     const date = new Date().toISOString().slice(0, 10);
+    const stem = `${name}-${date}`;
 
-    if (kind === 'csv') {
-      download(`${name}-${date}.csv`, toCsv(resolved, meta), 'text/csv;charset=utf-8');
-      toast('CSV exported');
-    } else if (kind === 'xls') {
-      download(`${name}-${date}.xls`, toExcel(resolved, meta), 'application/vnd.ms-excel');
-      toast('Excel workbook exported');
-    } else {
-      // PDF and Print are the same path: the print stylesheet renders the
-      // preview to paper, and the browser's dialogue offers "Save as PDF".
-      toast(kind === 'pdf' ? 'Choose “Save as PDF” in the print dialogue' : 'Opening print dialogue');
+    try {
+      if (kind === 'csv') {
+        download(`${stem}.csv`, toCsv(resolved, meta), 'text/csv;charset=utf-8');
+        toast('CSV exported');
+        return;
+      }
+
+      if (kind === 'xlsx') {
+        // Real OOXML workbook — one sheet per section.
+        const bytes = toXlsx(resolved, meta);
+        download(`${stem}.xlsx`, new Blob([bytes],
+          { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+        toast(`Excel workbook exported · ${resolved.length} sheet${resolved.length === 1 ? '' : 's'}`);
+        return;
+      }
+
+      if (kind === 'pdf') {
+        // Generated directly, so the user gets a file rather than a print dialogue.
+        const bytes = toPdf(resolved, meta);
+        download(`${stem}.pdf`, new Blob([bytes], { type: 'application/pdf' }));
+        toast('PDF exported');
+        return;
+      }
+
+      // Print is the only path that should open the browser dialogue.
+      toast('Opening print dialogue');
       document.body.classList.add('is-printing');
       const done = () => {
         document.body.classList.remove('is-printing');
@@ -330,6 +393,9 @@ export function createReports() {
       window.addEventListener('afterprint', done);
       setTimeout(() => window.print(), 120);
       setTimeout(done, 60000);
+    } catch (err) {
+      console.error('[reports] export failed', err);
+      toast('Export failed — see the console for details');
     }
   }
 
@@ -352,6 +418,17 @@ export function createReports() {
       view.addEventListener('click', (e) => {
         const ex = e.target.closest('[data-export]');
         if (ex) { exportAs(ex.dataset.export); return; }
+
+        // Collapse the builder column rather than letting it stack above the
+        // preview: the grid transitions its track width, so the document simply
+        // widens instead of the panels jumping on top of it.
+        if (e.target.closest('[data-collapse]')) {
+          const body = $('.rp-body', view);
+          body.classList.toggle('is-collapsed');
+          collapsed = body.classList.contains('is-collapsed');
+          try { localStorage.setItem('nmi.reportCollapsed', collapsed ? '1' : '0'); } catch { /* quota */ }
+          return;
+        }
 
         const pre = e.target.closest('[data-preset]');
         if (pre) {

@@ -541,3 +541,88 @@
 
 /* `hidden` loses to the .rp-field display rule without an explicit override. */
 .rp-field[hidden] { display: none !important; }
+
+/* ============================================================
+   BUILDER COLLAPSE, CHARTS, TABLE WRAPPING
+   ============================================================ */
+
+/* Collapsing animates the grid track, so the preview widens smoothly instead
+   of the builder panels reflowing on top of the document. */
+.rp-body {
+  transition: grid-template-columns .32s cubic-bezier(.4, 0, .2, 1);
+}
+.rp-body.is-collapsed { grid-template-columns: 0px minmax(0, 1fr); }
+.rp-body.is-collapsed > .rp-side {
+  opacity: 0; pointer-events: none;
+  transform: translateX(-10px);
+  overflow: hidden;
+}
+.rp-side {
+  transition: opacity .24s ease, transform .28s cubic-bezier(.4, 0, .2, 1);
+  min-width: 0;
+}
+
+.rp-collapse {
+  display: grid; place-items: center;
+  width: 22px; height: 22px; flex-shrink: 0;
+  border-radius: var(--r-sm); cursor: pointer;
+  background: transparent; border: 1px solid var(--line-soft);
+  color: var(--text-low);
+  transition: color .14s, border-color .14s, background .14s;
+}
+.rp-collapse:hover { color: var(--green); border-color: var(--green-dim); background: var(--surface-2); }
+/* Chevron points left to collapse, right to reopen. The button sits inside
+   .rp-main, which is a child of .rp-body, so one descendant rule covers both. */
+.rp-collapse svg { transform: rotate(90deg); transition: transform .3s cubic-bezier(.4, 0, .2, 1); }
+.rp-body.is-collapsed .rp-collapse svg { transform: rotate(-90deg); }
+
+/* ---------- charts ---------- */
+
+.rp-chart {
+  margin: 0 0 16px; padding: 12px 13px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-faint);
+  border-radius: var(--r-md);
+}
+.rp-chart figcaption {
+  font-size: 9px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text-low); font-weight: 600; margin-bottom: 10px;
+}
+.rp-bars { display: grid; gap: 5px; }
+.rp-bar-row { display: grid; grid-template-columns: 128px minmax(0, 1fr) 58px; gap: 9px; align-items: center; }
+.rp-bar-l {
+  font-size: 10.5px; color: var(--text-mid);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rp-bar-t {
+  height: 9px; border-radius: 3px; overflow: hidden;
+  background: rgba(255, 255, 255, .05);
+}
+.rp-bar-t i { display: block; height: 100%; border-radius: 3px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+.rp-bar-v { font-size: 10.5px; text-align: right; color: var(--text-hi); }
+.rp-chart-n { font-size: 9.5px; color: var(--text-low); margin: 9px 0 0; font-style: italic; }
+
+.rp-stack { display: flex; height: 13px; border-radius: 3px; overflow: hidden; gap: 1px; }
+.rp-stack i { display: block; height: 100%; }
+.rp-stack-k { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 9px; }
+.rp-stack-k span { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-mid); }
+.rp-stack-k i { width: 7px; height: 7px; border-radius: 2px; }
+
+.rp-sub {
+  font-size: 11.5px; color: var(--text-hi); margin: 18px 0 9px;
+  padding-top: 12px; border-top: 1px solid var(--line-faint);
+}
+
+/* ---------- preview table wrapping ---------- */
+
+/* Long values must wrap inside their column rather than forcing the table
+   wider than the page. Identifiers and figures still stay on one line. */
+.rp-table { table-layout: auto; }
+.rp-table td {
+  white-space: normal; word-break: normal; overflow-wrap: break-word;
+  vertical-align: top;
+}
+.rp-table th { white-space: normal; }
+.rp-table td.t-mono { white-space: nowrap; }
+.rp-doc { overflow: hidden; }
+.rp-sec { overflow-x: auto; }
