@@ -14,6 +14,8 @@ import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=755258
 import { icon } from '../core/icons.js?v=7552589';
 import { api } from '../data/api.js?v=7552589';
 import { ctx } from '../core/context.js?v=7552589';
+import { reports } from '../core/reports.js?v=eb3c4a3';
+import { toast } from './dashboard.js?v=eb3c4a3';
 import { RESOURCE_META as RMETA } from '../data/fixtures.js?v=7552589';
 
 const CATEGORIES = ['All', 'Metallic', 'Industrial', 'Energy'];
@@ -168,6 +170,7 @@ export function createMinerals() {
             <button class="btn-ghost btn-primary" data-go="explore">${icon('map', { size: 13 })} View on map</button>
             <button class="btn-ghost" data-go="prospectivity">${icon('prospectivity', { size: 13 })} Prospectivity</button>
             <button class="btn-ghost" data-go="risk">${icon('risk', { size: 13 })} Risk</button>
+            <button class="btn-ghost" data-report-item>${icon('reports', { size: 13 })} Generate report</button>
           </div>
 
           <div class="mn-dgrid2">
@@ -275,6 +278,7 @@ export function createMinerals() {
           ${kpi('Occurrences', fmt.int(c.occurrences), `${trendChip(c.trend)} national register`, c.hex)}
           ${kpi('Catalogued sites', c.siteCount, `${c.producing} producing`, 'var(--green)')}
           ${kpi('States', c.stateCount, 'with recorded presence', 'var(--cyan)')}
+          <button class="btn-ghost mn-dh-report" data-report-item>${icon('reports', { size: 13 })} Generate report</button>
           <button class="mn-close" data-close title="Close profile">${icon('plus', { size: 15 })}</button>
         </div>
       </header>
@@ -517,6 +521,19 @@ export function createMinerals() {
         $$('[data-lga]', root).forEach((n) => n.classList.toggle('is-on', n === lga));
         // Second click on an already-selected LGA opens it on the map.
         if (already) ctx.go('explore');
+        return;
+      }
+
+      // Report the selected commodity, scoped to a state when one is chosen.
+      if (e.target.closest('[data-report-item]')) {
+        const st = stateDetail?.state?.name;
+        const ok = reports.add({
+          kind: 'commodity', id: selectedId,
+          title: `Commodity register — ${selectedId}`,
+        });
+        if (st) reports.add({ kind: 'state', id: st, title: `State profile — ${st}` });
+        toast(ok ? `Added ${selectedId}${st ? ` and ${st}` : ''} to the report`
+                 : `${selectedId} is already in the report`);
         return;
       }
 

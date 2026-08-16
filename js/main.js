@@ -10,14 +10,18 @@ import { buildShell } from './components/shell.js?v=7552589';
 import { createGlobalSearch } from './components/search.js?v=7552589';
 import { Router } from './core/router.js?v=7552589';
 import { store } from './core/store.js?v=7552589';
+import { reports } from './core/reports.js?v=eb3c4a3';
 import { api } from './data/api.js?v=7552589';
 import { $ } from './core/utils.js?v=7552589';
 import { createDashboard, toast } from './modules/dashboard.js?v=7552589';
-import { createStub } from './modules/stub.js?v=7552589';
 import { createSettings } from './modules/settings.js?v=7552589';
 import { createMinerals } from './modules/minerals.js?v=7552589';
 import { createProspectivity } from './modules/prospectivity.js?v=7552589';
 import { createRisk } from './modules/risk.js?v=7552589';
+import { createOilGas } from './modules/oilgas.js?v=eb3c4a3';
+import { createTitles } from './modules/titles.js?v=eb3c4a3';
+import { createReports } from './modules/reports.js?v=eb3c4a3';
+import { createDataCenter } from './modules/data.js?v=eb3c4a3';
 import { createExplore } from './modules/explore.js?v=7552589';
 import { theme } from './core/theme.js?v=7552589';
 import { applyPrefs } from './modules/settings.js?v=7552589';
@@ -44,36 +48,20 @@ const MODULES = [
     factory: () => createRisk(),
   },
   {
-    id: 'oilgas', title: 'Oil & Gas', keepAlive: false,
-    factory: createStub({
-      title: 'Oil & Gas', glyph: 'oil',
-      blurb: 'Upstream petroleum intelligence — licence blocks, field outlines, well records, production history and reserve accounting across all Nigerian basins.',
-      features: ['Licence blocks (OML/OPL)', 'Field outlines', 'Well & log records', 'Production history', 'Reserves accounting', 'Basin analysis'],
-    }),
+    id: 'oilgas', title: 'Oil & Gas', keepAlive: true,
+    factory: () => createOilGas(),
   },
   {
-    id: 'titles', title: 'Mining Titles', keepAlive: false,
-    factory: createStub({
-      title: 'Mining Titles', glyph: 'titles',
-      blurb: 'Mining cadastre integration — exploration licences, small-scale and mining leases, holder records, expiry tracking and overlap detection.',
-      features: ['Cadastre polygons', 'Holder registry', 'Expiry tracking', 'Overlap detection', 'Application status', 'Fee compliance'],
-    }),
+    id: 'titles', title: 'Mining Titles', keepAlive: true,
+    factory: () => createTitles(),
   },
   {
     id: 'reports', title: 'Reports', keepAlive: false,
-    factory: createStub({
-      title: 'Reports', glyph: 'reports',
-      blurb: 'Generate investor-grade briefing documents — state resource profiles, prospectivity dossiers and due-diligence packs with map plates and charts.',
-      features: ['State profiles', 'Prospect dossiers', 'Due-diligence packs', 'Map plate export', 'Scheduled delivery', 'Branding templates'],
-    }),
+    factory: () => createReports(),
   },
   {
-    id: 'data', title: 'Data Center', keepAlive: false,
-    factory: createStub({
-      title: 'Data Center', glyph: 'data',
-      blurb: 'Dataset catalogue and ingestion pipeline — survey lineage, coverage tracking, quality flags, versioning and bulk export in GIS-native formats.',
-      features: ['Dataset catalogue', 'Ingestion pipeline', 'Lineage & provenance', 'Quality flags', 'Versioning', 'Bulk GIS export'],
-    }),
+    id: 'data', title: 'Data Center', keepAlive: true,
+    factory: () => createDataCenter(),
   },
   {
     id: 'settings', title: 'Settings', keepAlive: true,
@@ -128,6 +116,16 @@ function boot() {
       toast(`Global search wires into the unified index: "${gs.value.trim()}"`);
     }
   });
+
+  // Sidebar report-cart counter — the badge slot vacated by live/soon.
+  const syncCart = (n) => {
+    const b = document.querySelector('[data-cart-count]');
+    if (!b) return;
+    b.textContent = n;
+    b.hidden = n === 0;
+  };
+  syncCart(reports.count);
+  reports.subscribe((items) => syncCart(items.length));
 
   // Remove boot splash
   const splash = document.getElementById('boot');

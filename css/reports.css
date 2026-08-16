@@ -1,0 +1,543 @@
+/* ============================================================
+   REGISTERS, DATA CENTER & REPORTS
+   Reuses the .pr-* scaffolding from prospectivity.css so the new
+   modules inherit the established head/KPI/empty-state language.
+   ============================================================ */
+
+/* ---------- shared register (Oil & Gas, Mining Titles) ---------- */
+
+.rg-tools {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 12px; flex-wrap: wrap;
+}
+.rg-tools .spacer { flex: 1; }
+
+.rg-search { min-width: 260px; flex: 0 1 320px; }
+
+.rg-sel { display: flex; align-items: center; gap: 6px; }
+.rg-sel > span {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--text-low);
+}
+
+.rg-body {
+  display: grid; grid-template-columns: minmax(0, 1fr) 344px;
+  gap: var(--gutter); align-items: start;
+}
+
+.rg-panel { display: flex; flex-direction: column; min-height: 0; }
+.rg-scroll { overflow: auto; max-height: calc(100vh - 320px); }
+
+/* ---------- table ---------- */
+
+.rg-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+.rg-table thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--surface-2);
+  padding: 9px 10px; text-align: left; white-space: nowrap;
+  font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text-low);
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer; user-select: none;
+}
+.rg-table thead th:hover { color: var(--text-mid); }
+.rg-table thead th.is-sorted { color: var(--green); }
+
+.rg-caret {
+  display: inline-block; width: 0; height: 0; margin-left: 5px;
+  vertical-align: middle; opacity: 0;
+  border-left: 3px solid transparent; border-right: 3px solid transparent;
+  border-bottom: 4px solid currentColor;
+}
+.rg-table th.is-sorted .rg-caret { opacity: 1; }
+.rg-table th[data-dir="desc"] .rg-caret {
+  border-bottom: none; border-top: 4px solid currentColor;
+}
+
+.rg-table tbody td {
+  padding: 8px 10px; border-bottom: 1px solid var(--line-faint);
+  color: var(--text-mid); white-space: nowrap;
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+}
+.rg-table tbody tr { cursor: pointer; transition: background .12s; }
+.rg-table tbody tr:hover { background: rgba(0, 230, 118, .045); }
+.rg-table tbody tr.is-on { background: rgba(0, 230, 118, .1); }
+.rg-table tbody tr.is-on td { color: var(--text-hi); }
+.rg-table tbody tr.is-on td:first-child { box-shadow: inset 2px 0 0 var(--green); }
+
+.ta-r { text-align: right; }
+.rg-none { text-align: center; padding: 28px 0 !important; color: var(--text-low); }
+
+.rg-tag { font-size: 11px; font-weight: 600; }
+.rg-dot {
+  display: inline-block; width: 5px; height: 5px; margin-left: 6px;
+  border-radius: 50%; background: var(--gold); box-shadow: 0 0 6px var(--gold);
+  vertical-align: middle;
+}
+
+/* ---------- detail drawer ---------- */
+
+.rg-detail { position: sticky; top: 0; }
+
+.rg-card {
+  background: var(--surface-1); border: 1px solid var(--line-soft);
+  border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.01), 0 12px 32px rgba(0,0,0,.34);
+}
+.rg-card::before {
+  content: ''; display: block; height: 2px;
+  background: linear-gradient(90deg, var(--rc), transparent);
+}
+
+.rg-card-hd {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 14px 12px; border-bottom: 1px solid var(--line-soft);
+}
+.rg-card-hd > div:first-child { flex: 1; min-width: 0; }
+.rg-card-k {
+  font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-low); margin-bottom: 4px;
+}
+.rg-card-hd h2 {
+  font-size: 17px; line-height: 1.2; margin: 0 0 4px; color: var(--text-hi);
+  word-break: break-word;
+}
+.rg-card-s { font-size: 11.5px; color: var(--text-mid); }
+
+.rg-badge {
+  flex-shrink: 0; font-size: 10px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px;
+  border: 1px solid currentColor; opacity: .9;
+}
+
+.rg-flag {
+  display: flex; gap: 8px; align-items: flex-start;
+  margin: 12px 14px 0; padding: 9px 10px;
+  background: rgba(245, 185, 66, .07);
+  border: 1px solid rgba(245, 185, 66, .2);
+  border-radius: 7px; font-size: 11px; line-height: 1.45;
+  color: var(--gold);
+}
+.rg-flag svg { flex-shrink: 0; margin-top: 1px; }
+
+.rg-metrics {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--line-soft); margin: 12px 0 0;
+  border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+}
+.rg-metrics > div {
+  background: var(--surface-1); padding: 11px 10px; text-align: center;
+}
+.rg-metrics span {
+  display: block; font-size: 9px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--text-low); margin-bottom: 4px;
+}
+.rg-metrics b {
+  display: block; font-size: 17px; font-weight: 600;
+  color: var(--rc, var(--green)); line-height: 1.1;
+}
+.rg-metrics em {
+  display: block; font-style: normal; font-size: 9.5px;
+  color: var(--text-low); margin-top: 2px;
+}
+
+.rg-card .pr-facts { padding: 12px 14px; }
+.rg-card .ctx-acts { padding: 0 14px 14px; flex-wrap: wrap; }
+
+.rg-empty { border-radius: var(--r-lg); }
+
+/* ---------- data center ---------- */
+
+.dc-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.dc-chip {
+  font: inherit; font-size: 11px; cursor: pointer;
+  padding: 5px 11px; border-radius: 20px;
+  background: transparent; border: 1px solid var(--line-soft);
+  color: var(--text-mid); transition: all .14s;
+}
+.dc-chip:hover { border-color: var(--green-dim); color: var(--text-hi); }
+.dc-chip.is-on {
+  background: rgba(0, 230, 118, .1); border-color: rgba(0, 230, 118, .38);
+  color: var(--green);
+}
+
+.dc-grid {
+  display: grid; gap: var(--gutter);
+  grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
+  margin-bottom: var(--gutter);
+}
+
+.dc-card {
+  background: var(--surface-1); border: 1px solid var(--line-soft);
+  border-radius: var(--r-lg); padding: 13px;
+  transition: border-color .15s, transform .15s;
+}
+.dc-card:hover { border-color: rgba(0, 230, 118, .26); transform: translateY(-1px); }
+.dc-card.is-off { opacity: .58; }
+
+.dc-card-hd { display: flex; align-items: flex-start; gap: 9px; }
+.dc-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.dc-card-t { flex: 1; min-width: 0; }
+.dc-card-t h3 { font-size: 13px; margin: 0 0 2px; color: var(--text-hi); }
+.dc-card-t p { font-size: 10.5px; color: var(--text-low); margin: 0; }
+.dc-status {
+  font-size: 9px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; flex-shrink: 0; padding-top: 2px;
+}
+
+.dc-quality { display: flex; align-items: center; gap: 8px; margin: 11px 0 10px; }
+.dc-q-bar {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: rgba(255, 255, 255, .06); overflow: hidden;
+}
+.dc-q-bar i { display: block; height: 100%; border-radius: 2px; transition: width .4s; }
+.dc-quality span { font-size: 10.5px; color: var(--text-mid); }
+
+.dc-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; margin: 0; }
+.dc-meta > div { min-width: 0; }
+.dc-meta dt {
+  font-size: 9px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--text-low); margin-bottom: 1px;
+}
+.dc-meta dd {
+  font-size: 11px; color: var(--text-mid); margin: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.dc-health-bd { display: grid; gap: 1px; background: var(--line-soft); padding: 0 !important; }
+.dc-h-row {
+  display: grid; grid-template-columns: 150px 210px 1fr;
+  gap: 12px; align-items: baseline;
+  padding: 11px 14px; background: var(--surface-1);
+}
+.dc-h-row > span {
+  font-size: 10px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--text-low);
+}
+.dc-h-row > b { font-size: 12px; }
+.dc-h-row > em {
+  font-style: normal; font-size: 11px; color: var(--text-mid); line-height: 1.45;
+}
+
+/* ---------- report builder ---------- */
+
+.rp-body {
+  display: grid; grid-template-columns: 316px minmax(0, 1fr);
+  gap: var(--gutter); align-items: start;
+}
+.rp-side { display: grid; gap: var(--gutter); position: sticky; top: 0; }
+
+.rp-field { display: block; margin-bottom: 10px; }
+.rp-field > span {
+  display: block; font-size: 9.5px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-low); margin-bottom: 5px;
+}
+.rp-field input, .rp-field select {
+  width: 100%; font: inherit; font-size: 12px;
+  padding: 7px 9px; border-radius: 6px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft); color: var(--text-hi);
+}
+.rp-field input:focus, .rp-field select:focus {
+  outline: none; border-color: rgba(0, 230, 118, .45);
+  box-shadow: 0 0 0 2px rgba(0, 230, 118, .1);
+}
+.rp-meta, .rp-add { padding: 13px !important; }
+.rp-add-btn { width: 100%; justify-content: center; margin-top: 2px; }
+
+.rp-preset-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+.rp-chip {
+  font: inherit; font-size: 10.5px; cursor: pointer;
+  padding: 4px 9px; border-radius: 20px;
+  background: transparent; border: 1px dashed var(--line-soft);
+  color: var(--text-low); transition: all .14s;
+}
+.rp-chip:hover { border-style: solid; border-color: rgba(0,230,118,.36); color: var(--green); }
+
+.rp-clear {
+  font: inherit; font-size: 10px; cursor: pointer;
+  background: none; border: none; color: var(--text-low);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.rp-clear:hover { color: var(--red); }
+
+.rp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.rp-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 8px; border-radius: 6px;
+  background: rgba(255, 255, 255, .02); border: 1px solid var(--line-soft);
+}
+.rp-item-n { font-size: 10px; color: var(--text-low); flex-shrink: 0; }
+.rp-item-i { color: var(--green); display: flex; flex-shrink: 0; opacity: .8; }
+.rp-item-t { flex: 1; min-width: 0; }
+.rp-item-t b {
+  display: block; font-size: 11.5px; font-weight: 500; color: var(--text-hi);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rp-item-t em {
+  display: block; font-style: normal; font-size: 9.5px; color: var(--text-low);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rp-item-a { display: flex; gap: 2px; flex-shrink: 0; }
+.rp-mini {
+  display: grid; place-items: center; width: 20px; height: 20px;
+  border-radius: 4px; cursor: pointer;
+  background: transparent; border: none; color: var(--text-low);
+}
+.rp-mini:hover:not(:disabled) { background: rgba(255,255,255,.06); color: var(--text-hi); }
+.rp-mini:disabled { opacity: .25; cursor: default; }
+.rp-mini svg { transform: rotate(180deg); }
+.rp-mini.rp-dn svg { transform: rotate(0deg); }
+.rp-mini.rp-del svg { transform: none; }
+.rp-mini.rp-del:hover { color: var(--red); }
+
+.rp-hint { font-size: 11.5px; color: var(--text-low); margin: 0; }
+
+.rp-bar {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 12px; margin-bottom: var(--gutter);
+  background: var(--surface-1); border: 1px solid var(--line-soft);
+  border-radius: var(--r-lg);
+}
+.rp-bar .spacer { flex: 1; }
+.rp-bar-t {
+  font-size: 10px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text-low);
+}
+.rp-bar button:disabled { opacity: .35; cursor: default; }
+
+.rp-empty {
+  display: grid; place-items: center; text-align: center;
+  padding: 44px 20px; background: var(--surface-1);
+  border: 1px dashed var(--line-soft); border-radius: var(--r-lg);
+}
+.rp-presets {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(184px, 1fr));
+  gap: 9px; margin-top: 20px; width: 100%; max-width: 620px;
+}
+.rp-preset {
+  font: inherit; text-align: left; cursor: pointer;
+  padding: 12px; border-radius: 8px;
+  background: rgba(255, 255, 255, .02); border: 1px solid var(--line-soft);
+  transition: all .15s;
+}
+.rp-preset:hover { border-color: rgba(0,230,118,.36); transform: translateY(-1px); }
+.rp-preset b { display: block; font-size: 12.5px; color: var(--text-hi); margin-bottom: 3px; }
+.rp-preset em {
+  display: block; font-style: normal; font-size: 10.5px;
+  color: var(--text-low); line-height: 1.4; margin-bottom: 7px;
+}
+.rp-preset span { font-size: 9.5px; color: var(--green); letter-spacing: .05em; }
+
+/* ---------- the document ---------- */
+
+.rp-doc {
+  background: var(--surface-1); border: 1px solid var(--line-soft);
+  border-radius: var(--r-lg); overflow: hidden;
+}
+
+.rp-cover {
+  padding: 26px 26px 22px;
+  border-bottom: 1px solid var(--line-soft);
+  background:
+    radial-gradient(720px 200px at 12% -40%, rgba(0,230,118,.11), transparent 70%),
+    linear-gradient(180deg, rgba(0,230,118,.035), transparent);
+}
+.rp-cover-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.rp-mark {
+  display: grid; place-items: center; width: 32px; height: 32px;
+  border-radius: 8px; color: var(--green);
+  background: rgba(0, 230, 118, .1); border: 1px solid rgba(0, 230, 118, .28);
+}
+.rp-cover-brand b {
+  display: block; font-size: 11px; letter-spacing: .13em; color: var(--text-hi);
+}
+.rp-cover-brand em {
+  display: block; font-style: normal; font-size: 10px; color: var(--text-low);
+  letter-spacing: .02em;
+}
+.rp-cover h1 {
+  font-size: 27px; line-height: 1.16; margin: 0 0 18px;
+  color: var(--text-hi); max-width: 22ch;
+}
+.rp-cover-meta { display: flex; gap: 28px; flex-wrap: wrap; }
+.rp-cover-meta span {
+  display: block; font-size: 9px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--text-low); margin-bottom: 3px;
+}
+.rp-cover-meta b { font-size: 12.5px; color: var(--text-mid); font-weight: 500; }
+
+.rp-toc { padding: 18px 26px; border-bottom: 1px solid var(--line-soft); }
+.rp-toc h3 {
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-low); margin: 0 0 10px;
+}
+.rp-toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.rp-toc li {
+  display: flex; align-items: baseline; gap: 9px;
+  font-size: 12px; color: var(--text-mid);
+}
+.rp-toc li span { color: var(--green); font-size: 10.5px; }
+.rp-toc li em {
+  margin-left: auto; font-style: normal; font-size: 10px; color: var(--text-low);
+}
+
+.rp-sec { padding: 22px 26px; border-bottom: 1px solid var(--line-soft); }
+.rp-sec:last-of-type { border-bottom: none; }
+.rp-sec-hd { display: flex; gap: 11px; align-items: baseline; margin-bottom: 13px; }
+.rp-sec-n { font-size: 12px; color: var(--green); }
+.rp-sec-hd h2 { font-size: 15px; margin: 0 0 3px; color: var(--text-hi); }
+.rp-sec-hd p { font-size: 11px; color: var(--text-low); margin: 0; }
+
+.rp-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.rp-table th {
+  text-align: left; padding: 7px 9px; white-space: nowrap;
+  font-size: 9.5px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--green);
+  background: rgba(0, 230, 118, .05);
+  border-bottom: 1px solid rgba(0, 230, 118, .18);
+}
+.rp-table td {
+  padding: 6px 9px; color: var(--text-mid);
+  border-bottom: 1px solid var(--line-faint);
+}
+.rp-table tbody tr:nth-child(even) { background: rgba(255, 255, 255, .012); }
+.rp-table td:first-child { color: var(--text-hi); }
+
+.rp-note {
+  font-size: 10.5px; color: var(--text-low); margin: 9px 0 0;
+  font-style: italic;
+}
+
+.rp-foot {
+  display: flex; justify-content: space-between; gap: 20px;
+  padding: 14px 26px; border-top: 1px solid var(--line-soft);
+  font-size: 10px; color: var(--text-low);
+}
+
+/* sidebar cart counter reuses the vacated badge slot */
+.nav-badge.cart {
+  color: var(--green); border-color: rgba(0, 230, 118, .3);
+  background: rgba(0, 230, 118, .12);
+  min-width: 17px; text-align: center;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 1420px) {
+  .rg-body { grid-template-columns: minmax(0, 1fr) 300px; }
+  .rp-body { grid-template-columns: 288px minmax(0, 1fr); }
+}
+@media (max-width: 1180px) {
+  .rg-body, .rp-body { grid-template-columns: minmax(0, 1fr); }
+  .rg-detail, .rp-side { position: static; }
+  .rg-scroll { max-height: 460px; }
+  .dc-h-row { grid-template-columns: 1fr; gap: 3px; }
+}
+
+/* ============================================================
+   PRINT — the preview IS the PDF
+   ============================================================ */
+
+@media print {
+  @page { size: A4 portrait; margin: 14mm 12mm; }
+
+  /* Hide the whole application chrome; only the document prints. */
+  .sidebar, .topbar, .statusbar, .rp-side, .rp-bar, .toast-host,
+  #boot, .ex-rail, .map-toolbar { display: none !important; }
+
+  /* NB: `display` is deliberately NOT forced on .view — the router hides
+     inactive keep-alive views with an inline style.display='none', and a
+     blanket `display:block !important` would resurrect every one of them
+     into the printout. Only geometry is reset here. */
+  html, body, .app, .main, .view, .pr-wrap, .rp-wrap, .rp-body, .rp-main,
+  .rp-stage {
+    position: static !important; inset: auto !important;
+    overflow: visible !important;
+    height: auto !important; width: auto !important;
+    margin: 0 !important; padding: 0 !important;
+    background: #fff !important; color: #111 !important;
+  }
+  .pr-wrap, .rp-wrap, .rp-body, .rp-main, .rp-stage { display: block !important; }
+
+  /* Whatever the active module is, only the report document goes to paper. */
+  .view:not(:has(.rp-doc)) { display: none !important; }
+
+  .pr-head { display: none !important; }
+
+  /* Ink-friendly document: keep the structure, drop the glow. */
+  .rp-doc {
+    background: #fff !important; border: none !important;
+    border-radius: 0 !important; box-shadow: none !important;
+  }
+  .rp-cover {
+    background: none !important;
+    border-bottom: 2px solid #00743c !important;
+    padding: 0 0 14pt !important;
+  }
+  .rp-mark {
+    background: none !important; border: 1px solid #00743c !important;
+    color: #00743c !important;
+  }
+  .rp-cover-brand b, .rp-cover h1, .rp-sec-hd h2,
+  .rp-toc li, .rp-table td:first-child { color: #111 !important; }
+  .rp-cover-brand em, .rp-cover-meta span, .rp-sec-hd p,
+  .rp-toc li em, .rp-note, .rp-foot { color: #555 !important; }
+  .rp-cover-meta b, .rp-table td { color: #222 !important; }
+  .rp-cover h1 { font-size: 22pt !important; }
+
+  .rp-toc, .rp-sec, .rp-foot {
+    border-color: #ddd !important; padding-left: 0 !important; padding-right: 0 !important;
+  }
+  .rp-sec-n, .rp-toc li span { color: #00743c !important; }
+
+  /* Wide asset tables have to fit A4 portrait: shrink the type and stop
+     identifiers like "OPL-145" from breaking across two lines. */
+  /* The 9-column asset registers overflowed A4 because the screen style keeps
+     header cells on one line. Releasing that lets automatic table layout size
+     each column to its content and fit the 186mm text block — which looks far
+     better than `table-layout: fixed`, whose equal columns both waste space on
+     short fields and break identifiers mid-token. */
+  .rp-table { font-size: 8pt !important; width: 100% !important; }
+  .rp-table th, .rp-table td {
+    padding: 3pt 4pt !important;
+    white-space: normal !important;   /* wrap at spaces, never mid-word */
+    word-break: normal; overflow-wrap: normal;
+  }
+  /* Identifiers and figures must never split across lines. */
+  .rp-table td:first-child, .rp-table td.t-mono { white-space: nowrap !important; }
+
+  .rp-table th {
+    color: #00743c !important; background: #f2f7f4 !important;
+    border-bottom: 1px solid #00743c !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .rp-table td { border-bottom: 1px solid #eee !important; }
+  .rp-table tbody tr:nth-child(even) { background: #fafafa !important; }
+
+  /* Sections should not be split mid-heading. */
+  .rp-sec { break-inside: auto; page-break-inside: auto; }
+  .rp-sec-hd { break-after: avoid; page-break-after: avoid; }
+  .rp-table thead { display: table-header-group; }
+  .rp-table tr { break-inside: avoid; page-break-inside: avoid; }
+  .rp-toc { break-after: page; page-break-after: always; }
+}
+
+/* ============================================================
+   FIXES
+   ============================================================ */
+
+/* .btn-ghost carries a global `flex: 1` for the dashboard's button rows.
+   In the register toolbar and the export bar the buttons must size to their
+   own content instead of stretching across the container. */
+.rg-tools .btn-ghost,
+.rp-bar .btn-ghost {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 12px; white-space: nowrap;
+}
+
+/* `hidden` loses to the .rp-field display rule without an explicit override. */
+.rp-field[hidden] { display: none !important; }

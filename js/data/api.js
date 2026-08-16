@@ -405,6 +405,136 @@ export class Api {
     };
   }
 
+  /**
+   * GET /petroleum/blocks — upstream licence blocks.
+   * Deterministic placeholders shaped like the DPR cadastre payload.
+   */
+  getPetroleumBlocks() {
+    return this._req('/petroleum/blocks', () => {
+      const out = [];
+      const petro = Object.entries(STATES).filter(([, v]) => v.petroleum);
+      const TERRAIN = ['Onshore', 'Swamp', 'Shallow offshore', 'Deep offshore'];
+      const OPERATORS = ['Shell Nigeria E&P', 'TotalEnergies Nigeria', 'Chevron Nigeria',
+        'NNPC Upstream', 'Seplat Energy', 'Oando Energy Resources',
+        'Aiteo Eastern E&P', 'First E&P', 'Heirs Energies', 'Waltersmith Petroman'];
+
+      petro.forEach(([name, st], si) => {
+        const r = seeded(name + 'oil');
+        const n = 2 + Math.floor(r() * 4);
+        for (let i = 0; i < n; i += 1) {
+          const kind = r() > 0.32 ? 'OML' : 'OPL';
+          const terrain = TERRAIN[Math.floor(r() * TERRAIN.length)];
+          const oil = Math.round(40 + r() * 900);
+          const gas = Math.round(80 + r() * 4200);
+          out.push({
+            id: `${kind}-${100 + si * 7 + i}`,
+            kind,
+            state: name,
+            code: st.code,
+            terrain,
+            operator: OPERATORS[Math.floor(r() * OPERATORS.length)],
+            status: r() > 0.28 ? 'Producing' : r() > 0.12 ? 'Development' : 'Appraisal',
+            areaKm2: Math.round(180 + r() * 1900),
+            wells: Math.round(3 + r() * 46),
+            oilBopd: oil * 10,
+            gasMmscfd: Math.round(gas / 20),
+            reservesMmboe: Math.round(oil / 6 + gas / 90),
+            awarded: 1993 + Math.floor(r() * 30),
+            expiry: 2027 + Math.floor(r() * 18),
+            centroid: st.centroid,
+          });
+        }
+      });
+      return out.sort((a, b) => b.oilBopd - a.oilBopd);
+    });
+  }
+
+  /**
+   * GET /titles — mining cadastre.
+   * Licence polygons are not in the fixture set, so each title carries the
+   * state centroid; swap for real geometry when the cadastre lands.
+   */
+  getMiningTitles() {
+    return this._req('/titles', () => {
+      const out = [];
+      const TYPES = [
+        { id: 'EL', label: 'Exploration Licence', years: 3 },
+        { id: 'SSML', label: 'Small Scale Mining Lease', years: 5 },
+        { id: 'ML', label: 'Mining Lease', years: 25 },
+        { id: 'QL', label: 'Quarry Lease', years: 5 },
+        { id: 'RP', label: 'Reconnaissance Permit', years: 1 },
+      ];
+      const HOLDERS = ['Segilola Resources', 'Thor Explorations', 'Kian Smith Trust',
+        'Comet Minerals', 'Ratel Mining', 'Symbol Mining', 'Dangote Industries',
+        'BUA Mining', 'Multiverse Mining', 'Rockshield Resources', 'Sahelian Mining',
+        'Zamfara Gold Consortium', 'Jos Tin Holdings', 'Kogi Iron Nigeria'];
+      const YEAR = 2026;
+
+      Object.entries(STATES).forEach(([name, st]) => {
+        const r = seeded(name + 'title');
+        // Sample the state's real title count so the register stays plausible.
+        const n = Math.max(3, Math.round(st.titles / 26));
+        for (let i = 0; i < n; i += 1) {
+          const t = TYPES[Math.floor(r() * TYPES.length)];
+          // Recent-weighted grant year: squaring the draw biases toward newer
+          // titles, so the register reads live rather than mostly archival.
+          const granted = 2008 + Math.floor((1 - r() * r()) * 17);
+          const expiry = granted + t.years + Math.floor(r() * 4);
+          const commodity = (st.commodities || ['gold'])[Math.floor(r() * (st.commodities || ['gold']).length)];
+          const life = expiry - YEAR;
+          out.push({
+            id: `${st.code}/${t.id}/${2000 + Math.floor(r() * 7999)}`,
+            type: t.id,
+            typeLabel: t.label,
+            state: name,
+            code: st.code,
+            holder: HOLDERS[Math.floor(r() * HOLDERS.length)],
+            commodity,
+            areaHa: Math.round(12 + r() * 2400),
+            granted,
+            expiry,
+            status: life < 0 ? 'Expired' : life <= 1 ? 'Expiring' : 'Active',
+            // Overlap is the cadastre's classic data-quality problem.
+            overlap: r() > 0.88,
+            centroid: st.centroid,
+          });
+        }
+      });
+      return out.sort((a, b) => a.expiry - b.expiry);
+    });
+  }
+
+  /** GET /datasets — catalogue backing the Data Center. */
+  getDatasets() {
+    return this._req('/datasets', () => {
+      const DEFS = [
+        ['adm1', 'State boundaries (ADM1)', 'Geospatial', 'geoBoundaries', 'GeoJSON', 316, 37, 'Connected', 100],
+        ['adm2', 'LGA boundaries (ADM2)', 'Geospatial', 'geoBoundaries', 'GeoJSON', 4820, 774, 'Connected', 100],
+        ['occurrence', 'Mineral occurrence register', 'Geoscience', 'NMI placeholder', 'JSON', 46, 64, 'Sample data', 62],
+        ['commodity', 'Commodity register', 'Geoscience', 'NMI placeholder', 'JSON', 12, 17, 'Sample data', 70],
+        ['prospectivity', 'Prospectivity inputs', 'Analytics', 'Derived', 'JSON', 8, 37, 'Derived', 88],
+        ['risk', 'Risk factor inputs', 'Analytics', 'Derived', 'JSON', 8, 37, 'Derived', 84],
+        ['petroleum', 'Petroleum licence blocks', 'Assets', 'NMI placeholder', 'JSON', 22, 0, 'Sample data', 55],
+        ['titles', 'Mining cadastre', 'Assets', 'NMI placeholder', 'JSON', 64, 0, 'Sample data', 58],
+        ['geochem', 'Regional geochemistry', 'Geoscience', 'Awaiting NGSA', 'CSV', 0, 0, 'Not connected', 0],
+        ['geophys', 'Airborne geophysics', 'Geoscience', 'Awaiting NGSA', 'GeoTIFF', 0, 0, 'Not connected', 0],
+        ['imagery', 'Satellite imagery', 'Geospatial', 'ArcGIS World Imagery', 'XYZ tiles', 0, 0, 'On demand', 100],
+        ['infra', 'Roads & infrastructure', 'Geospatial', 'Awaiting OSM import', 'GeoJSON', 0, 0, 'Not connected', 0],
+      ];
+      return DEFS.map(([id, name, domain, source, format, sizeMb, records, status, quality]) => {
+        const r = seeded(id + 'ds');
+        return {
+          id, name, domain, source, format,
+          sizeMb, records, status, quality,
+          updated: status === 'Not connected' ? null
+            : `${Math.floor(r() * 27) + 1} ${['Jan', 'Mar', 'Jun', 'Aug', 'Nov'][Math.floor(r() * 5)]} 202${4 + Math.floor(r() * 2)}`,
+          licence: source.includes('geoBoundaries') ? 'CC BY 4.0'
+            : source.includes('ArcGIS') ? 'Esri terms' : 'Internal',
+        };
+      });
+    });
+  }
+
   /** GET /system/health */
   getSystemHealth() {
     return this._req('/system/health', () => ({

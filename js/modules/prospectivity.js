@@ -13,6 +13,8 @@ import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=7552589';
 import { icon } from '../core/icons.js?v=7552589';
 import { api } from '../data/api.js?v=7552589';
 import { ctx } from '../core/context.js?v=7552589';
+import { reports } from '../core/reports.js?v=eb3c4a3';
+import { toast } from './dashboard.js?v=eb3c4a3';
 import { RESOURCE_META } from '../data/fixtures.js?v=7552589';
 import {
   CRITERIA, TIERS, runModel, defaultWeights, explain,
@@ -189,6 +191,7 @@ export function createProspectivity() {
               <button class="btn-ghost btn-primary" data-go="explore">${icon('map', { size: 13 })} View on map</button>
               <button class="btn-ghost" data-go="risk">${icon('risk', { size: 13 })} Risk</button>
               ${commodity ? `<button class="btn-ghost" data-go="minerals">${icon('minerals', { size: 13 })} Mineral</button>` : ''}
+              <button class="btn-ghost" data-report-item>${icon('reports', { size: 13 })} Generate report</button>
             </div>
           </div>
         </section>
@@ -455,6 +458,17 @@ export function createProspectivity() {
       }
 
       if (e.target.closest('[data-ctx-clear]')) { ctx.clear(); commodity = ''; renderCtxBar(); refresh({ criteria: true }); return; }
+
+      if (e.target.closest('[data-report-item]')) {
+        const ok = reports.add({
+          kind: 'prospectivity', id: selectedName,
+          commodity: commodity || null,
+          title: `Prospectivity — ${selectedName}`,
+        });
+        toast(ok ? `Added ${selectedName} prospectivity to the report`
+                 : `${selectedName} prospectivity is already in the report`);
+        return;
+      }
 
       const go = e.target.closest('[data-go]')?.dataset.go;
       if (go) {

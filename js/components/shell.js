@@ -10,19 +10,19 @@ import { $, $$ } from '../core/utils.js?v=7552589';
 
 export const NAV = [
   { group: 'Intelligence', items: [
-    { id: 'overview',      label: 'Overview',          ico: 'overview',      badge: 'live' },
-    { id: 'explore',       label: 'Explore Map',       ico: 'map',           badge: 'live' },
-    { id: 'minerals',      label: 'Minerals',          ico: 'minerals',      badge: 'live' },
-    { id: 'prospectivity', label: 'Prospectivity',     ico: 'prospectivity', badge: 'live' },
-    { id: 'risk',          label: 'Risk Intelligence', ico: 'risk',          badge: 'live' },
+    { id: 'overview',      label: 'Overview',          ico: 'overview' },
+    { id: 'explore',       label: 'Explore Map',       ico: 'map' },
+    { id: 'minerals',      label: 'Minerals',          ico: 'minerals' },
+    { id: 'prospectivity', label: 'Prospectivity',     ico: 'prospectivity' },
+    { id: 'risk',          label: 'Risk Intelligence', ico: 'risk' },
   ]},
   { group: 'Assets', items: [
-    { id: 'oilgas', label: 'Oil & Gas',    ico: 'oil',     badge: 'soon' },
-    { id: 'titles', label: 'Mining Titles', ico: 'titles', badge: 'soon' },
+    { id: 'oilgas', label: 'Oil & Gas',    ico: 'oil' },
+    { id: 'titles', label: 'Mining Titles', ico: 'titles' },
   ]},
   { group: 'Operations', items: [
-    { id: 'reports', label: 'Reports',     ico: 'reports', badge: 'soon' },
-    { id: 'data',    label: 'Data Center', ico: 'data',    badge: 'soon' },
+    { id: 'reports', label: 'Reports',     ico: 'reports' },
+    { id: 'data',    label: 'Data Center', ico: 'data' },
   ]},
 ];
 
@@ -89,7 +89,7 @@ export function buildShell(mountPoint) {
                 <button class="nav-item" data-route="${it.id}" title="${it.label}">
                   ${icon(it.ico, { size: 17, cls: 'ico' })}
                   <span class="lbl">${it.label}</span>
-                  ${it.badge ? `<span class="nav-badge ${it.badge}">${it.badge === 'live' ? 'LIVE' : 'SOON'}</span>` : ''}
+                  ${it.id === 'reports' ? '<span class="nav-badge cart" data-cart-count hidden>0</span>' : ''}
                 </button>`).join('')}
             </div>`).join('')}
         </div>

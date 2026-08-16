@@ -14,6 +14,8 @@ import { $, $$, fmt, clamp } from '../core/utils.js?v=7552589';
 import { icon } from '../core/icons.js?v=7552589';
 import { api } from '../data/api.js?v=7552589';
 import { ctx } from '../core/context.js?v=7552589';
+import { reports } from '../core/reports.js?v=eb3c4a3';
+import { toast } from './dashboard.js?v=eb3c4a3';
 import { RESOURCE_META } from '../data/fixtures.js?v=7552589';
 import {
   RISK_FACTORS, RISK_BANDS, runRisk, defaultRiskWeights, explainRisk,
@@ -166,6 +168,7 @@ export function createRisk() {
               <button class="btn-ghost btn-primary" data-go="explore">${icon('map', { size: 13 })} View on map</button>
               <button class="btn-ghost" data-go="prospectivity">${icon('prospectivity', { size: 13 })} Prospectivity</button>
               ${c.commodity ? `<button class="btn-ghost" data-go="minerals">${icon('minerals', { size: 13 })} Mineral</button>` : ''}
+              <button class="btn-ghost" data-report-item>${icon('reports', { size: 13 })} Generate report</button>
             </div>
           </div>
         </section>
@@ -364,6 +367,14 @@ export function createRisk() {
 
       if (e.target.closest('#rk-reset')) { weights = defaultRiskWeights(); save(); refresh({ factors: true }); return; }
       if (e.target.closest('[data-ctx-clear]')) { ctx.clear(); renderCtxBar(); renderDetail(); return; }
+
+      if (e.target.closest('[data-report-item]')) {
+        const n = selectedName || ctx.get().state;
+        const ok = reports.add({ kind: 'risk', id: n, title: `Risk assessment — ${n}` });
+        toast(ok ? `Added ${n} risk assessment to the report`
+                 : `${n} risk assessment is already in the report`);
+        return;
+      }
 
       const go = e.target.closest('[data-go]')?.dataset.go;
       if (go) {
