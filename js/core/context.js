@@ -15,7 +15,7 @@
  * be restored from a URL or a saved session later without change.
  */
 
-import { store } from './store.js?v=cba4c5d';
+import { store } from './store.js?v=0939875';
 
 /** Routes that understand a context handoff. */
 export const CONTEXT_ROUTES = ['minerals', 'prospectivity', 'risk', 'explore'];

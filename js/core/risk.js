@@ -9,7 +9,7 @@
  * server-side model without touching the UI.
  */
 
-import { clamp, seeded } from './utils.js?v=cba4c5d';
+import { clamp, seeded } from './utils.js?v=0939875';
 
 const LEVEL_BASE = { low: 18, medium: 52, high: 84 };
 
@@ -23,7 +23,7 @@ export const RISK_FACTORS = [
     id: 'security',
     label: 'Security',
     accent: 'var(--red)',
-    weight: 32,
+    weight: 28,
     hint: 'Advisory level, incident history and escort requirements for field crews.',
     mitigation: 'Engage state security liaison; budget for escorted access and convoy movement.',
     evidence: (s) => LEVEL_BASE[s.risk] ?? 50,
@@ -32,7 +32,7 @@ export const RISK_FACTORS = [
     id: 'access',
     label: 'Accessibility',
     accent: 'var(--orange)',
-    weight: 22,
+    weight: 20,
     hint: 'Road quality, seasonal passability and distance to a serviceable airstrip or rail head.',
     mitigation: 'Plan mobilisation in the dry season; pre-position fuel and drilling consumables.',
     evidence: (s, r) => clamp(LEVEL_BASE[s.risk] * 0.55 + (100 - s.coverage) * 0.5 + r() * 14, 0, 100),
@@ -41,7 +41,7 @@ export const RISK_FACTORS = [
     id: 'environment',
     label: 'Environmental',
     accent: 'var(--green)',
-    weight: 18,
+    weight: 16,
     hint: 'Protected areas, forest reserve overlap, watercourse proximity and rehabilitation load.',
     mitigation: 'Commission an ESIA early; screen tenements against the protected-area register.',
     evidence: (s, r) => clamp(28 + (s.petroleum ? 20 : 0) + r() * 44, 0, 100),
@@ -50,16 +50,30 @@ export const RISK_FACTORS = [
     id: 'community',
     label: 'Community & land',
     accent: 'var(--gold)',
-    weight: 16,
+    weight: 14,
     hint: 'Artisanal mining presence, land-tenure disputes and host-community agreements.',
     mitigation: 'Formalise a community development agreement before ground disturbance.',
     evidence: (s, r) => clamp((s.occurrences / 224) * 58 + LEVEL_BASE[s.risk] * 0.3 + r() * 16, 0, 100),
   },
   {
+    id: 'flood',
+    label: 'Flood & physical',
+    accent: 'var(--cyan)',
+    weight: 12,
+    hint: 'Seasonal flooding, terrain severity and erosion exposure on access routes and workings.',
+    mitigation: 'Site camps and core sheds above the flood line; schedule earthworks outside the rainy season.',
+    // Riverine and coastal states carry the highest seasonal exposure.
+    evidence: (s, r) => {
+      const RIVERINE = ['South South', 'North Central', 'North East'];
+      const base = RIVERINE.includes(s.region) ? 58 : 30;
+      return clamp(base + (s.petroleum ? 14 : 0) + r() * 26, 0, 100);
+    },
+  },
+  {
     id: 'tenure',
     label: 'Tenure & regulatory',
     accent: 'var(--purple)',
-    weight: 12,
+    weight: 10,
     hint: 'Cadastre congestion, overlapping applications and licence renewal exposure.',
     mitigation: 'Run a cadastre overlap search and diarise renewal dates before acquisition.',
     evidence: (s, r) => clamp((s.titles / 312) * 72 + r() * 22, 0, 100),

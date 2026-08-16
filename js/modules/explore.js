@@ -13,23 +13,23 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js?v=cba4c5d';
-import { store } from '../core/store.js?v=cba4c5d';
-import { ctx } from '../core/context.js?v=cba4c5d';
-import { icon } from '../core/icons.js?v=cba4c5d';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=cba4c5d';
-import { NigeriaMap, zoomBand } from '../components/map.js?v=cba4c5d';
-import { RESOURCE_META } from '../data/fixtures.js?v=cba4c5d';
-import { toast } from './dashboard.js?v=cba4c5d';
-import { DrawEngine, TOOL_META } from '../components/draw.js?v=cba4c5d';
-import { History } from '../core/history.js?v=cba4c5d';
-import { projects } from '../data/projects.js?v=cba4c5d';
-import { measureShape } from '../core/geo.js?v=cba4c5d';
-import { loadPrefs } from './settings.js?v=cba4c5d';
-import { LAYER_GROUPS } from '../data/layers.js?v=cba4c5d';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=cba4c5d';
-import { createStatusBar } from '../components/statusbar.js?v=cba4c5d';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=cba4c5d';
+import { api } from '../data/api.js?v=0939875';
+import { store } from '../core/store.js?v=0939875';
+import { ctx } from '../core/context.js?v=0939875';
+import { icon } from '../core/icons.js?v=0939875';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=0939875';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=0939875';
+import { RESOURCE_META } from '../data/fixtures.js?v=0939875';
+import { toast } from './dashboard.js?v=0939875';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=0939875';
+import { History } from '../core/history.js?v=0939875';
+import { projects } from '../data/projects.js?v=0939875';
+import { measureShape } from '../core/geo.js?v=0939875';
+import { loadPrefs } from './settings.js?v=0939875';
+import { LAYER_GROUPS } from '../data/layers.js?v=0939875';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=0939875';
+import { createStatusBar } from '../components/statusbar.js?v=0939875';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=0939875';
 
 const RESOURCES = LEGEND_RESOURCES;
 
@@ -421,7 +421,13 @@ export function createExplore() {
                 <input type="text" id="map-loc-search" placeholder="Find state, LGA or occurrence" autocomplete="off"/>
               </div>
             </div>
-            <div class="glass-bar" id="ex-quick">
+            <div class="risk-key" id="ex-risk-key">
+                <b>Risk</b>
+                <span class="rk-k"><i style="background:#ff4d5e"></i>High</span>
+                <span class="rk-k"><i style="background:#ff8a3d"></i>Medium</span>
+                <span class="rk-k"><i style="background:#00e676"></i>Low</span>
+              </div>
+              <div class="glass-bar" id="ex-quick">
               <button class="tool-btn" data-tool="reset" title="National extent">${icon('crosshair', { size: 15 })}</button>
               <button class="tool-btn" data-tool="in" title="Zoom in">${icon('plus', { size: 15 })}</button>
               <button class="tool-btn" data-tool="out" title="Zoom out">${icon('minus', { size: 15 })}</button>

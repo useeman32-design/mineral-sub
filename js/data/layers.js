@@ -21,6 +21,8 @@ export const LAYER_GROUPS = [
       { id: 'prospectivity', label: 'Prospectivity heat',  color: '#ff8a3d', def: true },
       { id: 'lgas',          label: 'LGA boundaries',      color: '#5eead4', def: false,
         hint: 'Needs a selected state · auto at zoom 8.5+' },
+      { id: 'risk',          label: 'Risk zones',          color: '#ff4d5e', def: false,
+        hint: 'States tinted by security advisory level' },
     ],
   },
   {
@@ -28,7 +30,6 @@ export const LAYER_GROUPS = [
     items: [
       { id: 'geology', label: 'Geological units',      color: '#8b7dff', soon: true },
       { id: 'titles',  label: 'Mining titles',         color: '#4d9dff', soon: true },
-      { id: 'risk',    label: 'Risk zones',            color: '#ff4d5e', soon: true },
       { id: 'infra',   label: 'Roads & infrastructure', color: '#9aa7b0', soon: true },
     ],
   },

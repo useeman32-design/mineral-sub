@@ -10,9 +10,9 @@
  * register another layer in LAYER_SPECS and give it a zoom band.
  */
 
-import { store } from '../core/store.js?v=cba4c5d';
-import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=cba4c5d';
-import { fmt } from '../core/utils.js?v=cba4c5d';
+import { store } from '../core/store.js?v=0939875';
+import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=0939875';
+import { fmt } from '../core/utils.js?v=0939875';
 
 const NG_CENTER = [9.06, 8.68];
 const NG_BOUNDS = L.latLngBounds([3.6, 2.4], [14.3, 15.2]);
@@ -93,6 +93,7 @@ export class NigeriaMap {
     const PANE_Z = {
       graticule: 400, halo: 420, states: 440,
       lgas: 460,          // above states so LGA clicks win
+      risk: 470,          // risk tint above fills, below heat/deposits
       heat: 500, deposits: 540, labels: 580,
     };
     Object.entries(PANE_Z).forEach(([p, z]) => {
@@ -196,6 +197,7 @@ export class NigeriaMap {
 
   /** State polygons — hover + click drive the drill-down. */
   _buildStates(geo) {
+    this._geo = geo;
     this.layers.states = L.geoJSON(geo, {
       pane: 'states',
       style: (f) => this._stateStyle(f),
@@ -616,6 +618,36 @@ export class NigeriaMap {
       if (pane) { this._onZoom(); if (!on) pane.style.opacity = 0; }
     }
     if (id === 'graticule') this._setLayerVisible(this.layers.graticule, on);
+    if (id === 'risk') this.setRiskZones(on);
+  }
+
+  /**
+   * Risk-zone overlay — states tinted by advisory level.
+   * Built lazily on first enable, then shown/hidden.
+   */
+  setRiskZones(on) {
+    if (!on) {
+      if (this.layers.risk) this.map.removeLayer(this.layers.risk);
+      this.root.classList.remove('risk-active');
+      return;
+    }
+    if (!this.layers.risk) {
+      const COLORS = { high: '#ff4d5e', medium: '#ff8a3d', low: '#00e676' };
+      this.layers.risk = L.geoJSON(this._geo, {
+        pane: 'risk',
+        interactive: false,
+        style: (f) => {
+          const c = COLORS[f.properties.risk] || '#64787c';
+          return {
+            color: c, weight: 1.2, opacity: 0.75,
+            fillColor: c, fillOpacity: 0.2,
+            className: `ng-risk ng-risk-${f.properties.risk}`,
+          };
+        },
+      });
+    }
+    this.layers.risk.addTo(this.map);
+    this.root.classList.add('risk-active');
   }
 
   _setLayerVisible(layer, on) {

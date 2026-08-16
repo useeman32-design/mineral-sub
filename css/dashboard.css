@@ -1860,3 +1860,28 @@ body.is-panel-dragging .leaflet-container { pointer-events: none; }
   opacity: .55;
 }
 .tool-btn.is-off:hover { color: var(--text-mid); opacity: .85; }
+
+/* ============================================================
+   Risk-zone overlay
+   States tinted by advisory level. Non-interactive, so clicks
+   still reach the state polygons beneath.
+   ============================================================ */
+.ng-risk { transition: fill-opacity var(--t-med) var(--ease); pointer-events: none !important; }
+.leaflet-risk-pane { pointer-events: none; }
+
+/* legend chip appears while the overlay is on */
+.risk-key {
+  display: none; align-items: center; gap: 12px;
+  padding: 6px 11px; border-radius: var(--r-sm);
+  background: rgba(6, 10, 12, .78);
+  border: 1px solid var(--line-soft);
+  backdrop-filter: blur(6px);
+}
+.risk-active .risk-key { display: inline-flex; }
+.risk-key b {
+  font-size: var(--fs-micro); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+}
+.rk-k { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-micro); color: var(--text-mid); }
+.rk-k i { width: 9px; height: 9px; border-radius: 2px; }
+[data-theme="light"] .risk-key { background: rgba(255, 255, 255, .9); }

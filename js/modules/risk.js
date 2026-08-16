@@ -10,14 +10,14 @@
  * core/context.js and is carried onward by the action buttons.
  */
 
-import { $, $$, fmt, clamp } from '../core/utils.js?v=cba4c5d';
-import { icon } from '../core/icons.js?v=cba4c5d';
-import { api } from '../data/api.js?v=cba4c5d';
-import { ctx } from '../core/context.js?v=cba4c5d';
-import { RESOURCE_META } from '../data/fixtures.js?v=cba4c5d';
+import { $, $$, fmt, clamp } from '../core/utils.js?v=0939875';
+import { icon } from '../core/icons.js?v=0939875';
+import { api } from '../data/api.js?v=0939875';
+import { ctx } from '../core/context.js?v=0939875';
+import { RESOURCE_META } from '../data/fixtures.js?v=0939875';
 import {
   RISK_FACTORS, RISK_BANDS, runRisk, defaultRiskWeights, explainRisk,
-} from '../core/risk.js?v=cba4c5d';
+} from '../core/risk.js?v=0939875';
 
 const WEIGHTS_KEY = 'nmi.riskWeights';
 
@@ -209,7 +209,7 @@ export function createRisk() {
           <div class="pr-head-t">
             <h1>Risk Intelligence</h1>
             <p>Composite exploration risk across all 37 states — security, access,
-            environment, community and tenure, weighted to your risk appetite.</p>
+            environment, community, flood and tenure, weighted to your risk appetite.</p>
           </div>
           <div class="pr-head-k" id="rk-head-k"></div>
         </header>
@@ -367,7 +367,7 @@ export function createRisk() {
 
       const go = e.target.closest('[data-go]')?.dataset.go;
       if (go) {
-        ctx.set({ state: selectedName, layer: go === 'explore' ? 'risk' : null });
+        ctx.set({ state: selectedName || ctx.get().state, layer: go === 'explore' ? 'risk' : null });
         ctx.go(go);
       }
     });
@@ -389,7 +389,11 @@ export function createRisk() {
   /** Adopt any context handed over by another module. */
   async function adopt() {
     const c = ctx.get();
-    if (c.state && c.state !== selectedName) await selectState(c.state, { keepLga: !!c.lga });
+    if (c.state && c.state !== selectedName) {
+      await selectState(c.state, { keepLga: !!c.lga });
+    } else if (c.state) {
+      selectedName = c.state;
+    }
     if (c.lga) { const s = $('#rk-lga', root); if (s) s.value = c.lga; }
     renderCtxBar();
     renderDetail();

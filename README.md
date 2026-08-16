@@ -103,6 +103,17 @@ an asset path.
 resizes to 480px and palette-quantises it — 12 MB down to 2.6 MB with no
 visible loss at card size. Re-run it after adding any new photograph.
 
+### Risk zones layer
+
+`Risk zones` is a real overlay, not a placeholder: every state tinted by its
+security advisory level, drawn in a dedicated pane (z 470) above the base fills
+so the prospectivity heat pane's zoom-driven opacity cannot dim it. It is
+non-interactive, so clicks still reach the state polygons beneath, and a legend
+chip appears beside the map toolbar only while the layer is on.
+
+Risk Intelligence's *View on map* enables it automatically through
+`ctx.layer = 'risk'`.
+
 ### Cross-module navigation
 
 `core/context.js` holds one selection — commodity, state, LGA, occurrence —
