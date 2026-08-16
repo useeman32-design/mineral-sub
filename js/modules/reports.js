@@ -13,6 +13,7 @@ import { $, $$, fmt, debounce } from '../core/utils.js?v=effc9f2';
 import { icon } from '../core/icons.js?v=effc9f2';
 import { api } from '../data/api.js?v=effc9f2';
 import { store } from '../core/store.js?v=effc9f2';
+import { ctx } from '../core/context.js?v=effc9f2';
 import {
   reports, resolveSections, toCsv, toXlsx, toPdf, download, slug, SECTION_KINDS,
 } from '../core/reports.js?v=effc9f2';
@@ -32,6 +33,9 @@ const PRESETS = [
       { kind: 'petroleum', id: null, title: 'Petroleum licence blocks — national' },
       { kind: 'titles', id: null, title: 'Mining cadastre — national' },
     ] },
+  // Built from the live selection rather than a fixed list.
+  { id: 'location', label: 'Location intelligence', hint: 'Everything known about the current selection',
+    contextual: true, sections: [] },
   { id: 'everything', label: 'Full country dossier', hint: 'Every section, all scopes',
     sections: [
       { kind: 'national', id: null, title: 'National indicators' },
@@ -65,6 +69,28 @@ export function createReports() {
   const saveMeta = () => {
     try { localStorage.setItem('nmi.reportMeta', JSON.stringify(meta)); } catch { /* quota */ }
   };
+
+  /**
+   * Build a report around whatever the application currently has selected, so
+   * the user never re-enters a place they already chose. Anka + Gold yields the
+   * commodity, the state, the LGA, prospectivity, risk and the local cadastre.
+   */
+  function contextSections() {
+    const c = ctx.get();
+    const out = [];
+    if (c.occurrence) out.push({ kind: 'occurrence', id: c.occurrence, title: `Occurrence — ${c.occurrence}` });
+    if (c.commodity) out.push({ kind: 'commodity', id: c.commodity, title: `Commodity register — ${c.commodity}` });
+    if (c.lga && c.state) out.push({ kind: 'lga', id: c.lga, state: c.state, title: `Local government — ${c.lga}` });
+    if (c.state) {
+      out.push({ kind: 'state', id: c.state, title: `State profile — ${c.state}` });
+      out.push({ kind: 'prospectivity', id: c.state, commodity: c.commodity || null, title: `Prospectivity — ${c.state}` });
+      out.push({ kind: 'risk', id: c.state, title: `Risk assessment — ${c.state}` });
+      out.push({ kind: 'titles', id: c.state, title: `Mining titles — ${c.state}` });
+    }
+    if (c.title) out.push({ kind: 'title', id: c.title, title: `Mining title — ${c.title}` });
+    if (c.block) out.push({ kind: 'block', id: c.block, title: `Licence block — ${c.block}` });
+    return out;
+  }
 
   const stamp = () => new Date().toLocaleString('en-GB', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
@@ -433,8 +459,12 @@ export function createReports() {
         const pre = e.target.closest('[data-preset]');
         if (pre) {
           const p = PRESETS.find((x) => x.id === pre.dataset.preset);
-          let n = 0;
-          p.sections.forEach((s) => { if (reports.add({ ...s })) n += 1; });
+          const sections = p.contextual ? contextSections() : p.sections;
+          if (!sections.length) {
+            toast('Select a state, LGA or occurrence first — then this builds a report around it');
+            return;
+          }
+          const n = reports.addMany(sections.map((x) => ({ ...x })));
           toast(n ? `Added ${n} section${n > 1 ? 's' : ''}` : 'Those sections are already in the report');
           return;
         }

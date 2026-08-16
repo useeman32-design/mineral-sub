@@ -21,6 +21,7 @@ import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=effc9f2';
 import { NigeriaMap, zoomBand } from '../components/map.js?v=effc9f2';
 import { RESOURCE_META } from '../data/fixtures.js?v=effc9f2';
 import { toast } from './dashboard.js?v=effc9f2';
+import { reports } from '../core/reports.js?v=effc9f2';
 import { DrawEngine, TOOL_META } from '../components/draw.js?v=effc9f2';
 import { History } from '../core/history.js?v=effc9f2';
 import { projects } from '../data/projects.js?v=effc9f2';
@@ -289,6 +290,10 @@ export function createExplore() {
         <button class="btn-ghost" data-act="back-state">Back to state</button>
       </div>
       <div class="ctx-acts ctx-acts-insp">
+        <button class="btn-ghost" data-send="minerals" data-st="${p.state}" data-lga="${p.name}">
+          ${icon('minerals', { size: 12 })} Minerals</button>
+        <button class="btn-ghost" data-report-place data-st="${p.state}" data-lga="${p.name}">
+          ${icon('reports', { size: 12 })} Report</button>
         <button class="btn-ghost" data-send="prospectivity" data-st="${p.state}" data-lga="${p.name}">
           ${icon('prospectivity', { size: 12 })} Prospectivity</button>
         <button class="btn-ghost" data-send="risk" data-st="${p.state}" data-lga="${p.name}">
@@ -347,10 +352,18 @@ export function createExplore() {
         <button class="btn-ghost" data-act="zoom-state">Zoom</button>
       </div>
       <div class="ctx-acts ctx-acts-insp">
+        <button class="btn-ghost" data-send="minerals" data-st="${p.name}">
+          ${icon('minerals', { size: 12 })} Minerals</button>
         <button class="btn-ghost" data-send="prospectivity" data-st="${p.name}">
           ${icon('prospectivity', { size: 12 })} Prospectivity</button>
         <button class="btn-ghost" data-send="risk" data-st="${p.name}">
           ${icon('risk', { size: 12 })} Risk</button>
+        <button class="btn-ghost" data-send="titles" data-st="${p.name}">
+          ${icon('titles', { size: 12 })} Titles</button>
+        ${p.petroleum ? `<button class="btn-ghost" data-send="oilgas" data-st="${p.name}">
+          ${icon('oil', { size: 12 })} Oil &amp; Gas</button>` : ''}
+        <button class="btn-ghost" data-report-place data-st="${p.name}">
+          ${icon('reports', { size: 12 })} Report</button>
       </div>`;
   };
 
@@ -385,6 +398,10 @@ export function createExplore() {
           ${icon('minerals', { size: 12 })} Mineral</button>
         <button class="btn-ghost" data-send="prospectivity" data-res="${d.resource}" data-st="${d.state}">
           ${icon('prospectivity', { size: 12 })} Prospectivity</button>
+        <button class="btn-ghost" data-send="titles" data-res="${d.resource}" data-st="${d.state}">
+          ${icon('titles', { size: 12 })} Titles</button>
+        <button class="btn-ghost" data-report-place data-st="${d.state}" data-occ="${d.id}">
+          ${icon('reports', { size: 12 })} Report</button>
         <button class="btn-ghost" data-send="risk" data-res="${d.resource}" data-st="${d.state}">
           ${icon('risk', { size: 12 })} Risk</button>
       </div>`;
@@ -1198,8 +1215,36 @@ export function createExplore() {
           state: d.st || null,
           lga: d.lga || null,
           occurrence: d.occ || null,
+          // A place handoff must not carry a stale asset selection, or the
+          // receiving register would jump to an unrelated record.
+          title: null,
+          block: null,
         });
         ctx.go(d.send);
+        return;
+      }
+
+      // Build a report for whatever the map has selected, then open Reports.
+      const rep = e.target.closest('[data-report-place]');
+      if (rep) {
+        const d = rep.dataset;
+        const sections = [];
+        if (d.occ) {
+          const dep = deposits.find((x) => x.id === d.occ);
+          sections.push({ kind: 'occurrence', id: d.occ,
+            title: `Occurrence — ${dep?.name || d.occ}` });
+        }
+        if (d.lga) sections.push({ kind: 'lga', id: d.lga, state: d.st,
+          title: `Local government — ${d.lga}` });
+        if (d.st) {
+          sections.push({ kind: 'state', id: d.st, title: `State profile — ${d.st}` });
+          sections.push({ kind: 'prospectivity', id: d.st, title: `Prospectivity — ${d.st}` });
+          sections.push({ kind: 'risk', id: d.st, title: `Risk assessment — ${d.st}` });
+          sections.push({ kind: 'titles', id: d.st, title: `Mining titles — ${d.st}` });
+        }
+        const n = reports.addMany(sections);
+        toast(n ? `Added ${n} section${n === 1 ? '' : 's'} to the report` : 'Already in the report');
+        ctx.go('reports', { state: d.st || null, lga: d.lga || null, occurrence: d.occ || null });
         return;
       }
 

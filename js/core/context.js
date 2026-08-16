@@ -1,8 +1,9 @@
 /**
  * CROSS-MODULE CONTEXT
  * ====================
- * One selection — commodity, state, LGA, occurrence — shared by Minerals,
- * Prospectivity, Risk Intelligence and the Map Explorer. Modules read it on
+ * One selection — commodity, state, LGA, occurrence, mining title, petroleum
+ * block — shared by Minerals, Prospectivity, Risk Intelligence, Mining Titles,
+ * Oil & Gas and the Map Explorer. Modules read it on
  * show and write it when the user drills, so moving between pages never asks
  * the user to re-pick what they already chose.
  *
@@ -18,13 +19,15 @@
 import { store } from './store.js?v=effc9f2';
 
 /** Routes that understand a context handoff. */
-export const CONTEXT_ROUTES = ['minerals', 'prospectivity', 'risk', 'explore'];
+export const CONTEXT_ROUTES = ['minerals', 'prospectivity', 'risk', 'explore', 'titles', 'oilgas'];
 
 const EMPTY = {
   commodity: null,   // RESOURCE_META key, e.g. 'gold'
   state: null,       // state name, e.g. 'Zamfara'
   lga: null,         // LGA name, e.g. 'Anka'
   occurrence: null,  // deposit id, e.g. 'NMI-0001'
+  title: null,       // mining title id, e.g. 'ZA/EL/3251'
+  block: null,       // petroleum block id, e.g. 'OML-128'
   from: null,        // route that initiated the last handoff
   layer: null,       // map layer the receiving map should enable
   stamp: 0,          // bumped on every set, so onShow can detect a new request
@@ -69,7 +72,10 @@ export const ctx = {
   },
 
   /** True when the context names a place. */
-  hasPlace() { return !!(current.state || current.lga || current.occurrence); },
+  hasPlace() {
+    return !!(current.state || current.lga || current.occurrence
+      || current.title || current.block);
+  },
 
   /** Human-readable trail, e.g. "Gold · Zamfara · Anka". */
   label(meta = {}) {

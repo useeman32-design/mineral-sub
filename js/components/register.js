@@ -19,6 +19,7 @@
 
 import { $, $$, fmt, debounce } from '../core/utils.js?v=effc9f2';
 import { icon } from '../core/icons.js?v=effc9f2';
+import { ctx } from '../core/context.js?v=effc9f2';
 
 export function createRegister(view, cfg) {
   let rows = [];
@@ -69,6 +70,8 @@ export function createRegister(view, cfg) {
           </div>
           <div class="pr-head-k" id="rg-kpis"></div>
         </header>
+
+        <div class="ctx-bar" id="rg-ctx" hidden></div>
 
         <div class="rg-tools">
           <div class="mn-search rg-search">
@@ -149,7 +152,25 @@ export function createRegister(view, cfg) {
       </div>`;
   }
 
-  function refresh() { renderRows(); renderKpis(); renderDetail(); }
+  /** Mirror the shared selection so the user can see and clear it. */
+  function renderCtxBar() {
+    const host = $('#rg-ctx', view);
+    if (!host) return;
+    const c = ctx.get();
+    const parts = [];
+    if (c.commodity) parts.push(c.commodity);
+    if (c.state) parts.push(c.state);
+    if (c.lga) parts.push(c.lga);
+    if (!parts.length) { host.hidden = true; host.innerHTML = ''; return; }
+    host.hidden = false;
+    host.innerHTML = `
+      <span class="ctx-bar-l">Context</span>
+      <span class="ctx-bar-v">${parts.join(' · ')}</span>
+      <span class="spacer"></span>
+      <button class="ctx-clear" data-ctx-clear>Clear</button>`;
+  }
+
+  function refresh() { renderRows(); renderKpis(); renderDetail(); renderCtxBar(); }
 
   function wire() {
     const q = $('#rg-q', view);
@@ -169,19 +190,83 @@ export function createRegister(view, cfg) {
         renderRows();
         return;
       }
+      if (e.target.closest('[data-ctx-clear]')) {
+        ctx.clear();
+        cfg.filters.forEach((x) => { active[x.id] = x.options[0].v; });
+        $$('[data-filter]', view).forEach((sel) => { sel.value = active[sel.dataset.filter]; });
+        selected = null;
+        refresh();
+        return;
+      }
+
       cfg.onClick?.(e, () => selected, refresh);
     });
   }
 
+  /**
+   * Adopt the shared context: narrow to its state and, when the context names
+   * a specific record this register owns, select and reveal it.
+   */
+  function applyContext() {
+    const c = ctx.get();
+    let changed = false;
+
+    // Validate against the rendered <select>, not cfg.filters: option lists for
+    // state/commodity are populated from the data after load, so the static
+    // config is empty at this point.
+    const optionExists = (filterId, value) => {
+      const sel = $(`[data-filter="${filterId}"]`, view);
+      if (sel) return [...sel.options].some((o) => o.value === value);
+      return cfg.filters.find((x) => x.id === filterId)?.options.some((o) => o.v === value);
+    };
+
+    if (c.state && cfg.stateFilterId && active[cfg.stateFilterId] !== c.state
+      && optionExists(cfg.stateFilterId, c.state)) {
+      active[cfg.stateFilterId] = c.state; changed = true;
+    }
+    if (c.commodity && cfg.commodityFilterId && active[cfg.commodityFilterId] !== c.commodity
+      && optionExists(cfg.commodityFilterId, c.commodity)) {
+      active[cfg.commodityFilterId] = c.commodity; changed = true;
+    }
+
+    const wantedId = cfg.contextId ? cfg.contextId(c) : null;
+    if (wantedId) {
+      const hit = rows.find((r) => cfg.rowId(r) === wantedId);
+      if (hit) { selected = hit; changed = true; }
+    }
+
+    if (changed) {
+      // Reflect the new filter values in the selects.
+      $$('[data-filter]', view).forEach((sel) => {
+        if (active[sel.dataset.filter] !== undefined) sel.value = active[sel.dataset.filter];
+      });
+      refresh();
+      const row = $('#rg-rows tr.is-on', view);
+      row?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    } else {
+      renderCtxBar();
+    }
+  }
+
   return {
+    applyContext,
     async mount() {
       view.innerHTML = `<div class="pr-loading">${icon('refresh', { size: 18 })}<span>${cfg.loadingLabel || 'Loading register…'}</span></div>`;
       rows = await cfg.load();
       view.innerHTML = shell();
       wire();
       refresh();
+      applyContext();
     },
     get selected() { return selected; },
+    select(id) {
+      const hit = rows.find((r) => cfg.rowId(r) === id);
+      if (!hit) return false;
+      selected = hit;
+      refresh();
+      $('#rg-rows tr.is-on', view)?.scrollIntoView({ block: 'center' });
+      return true;
+    },
     get rows() { return rows; },
     get visibleRows() { return visible(); },
     refresh,

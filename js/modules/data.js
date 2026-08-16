@@ -6,11 +6,37 @@
  * the honest inventory behind every number the rest of the app displays.
  */
 
-import { $, $$, fmt } from '../core/utils.js?v=effc9f2';
+import { $, $$, fmt, debounce } from '../core/utils.js?v=effc9f2';
 import { icon } from '../core/icons.js?v=effc9f2';
 import { api } from '../data/api.js?v=effc9f2';
 import { reports } from '../core/reports.js?v=effc9f2';
 import { toast } from './dashboard.js?v=effc9f2';
+
+/**
+ * Consumer map: which modules read each dataset. Makes the dependency between
+ * the catalogue and the rest of the platform explicit, and lets the user jump
+ * straight to a module that uses the data they are looking at.
+ */
+const USED_BY = {
+  adm1: ['explore', 'overview', 'prospectivity', 'risk'],
+  adm2: ['explore', 'minerals', 'risk'],
+  occurrence: ['minerals', 'explore', 'prospectivity'],
+  commodity: ['minerals', 'explore'],
+  prospectivity: ['prospectivity', 'explore'],
+  risk: ['risk', 'explore'],
+  petroleum: ['oilgas', 'explore'],
+  titles: ['titles', 'explore', 'prospectivity'],
+  geochem: ['prospectivity'],
+  geophys: ['prospectivity'],
+  imagery: ['explore'],
+  infra: ['explore', 'risk'],
+};
+
+const MODULE_LABEL = {
+  overview: 'Overview', explore: 'Map Explorer', minerals: 'Minerals',
+  prospectivity: 'Prospectivity', risk: 'Risk Intelligence',
+  oilgas: 'Oil & Gas', titles: 'Mining Titles', reports: 'Reports',
+};
 
 const STATUS = {
   Connected: { c: 'var(--green)', d: 'Live source, refreshed on deploy' },
@@ -25,6 +51,7 @@ export function createDataCenter() {
   let health = null;
   let view;
   let filter = '*';
+  let query = '';
 
   const card = (d) => {
     const st = STATUS[d.status] || STATUS['Not connected'];
@@ -44,6 +71,14 @@ export function createDataCenter() {
           <span class="t-mono">${d.quality}%</span>
         </div>
 
+        <div class="dc-used">
+          <span class="dc-used-l">Used by</span>
+          <span class="dc-used-v">
+            ${(USED_BY[d.id] || []).map((m) => `<button class="dc-mod" data-open-module="${m}" title="Open ${MODULE_LABEL[m] || m}">${MODULE_LABEL[m] || m}</button>`).join('')
+              || '<em class="dc-none">Not yet consumed</em>'}
+          </span>
+        </div>
+
         <dl class="dc-meta">
           <div><dt>Source</dt><dd>${d.source}</dd></div>
           <div><dt>Records</dt><dd class="t-mono">${d.records ? fmt.int(d.records) : '—'}</dd></div>
@@ -55,7 +90,13 @@ export function createDataCenter() {
   };
 
   function render() {
-    const list = filter === '*' ? sets : sets.filter((d) => d.domain === filter);
+    const q = query.trim().toLowerCase();
+    const list = sets.filter((d) => {
+      if (filter !== '*' && d.domain !== filter) return false;
+      if (!q) return true;
+      return [d.name, d.source, d.format, d.domain, d.status]
+        .some((v) => String(v).toLowerCase().includes(q));
+    });
     const domains = ['*', ...new Set(sets.map((d) => d.domain))];
     const conn = sets.filter((d) => d.status === 'Connected').length;
     const pend = sets.filter((d) => d.status === 'Not connected').length;
@@ -80,6 +121,11 @@ export function createDataCenter() {
         </header>
 
         <div class="rg-tools">
+          <div class="mn-search rg-search">
+            ${icon('search', { size: 13 })}
+            <input id="dc-q" type="search" placeholder="Search datasets, source or format"
+                   value="${query.replace(/"/g, '&quot;')}" autocomplete="off" />
+          </div>
           <div class="dc-chips">
             ${domains.map((d) => `
               <button class="dc-chip ${filter === d ? 'is-on' : ''}" data-domain="${d}">
@@ -92,7 +138,10 @@ export function createDataCenter() {
           </button>
         </div>
 
-        <div class="dc-grid">${list.map(card).join('')}</div>
+        ${list.length
+          ? `<div class="dc-grid">${list.map(card).join('')}</div>`
+          : `<div class="rp-empty"><p class="pr-empty-t">No datasets match</p>
+               <p class="pr-empty-s">Try a different search term or domain.</p></div>`}
 
         <section class="panel dc-health">
           <header class="panel-hd">
@@ -133,9 +182,23 @@ export function createDataCenter() {
       [sets, health] = await Promise.all([api.getDatasets(), api.getSystemHealth()]);
       render();
 
+      view.addEventListener('input', debounce((e) => {
+        if (e.target.id === 'dc-q') {
+          query = e.target.value;
+          render();
+          // Re-focus after the re-render so typing is not interrupted.
+          const i = view.querySelector('#dc-q');
+          if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+        }
+      }, 200));
+
       view.addEventListener('click', (e) => {
         const chip = e.target.closest('[data-domain]');
         if (chip) { filter = chip.dataset.domain; render(); return; }
+
+        // Jump to a module that consumes this dataset.
+        const mod = e.target.closest('[data-open-module]');
+        if (mod) { location.hash = `#/${mod.dataset.openModule}`; return; }
         if (e.target.closest('[data-report-all]')) {
           const ok = reports.add({ kind: 'datasets', id: null, title: 'Data coverage & provenance' });
           toast(ok ? 'Added data coverage to the report' : 'Data coverage is already in the report');

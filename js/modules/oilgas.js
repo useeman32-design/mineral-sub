@@ -14,6 +14,22 @@ import { reports } from '../core/reports.js?v=effc9f2';
 import { createRegister } from '../components/register.js?v=effc9f2';
 import { toast } from './dashboard.js?v=effc9f2';
 
+/** The ten states with petroleum acreage — the register's geographic scope. */
+const PETRO_STATES = ['Abia', 'Akwa Ibom', 'Anambra', 'Bayelsa', 'Cross River',
+  'Delta', 'Edo', 'Imo', 'Ondo', 'Rivers'];
+
+/**
+ * Basin attribution by state. Nigeria's producing acreage is overwhelmingly
+ * Niger Delta; the others are frontier/marginal plays.
+ */
+const BASINS = {
+  'Abia': 'Niger Delta', 'Akwa Ibom': 'Niger Delta', 'Bayelsa': 'Niger Delta',
+  'Delta': 'Niger Delta', 'Imo': 'Niger Delta', 'Rivers': 'Niger Delta',
+  'Cross River': 'Niger Delta', 'Edo': 'Niger Delta',
+  'Anambra': 'Anambra', 'Ondo': 'Dahomey',
+};
+const basinOf = (state) => BASINS[state] || 'Benue Trough';
+
 const STATUS_COLOR = {
   Producing: 'var(--green)',
   Development: 'var(--gold)',
@@ -42,6 +58,7 @@ export function createOilGas() {
 
       <div class="pr-facts">
         ${fact('State', b.state)}
+        ${fact('Basin', basinOf(b.state))}
         ${fact('Terrain', b.terrain)}
         ${fact('Licence area', `<span class="t-mono">${fmt.int(b.areaKm2)} km²</span>`)}
         ${fact('Wells drilled', `<span class="t-mono">${b.wells}</span>`)}
@@ -52,6 +69,7 @@ export function createOilGas() {
       <div class="ctx-acts">
         <button class="btn-ghost btn-primary" data-go-map>${icon('map', { size: 13 })} View on map</button>
         <button class="btn-ghost" data-go-risk>${icon('risk', { size: 13 })} Risk</button>
+        <button class="btn-ghost" data-go-titles>${icon('titles', { size: 13 })} Titles</button>
         <button class="btn-ghost" data-add-report>${icon('reports', { size: 13 })} Report this block</button>
         <button class="btn-ghost" data-report-state title="Every block in ${b.state}">${icon('reports', { size: 13 })} All of ${b.state}</button>
       </div>
@@ -87,10 +105,23 @@ export function createOilGas() {
           ];
         },
 
+        // Assets participate in the shared context: a state handoff narrows the
+        // register, and a block handoff selects that exact block.
+        stateFilterId: 'state',
+        contextId: (c) => c.block,
+
         filters: [
+          { id: 'state', label: 'State',
+            options: [{ v: '*', l: 'All states' }, ...PETRO_STATES.map((n) => ({ v: n, l: n }))],
+            match: (b, v) => b.state === v },
           { id: 'kind', label: 'Type',
             options: [{ v: '*', l: 'All types' }, { v: 'OML', l: 'OML' }, { v: 'OPL', l: 'OPL' }],
             match: (b, v) => b.kind === v },
+          { id: 'basin', label: 'Basin',
+            options: [{ v: '*', l: 'All basins' }, { v: 'Niger Delta', l: 'Niger Delta' },
+              { v: 'Anambra', l: 'Anambra' }, { v: 'Dahomey', l: 'Dahomey' },
+              { v: 'Benue Trough', l: 'Benue Trough' }],
+            match: (b, v) => basinOf(b.state) === v },
           { id: 'terrain', label: 'Terrain',
             options: [{ v: '*', l: 'All terrain' }, { v: 'Onshore', l: 'Onshore' },
               { v: 'Swamp', l: 'Swamp' }, { v: 'Shallow offshore', l: 'Shallow offshore' },
@@ -122,8 +153,15 @@ export function createOilGas() {
         onClick: (e, getSel) => {
           const b = getSel();
           if (e.target.closest('[data-go-map]') && b) {
-            ctx.set({ state: b.state, lga: null, occurrence: null, commodity: 'oil', layer: 'deposits' });
+            ctx.set({
+              state: b.state, lga: null, occurrence: null, title: null,
+              block: b.id, commodity: 'oil', layer: 'deposits',
+            });
             ctx.go('explore');
+          }
+          if (e.target.closest('[data-go-titles]') && b) {
+            ctx.set({ state: b.state, lga: null, block: b.id, title: null });
+            ctx.go('titles');
           }
           if (e.target.closest('[data-go-risk]') && b) {
             ctx.set({ state: b.state, lga: null });
@@ -151,5 +189,8 @@ export function createOilGas() {
 
       await reg.mount();
     },
+
+    // Keep-alive view: adopt any context set while we were hidden.
+    onShow() { reg?.applyContext(); },
   };
 }

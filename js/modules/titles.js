@@ -14,6 +14,10 @@ import { reports } from '../core/reports.js?v=effc9f2';
 import { createRegister } from '../components/register.js?v=effc9f2';
 import { toast } from './dashboard.js?v=effc9f2';
 
+/** Populated from the cadastre on first load so the filters match the data. */
+let STATE_NAMES = [];
+let COMMODITY_NAMES = [];
+
 const STATUS_COLOR = {
   Active: 'var(--green)',
   Expiring: 'var(--gold)',
@@ -61,6 +65,8 @@ export function createTitles() {
       <div class="ctx-acts">
         <button class="btn-ghost btn-primary" data-go-map>${icon('map', { size: 13 })} View on map</button>
         <button class="btn-ghost" data-go-mineral>${icon('minerals', { size: 13 })} Commodity</button>
+        <button class="btn-ghost" data-go-pros>${icon('prospectivity', { size: 13 })} Prospectivity</button>
+        <button class="btn-ghost" data-go-risk>${icon('risk', { size: 13 })} Risk</button>
         <button class="btn-ghost" data-add-report>${icon('reports', { size: 13 })} Report this title</button>
         <button class="btn-ghost" data-report-state title="Every title in ${t.state}">${icon('reports', { size: 13 })} All of ${t.state}</button>
       </div>
@@ -79,7 +85,12 @@ export function createTitles() {
         emptyHint: 'Holder, term, area and overlap status open here.',
         defaultSort: 'expiry',
         defaultDir: 'asc',
-        load: () => api.getMiningTitles(),
+        load: async () => {
+          const rows = await api.getMiningTitles();
+          STATE_NAMES = [...new Set(rows.map((t) => t.state))].sort();
+          COMMODITY_NAMES = [...new Set(rows.map((t) => t.commodity))].sort();
+          return rows;
+        },
         rowId: (t) => t.id,
 
         kpis: (list) => {
@@ -93,7 +104,17 @@ export function createTitles() {
           ];
         },
 
+        stateFilterId: 'state',
+        commodityFilterId: 'commodity',
+        contextId: (c) => c.title,
+
         filters: [
+          { id: 'state', label: 'State',
+            options: [{ v: '*', l: 'All states' }, ...STATE_NAMES.map((n) => ({ v: n, l: n }))],
+            match: (t, v) => t.state === v },
+          { id: 'commodity', label: 'Commodity',
+            options: [{ v: '*', l: 'All commodities' }],  // filled after load
+            match: (t, v) => t.commodity === v },
           { id: 'type', label: 'Type',
             options: [{ v: '*', l: 'All types' }, { v: 'EL', l: 'Exploration Licence' },
               { v: 'ML', l: 'Mining Lease' }, { v: 'SSML', l: 'Small Scale Lease' },
@@ -131,12 +152,23 @@ export function createTitles() {
           if (e.target.closest('[data-go-map]') && t) {
             // No title polygons exist yet, so hand off the state and the
             // commodity's occurrences rather than the pending 'titles' layer.
-            ctx.set({ state: t.state, lga: null, occurrence: null, commodity: t.commodity, layer: 'deposits' });
+            ctx.set({
+              state: t.state, lga: null, occurrence: null, block: null,
+              title: t.id, commodity: t.commodity, layer: 'deposits',
+            });
             ctx.go('explore');
           }
           if (e.target.closest('[data-go-mineral]') && t) {
-            ctx.set({ commodity: t.commodity, state: t.state, lga: null, occurrence: null });
+            ctx.set({ commodity: t.commodity, state: t.state, lga: null, occurrence: null, title: t.id });
             ctx.go('minerals');
+          }
+          if (e.target.closest('[data-go-pros]') && t) {
+            ctx.set({ commodity: t.commodity, state: t.state, lga: null, title: t.id });
+            ctx.go('prospectivity');
+          }
+          if (e.target.closest('[data-go-risk]') && t) {
+            ctx.set({ state: t.state, lga: null, title: t.id });
+            ctx.go('risk');
           }
           // Selecting one title reports exactly that title.
           if (e.target.closest('[data-add-report]') && t) {
@@ -157,6 +189,24 @@ export function createTitles() {
       });
 
       await reg.mount();
+
+      // Both option lists are only known once the cadastre has loaded, and the
+      // shell renders before that — so fill them in, then apply the context so
+      // an incoming state/commodity handoff can actually match an option.
+      const fill = (id, all, values) => {
+        const sel = view.querySelector(`[data-filter="${id}"]`);
+        if (!sel) return;
+        const keep = sel.value;
+        sel.innerHTML = `<option value="*">${all}</option>`
+          + values.map((v) => `<option value="${v}">${v}</option>`).join('');
+        sel.value = keep;
+      };
+      fill('state', 'All states', STATE_NAMES);
+      fill('commodity', 'All commodities', COMMODITY_NAMES);
+
+      reg.applyContext();
     },
+
+    onShow() { reg?.applyContext(); },
   };
 }

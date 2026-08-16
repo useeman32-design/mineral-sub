@@ -626,3 +626,34 @@
 .rp-table td.t-mono { white-space: nowrap; }
 .rp-doc { overflow: hidden; }
 .rp-sec { overflow-x: auto; }
+
+/* ============================================================
+   AUDIT ADDITIONS — context bars, dataset consumers
+   ============================================================ */
+
+/* The registers reuse the .ctx-bar language from Prospectivity/Risk. */
+.rg-wrap .ctx-bar { margin-bottom: 12px; }
+
+/* Data Center: which modules consume a dataset. */
+.dc-used {
+  display: flex; align-items: baseline; gap: 8px;
+  margin: 11px 0 0; padding-top: 10px;
+  border-top: 1px solid var(--line-faint);
+}
+.dc-used-l {
+  font-size: 9px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--text-low); flex-shrink: 0;
+}
+.dc-used-v { display: flex; flex-wrap: wrap; gap: 4px; }
+.dc-mod {
+  font: inherit; font-size: 10px; cursor: pointer;
+  padding: 2px 7px; border-radius: 20px;
+  background: var(--green-vdim); border: 1px solid var(--green-dim);
+  color: var(--green);
+  transition: background .14s, border-color .14s;
+}
+.dc-mod:hover { background: var(--green-dim); border-color: var(--green); }
+.dc-none { font-style: italic; font-size: 10px; color: var(--text-faint); }
+
+.dc-card .dc-meta { margin-top: 10px; }
+.dc-wrap .rg-search { min-width: 240px; flex: 0 1 300px; }
