@@ -19,6 +19,26 @@ what we hold, what we tested, and how the gap gets closed.
 So the register is real and complete on attributes — holder, commodity, area,
 dates — and completely blind on position. That is the whole gap.
 
+## eMC+ public account — register here
+
+**https://nigeriaminingcadastre.gov.ng/eMC/Account/RegisterPublic**
+
+Verified live (HTTP 200, valid TLS — unlike NGSA, no `-k` needed). The form is
+short and asks only for: user name, given name, family name, salutation,
+default language, and email. There is no payment step.
+
+Supporting pages, all reachable:
+- Login — `/eMC/Account/Login`
+- General documents — `/eMC/Document/GeneralDocuments`
+- Legal documents — `/eMC/Document/LegalDocuments`
+- Contact — info@miningcadastre.gov.ng
+
+The public account is what gets us into the map viewer where title geometry is
+displayed. Whether it also permits **bulk export** of that geometry is the open
+question — a viewer account often allows inspection but not download. If export
+is not available once logged in, Email 4 (title polygons via MCO) still needs
+to go out. Register first, then check, then send the email only if needed.
+
 ## Why the MCO export has no coordinates
 
 The published spreadsheet (`Valid Mineral Titles As At 31 May 2026`) carries
