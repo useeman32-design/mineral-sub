@@ -118,7 +118,7 @@ export function createExplore() {
   const drillNav = () => {
     const d = store.get('drill');
     const steps = [
-      { k: 'nation', label: 'Nigeria', sub: '37 states', done: true },
+      { k: 'nation', label: 'Nigeria', sub: '36 states + FCT', done: true },
       { k: 'state', label: d.state || 'Select a state', sub: d.state ? 'Click to zoom' : 'Click the map', done: !!d.state },
       { k: 'lga', label: d.lga || 'Local government', sub: d.state ? 'Zoom to 8.5+' : 'Awaiting state', done: !!d.lga },
       { k: 'prospect', label: d.prospect || 'Mineral prospect', sub: 'Zoom to 13+', done: !!d.prospect },

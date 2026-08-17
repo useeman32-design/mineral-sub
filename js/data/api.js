@@ -144,7 +144,7 @@ export class Api {
       const kpis = base.kpis.map((k) => {
         if (k.id === 'titles') {
           return { ...k, value: nat.totalTitles, delta: 0, live: true,
-            ctx: `${nat.states} states · ${Math.round(nat.totalAreaKm2).toLocaleString('en-US')} km² licensed` };
+            ctx: `${nat.states >= 37 ? '36 states + FCT' : `${nat.states} states`} · ${Math.round(nat.totalAreaKm2).toLocaleString('en-US')} km² licensed` };
         }
         return k;
       });

@@ -211,7 +211,7 @@ export function createRisk() {
         <header class="pr-head">
           <div class="pr-head-t">
             <h1>Risk Intelligence</h1>
-            <p>Composite exploration risk across all 37 states — security, access,
+            <p>Composite exploration risk across 36 states and the FCT — security, access,
             environment, community, flood and tenure, weighted to your risk appetite.</p>
           </div>
           <div class="pr-head-k" id="rk-head-k"></div>
@@ -286,7 +286,9 @@ export function createRisk() {
       ? result.rows.map(row).join('')
       : '<p class="pr-none pr-none-pad">Every factor is disabled — enable at least one to score risk.</p>';
     const n = $('#rk-count', root);
-    if (n) n.textContent = `${result.rows.length} states`;
+    if (n) n.textContent = result.rows.length >= 37
+      ? '36 states + FCT'
+      : `${result.rows.length} states`;
     const d = $('#rk-dist', root);
     if (d) d.innerHTML = result.activeWeight ? distribution() : '';
   }
@@ -297,7 +299,7 @@ export function createRisk() {
     const severe = result.rows.filter((r) => r.band.id === 'severe' || r.band.id === 'high').length;
     const top = result.rows[0];
     host.innerHTML = `
-      ${kpi('High / severe', severe, `of ${result.rows.length} states`, 'var(--red)')}
+      ${kpi('High / severe', severe, `of ${result.rows.length} areas`, 'var(--red)')}
       ${kpi('Highest risk', top ? top.name : '—', top ? `${top.score.toFixed(1)} composite` : '', 'var(--orange)')}
       ${kpi('Lowest risk', result.rows.at(-1)?.name || '—', `${result.rows.at(-1)?.score.toFixed(1) || ''} composite`, 'var(--green)')}`;
   }

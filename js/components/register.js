@@ -27,6 +27,10 @@ export function createRegister(view, cfg) {
   let query = '';
   let sortId = cfg.defaultSort || cfg.columns[0].id;
   let sortDir = cfg.defaultDir || 'asc';
+  // The real cadastre is 10,125 rows; rendering them all produced ~102,000 DOM
+  // nodes and a 12s freeze on a throttled CPU. Paginate instead.
+  const PAGE = 200;
+  let page = 0;
   const active = {};
   cfg.filters.forEach((f) => { active[f.id] = f.options[0].v; });
 
@@ -108,6 +112,7 @@ export function createRegister(view, cfg) {
                 <tbody id="rg-rows"></tbody>
               </table>
             </div>
+            <div class="rg-pager" id="rg-pager" hidden></div>
           </div>
           <aside class="rg-detail" id="rg-detail"></aside>
         </div>
@@ -118,15 +123,27 @@ export function createRegister(view, cfg) {
     const host = $('#rg-rows', view);
     if (!host) return;
     const list = visible();
-    host.innerHTML = list.length
-      ? list.map((r, i) => `
-        <tr data-row="${i}" class="${selected && cfg.rowId(r) === cfg.rowId(selected) ? 'is-on' : ''}">
+
+    const pages = Math.max(1, Math.ceil(list.length / PAGE));
+    if (page >= pages) page = pages - 1;
+    if (page < 0) page = 0;
+    const start = page * PAGE;
+    const slice = list.slice(start, start + PAGE);
+
+    host.innerHTML = slice.length
+      ? slice.map((r, i) => `
+        <tr data-row="${start + i}" class="${selected && cfg.rowId(r) === cfg.rowId(selected) ? 'is-on' : ''}">
           ${cfg.columns.map((c) => `
             <td class="${c.align === 'r' ? 'ta-r' : ''} ${c.mono ? 't-mono' : ''}">${c.render ? c.render(r) : c.get(r)}</td>`).join('')}
         </tr>`).join('')
       : `<tr><td colspan="${cfg.columns.length}" class="rg-none">Nothing matches the current filters.</td></tr>`;
 
-    $('#rg-count', view).textContent = `${list.length} of ${rows.length}`;
+    $('#rg-count', view).textContent = list.length === rows.length
+      ? `${list.length.toLocaleString('en-US')}`
+      : `${list.length.toLocaleString('en-US')} of ${rows.length.toLocaleString('en-US')}`;
+
+    renderPager(list.length, pages, start, slice.length);
+
     $$('#rg-rows [data-row]', view).forEach((tr) => {
       tr.addEventListener('click', () => { selected = list[+tr.dataset.row]; renderRows(); renderDetail(); });
     });
@@ -134,6 +151,25 @@ export function createRegister(view, cfg) {
       th.classList.toggle('is-sorted', th.dataset.sort === sortId);
       th.dataset.dir = th.dataset.sort === sortId ? sortDir : '';
     });
+  }
+
+  /** Page controls, hidden when everything fits on one page. */
+  function renderPager(total, pages, start, shown) {
+    const host = $('#rg-pager', view);
+    if (!host) return;
+    if (pages <= 1) { host.hidden = true; host.innerHTML = ''; return; }
+    host.hidden = false;
+    host.innerHTML = `
+      <span class="rg-pg-info">
+        ${(start + 1).toLocaleString('en-US')}–${(start + shown).toLocaleString('en-US')}
+        of ${total.toLocaleString('en-US')}
+      </span>
+      <span class="spacer"></span>
+      <button class="rg-pg" data-page="first" ${page === 0 ? 'disabled' : ''}>First</button>
+      <button class="rg-pg" data-page="prev" ${page === 0 ? 'disabled' : ''}>Prev</button>
+      <span class="rg-pg-n">Page ${page + 1} of ${pages.toLocaleString('en-US')}</span>
+      <button class="rg-pg" data-page="next" ${page >= pages - 1 ? 'disabled' : ''}>Next</button>
+      <button class="rg-pg" data-page="last" ${page >= pages - 1 ? 'disabled' : ''}>Last</button>`;
   }
 
   function renderKpis() {
@@ -174,19 +210,31 @@ export function createRegister(view, cfg) {
 
   function wire() {
     const q = $('#rg-q', view);
-    q?.addEventListener('input', debounce(() => { query = q.value; renderRows(); renderKpis(); }, 150));
+    q?.addEventListener('input', debounce(() => { query = q.value; page = 0; renderRows(); renderKpis(); }, 150));
 
     view.addEventListener('change', (e) => {
       const f = e.target.closest('[data-filter]');
-      if (f) { active[f.dataset.filter] = f.value; selected = null; refresh(); }
+      if (f) { active[f.dataset.filter] = f.value; selected = null; page = 0; refresh(); }
     });
 
     view.addEventListener('click', (e) => {
+      const pg = e.target.closest('[data-page]');
+      if (pg) {
+        const pages = Math.max(1, Math.ceil(visible().length / PAGE));
+        const to = pg.dataset.page;
+        page = to === 'first' ? 0 : to === 'last' ? pages - 1
+          : to === 'next' ? page + 1 : page - 1;
+        renderRows();
+        $('.rg-scroll', view)?.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
       const th = e.target.closest('th[data-sort]');
       if (th) {
         const id = th.dataset.sort;
         if (id === sortId) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
         else { sortId = id; sortDir = 'asc'; }
+        page = 0;
         renderRows();
         return;
       }

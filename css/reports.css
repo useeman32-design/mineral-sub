@@ -758,3 +758,28 @@
   .dc-live { flex-wrap: wrap; }
   .dc-live-t { flex: 1 1 100%; order: 3; }
 }
+
+/* ---------- register pagination ---------- */
+
+.rg-pager {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--line-soft);
+}
+.rg-pager[hidden] { display: none !important; }
+.rg-pager .spacer { flex: 1; }
+.rg-pg-info, .rg-pg-n {
+  font-size: 10.5px; color: var(--text-low);
+  font-family: var(--font-mono, monospace);
+}
+.rg-pg-n { padding: 0 6px; }
+.rg-pg {
+  font: inherit; font-size: 10.5px; cursor: pointer;
+  padding: 4px 10px; border-radius: var(--r-sm);
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+  color: var(--text-mid); transition: all .14s;
+}
+.rg-pg:hover:not(:disabled) {
+  color: var(--green); border-color: var(--green-dim); background: var(--green-vdim);
+}
+.rg-pg:disabled { opacity: .3; cursor: default; }

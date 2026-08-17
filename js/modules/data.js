@@ -175,7 +175,7 @@ export function createDataCenter() {
             <div class="dc-h-row">
               <span>Geometry</span>
               <b style="color:var(--green)">geoBoundaries ADM1 + ADM2</b>
-              <em>37 state polygons bundled; 774 LGA polygons loaded per state on demand.</em>
+              <em>36 states + FCT bundled as ADM1; 774 LGA polygons loaded per state on demand.</em>
             </div>
             <div class="dc-h-row">
               <span>Basemap tiles</span>

@@ -2,7 +2,7 @@
  * PROSPECTIVITY MODULE
  * ====================
  * A live weighted-overlay targeting model. The criteria editor on the left
- * drives an immediate re-score of all 37 states; the ranked target list and
+ * drives an immediate re-score of all 36 states and the FCT; the ranked list and
  * the selected target's evidence breakdown sit on the right.
  *
  * The maths lives in core/scoring.js so it stays testable and swappable. This
@@ -252,7 +252,7 @@ export function createProspectivity() {
         <header class="pr-head">
           <div class="pr-head-t">
             <h1>Prospectivity</h1>
-            <p>Weighted-overlay targeting across all 37 states. Adjust criteria
+            <p>Weighted-overlay targeting across 36 states and the FCT. Adjust criteria
             weights and the model re-scores immediately.</p>
           </div>
           <div class="pr-head-k" id="pr-head-k"></div>
@@ -350,7 +350,9 @@ export function createProspectivity() {
       host.innerHTML = result.targets.map(targetRow).join('');
     }
     const n = $('#pr-count', root);
-    if (n) n.textContent = `${result.targets.length} states`;
+    if (n) n.textContent = result.targets.length >= 37
+      ? '36 states + FCT'
+      : `${result.targets.length} states`;
     const d = $('#pr-dist', root);
     if (d) d.innerHTML = result.targets.length ? distribution() : '';
   }
@@ -364,7 +366,7 @@ export function createProspectivity() {
     host.innerHTML = `
       ${kpi('Tier 1 targets', t1, 'drill-ready', 'var(--green)')}
       ${kpi('Leading target', lead ? lead.name : '—', lead ? `${lead.score.toFixed(1)} composite` : 'no data', 'var(--gold)')}
-      ${kpi('High confidence', hiConf, `of ${result.targets.length} scored`, 'var(--cyan)')}`;
+      ${kpi('High confidence', hiConf, `of ${result.targets.length} areas scored`, 'var(--cyan)')}`;
   }
 
   async function pickTarget(name, { keepLga = false } = {}) {

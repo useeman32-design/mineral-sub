@@ -140,7 +140,7 @@ async function resolveOne(api, s) {
       const sum = await api.getDashboardSummary();
       return {
         ...base,
-        subtitle: 'Federal Republic of Nigeria · all 37 states',
+        subtitle: 'Federal Republic of Nigeria · 36 states + FCT',
         columns: ['Indicator', 'Value', 'Change', 'Context'],
         rows: sum.kpis.map((k) => [k.label, fmt.int(k.value) + (k.unit ? ` ${k.unit}` : ''),
           fmt.delta(k.delta), k.ctx || '—']),

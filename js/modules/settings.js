@@ -140,7 +140,7 @@ export function createSettings() {
               </div>
             </div>
             ${row('Role', 'Determines module access', `<span class="set-tagv">Administrator</span>`)}
-            ${row('Region scope', 'Data visibility boundary', `<span class="set-tagv">National — all 37 states</span>`)}
+            ${row('Region scope', 'Data visibility boundary', `<span class="set-tagv">National — 36 states + FCT</span>`)}
           `)}
         </div>
       </div>`;

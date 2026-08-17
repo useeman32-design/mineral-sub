@@ -160,7 +160,7 @@ export function createDashboard() {
     <article class="panel">
       <header class="panel-hd">
         <span class="accent-bar accent-purple"></span><h3>Data Coverage</h3><span class="spacer"></span>
-        <span class="t-label">37 states</span>
+        <span class="t-label">36 states + FCT</span>
       </header>
       <div class="panel-bd">
         ${rows.map((c) => `
