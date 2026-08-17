@@ -5,15 +5,15 @@
  * The map owns the majority of the viewport; intel cards flank it.
  */
 
-import { api } from '../data/api.js?v=20ba70e';
-import { store } from '../core/store.js?v=20ba70e';
-import { icon } from '../core/icons.js?v=20ba70e';
-import { $, $$, fmt, sparkline, bars, ring, donut, countUp } from '../core/utils.js?v=20ba70e';
-import { NigeriaMap } from '../components/map.js?v=20ba70e';
-import { RESOURCE_META } from '../data/fixtures.js?v=20ba70e';
-import { mapToolbar } from '../components/map-toolbar.js?v=20ba70e';
-import { initRail } from '../components/rail.js?v=20ba70e';
-import { loadPrefs } from './settings.js?v=20ba70e';
+import { api } from '../data/api.js?v=a2f4c1d';
+import { store } from '../core/store.js?v=a2f4c1d';
+import { icon } from '../core/icons.js?v=a2f4c1d';
+import { $, $$, fmt, sparkline, bars, ring, donut, countUp } from '../core/utils.js?v=a2f4c1d';
+import { NigeriaMap } from '../components/map.js?v=a2f4c1d';
+import { RESOURCE_META } from '../data/fixtures.js?v=a2f4c1d';
+import { mapToolbar } from '../components/map-toolbar.js?v=a2f4c1d';
+import { initRail } from '../components/rail.js?v=a2f4c1d';
+import { loadPrefs } from './settings.js?v=a2f4c1d';
 
 export function createDashboard() {
   let root, nmap, data, rail, lastLga = null, unsub = [];
