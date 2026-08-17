@@ -22,6 +22,8 @@ const STATUS_COLOR = {
   Active: 'var(--green)',
   Expiring: 'var(--gold)',
   Expired: 'var(--red)',
+  // Some published records carry corrupt dates; shown as unknown, not guessed.
+  Unknown: 'var(--text-low)',
 };
 
 export function createTitles() {
@@ -87,8 +89,16 @@ export function createTitles() {
         defaultDir: 'asc',
         load: async () => {
           const rows = await api.getMiningTitles();
-          STATE_NAMES = [...new Set(rows.map((t) => t.state))].sort();
-          COMMODITY_NAMES = [...new Set(rows.map((t) => t.commodity))].sort();
+          // Live records carry every state and mineral on the grant; sample
+          // records carry one of each. Collect from whichever is present.
+          const states = new Set();
+          const minerals = new Set();
+          rows.forEach((t) => {
+            (t.states || [t.state]).forEach((s) => s && states.add(s));
+            (t.commodities || [t.commodity]).forEach((c) => c && minerals.add(c));
+          });
+          STATE_NAMES = [...states].sort();
+          COMMODITY_NAMES = [...minerals].sort();
           return rows;
         },
         rowId: (t) => t.id,
@@ -111,10 +121,13 @@ export function createTitles() {
         filters: [
           { id: 'state', label: 'State',
             options: [{ v: '*', l: 'All states' }, ...STATE_NAMES.map((n) => ({ v: n, l: n }))],
-            match: (t, v) => t.state === v },
+            // Cross-boundary grants list several states; match any of them.
+            match: (t, v) => (t.states ? t.states.includes(v) : t.state === v) },
           { id: 'commodity', label: 'Commodity',
             options: [{ v: '*', l: 'All commodities' }],  // filled after load
-            match: (t, v) => t.commodity === v },
+            match: (t, v) => (t.commodities
+              ? t.commodities.some((c) => c.toLowerCase() === String(v).toLowerCase())
+              : t.commodity === v) },
           { id: 'type', label: 'Type',
             options: [{ v: '*', l: 'All types' }, { v: 'EL', l: 'Exploration Licence' },
               { v: 'ML', l: 'Mining Lease' }, { v: 'SSML', l: 'Small Scale Lease' },
@@ -122,7 +135,8 @@ export function createTitles() {
             match: (t, v) => t.type === v },
           { id: 'status', label: 'Status',
             options: [{ v: '*', l: 'All status' }, { v: 'Active', l: 'Active' },
-              { v: 'Expiring', l: 'Expiring' }, { v: 'Expired', l: 'Expired' }],
+              { v: 'Expiring', l: 'Expiring' }, { v: 'Expired', l: 'Expired' },
+              { v: 'Unknown', l: 'Date unrecorded' }],
             match: (t, v) => t.status === v },
           { id: 'flag', label: 'Integrity',
             options: [{ v: '*', l: 'All titles' }, { v: 'ovl', l: 'Overlaps only' }],
@@ -140,7 +154,8 @@ export function createTitles() {
           { id: 'holder', label: 'Holder', get: (t) => t.holder },
           { id: 'commodity', label: 'Commodity', get: (t) => t.commodity },
           { id: 'area', label: 'Area (ha)', get: (t) => fmt.int(t.areaHa), sort: (t) => t.areaHa, align: 'r', mono: true },
-          { id: 'expiry', label: 'Expiry', get: (t) => t.expiry, align: 'r', mono: true },
+          { id: 'expiry', label: 'Expiry', get: (t) => t.expiry ?? '—',
+            sort: (t) => t.expiry ?? 9999, align: 'r', mono: true },
           { id: 'status', label: 'Status', get: (t) => t.status,
             render: (t) => `<span class="rg-tag" style="color:${STATUS_COLOR[t.status]}">${t.status}</span>${t.overlap ? '<i class="rg-dot" title="Overlap flagged"></i>' : ''}` },
         ],

@@ -11,6 +11,7 @@ import { icon } from '../core/icons.js?v=11d9f5e';
 import { api } from '../data/api.js?v=11d9f5e';
 import { reports } from '../core/reports.js?v=11d9f5e';
 import { toast } from './dashboard.js?v=11d9f5e';
+import { liveMode } from '../data/live.js?v=11d9f5e';
 
 /**
  * Consumer map: which modules read each dataset. Makes the dependency between
@@ -90,6 +91,7 @@ export function createDataCenter() {
   };
 
   function render() {
+    const live = liveMode.enabled;
     const q = query.trim().toLowerCase();
     const list = sets.filter((d) => {
       if (filter !== '*' && d.domain !== filter) return false;
@@ -105,6 +107,21 @@ export function createDataCenter() {
 
     view.innerHTML = `
       <div class="pr-wrap dc-wrap">
+        <section class="dc-live ${live ? 'is-live' : ''}">
+          <div class="dc-live-i">${icon(live ? 'activity' : 'layers', { size: 17 })}</div>
+          <div class="dc-live-t">
+            <b>${live ? 'Live government data' : 'Sample data'}</b>
+            <em>${live
+              ? 'Serving real records from the Mining Cadastre Office, Protected Planet, OpenStreetMap and WorldPop.'
+              : 'Serving deterministic placeholders. Switch on to load the real government datasets held in this repository.'}</em>
+          </div>
+          <button class="dc-switch ${live ? 'is-on' : ''}" data-go-live role="switch"
+                  aria-checked="${live}" aria-label="Toggle live government data">
+            <span class="dc-switch-k"></span>
+          </button>
+          <span class="dc-live-l">${live ? 'GO LIVE' : 'GO LIVE'}</span>
+        </section>
+
         <header class="pr-head">
           <div class="pr-head-t">
             <h1>Data Center</h1>
@@ -175,12 +192,17 @@ export function createDataCenter() {
       </div>`;
   }
 
+  /** Fetch the catalogue and repaint — used on mount and after a mode switch. */
+  async function reload() {
+    view.innerHTML = `<div class="pr-loading">${icon('refresh', { size: 18 })}<span>Loading data catalogue…</span></div>`;
+    [sets, health] = await Promise.all([api.getDatasets(), api.getSystemHealth()]);
+    render();
+  }
+
   return {
     async mount(v) {
       view = v;
-      view.innerHTML = `<div class="pr-loading">${icon('refresh', { size: 18 })}<span>Loading data catalogue…</span></div>`;
-      [sets, health] = await Promise.all([api.getDatasets(), api.getSystemHealth()]);
-      render();
+      await reload();
 
       view.addEventListener('input', debounce((e) => {
         if (e.target.id === 'dc-q') {
@@ -193,6 +215,20 @@ export function createDataCenter() {
       }, 200));
 
       view.addEventListener('click', (e) => {
+        // GO LIVE: swap every module between sample and real government data.
+        const sw = e.target.closest('[data-go-live]');
+        if (sw) {
+          const on = !liveMode.enabled;
+          sw.classList.toggle('is-on', on);
+          liveMode.set(on);
+          api.clearCache();
+          toast(on
+            ? 'Live data enabled — loading real government datasets'
+            : 'Switched back to sample data');
+          reload();
+          return;
+        }
+
         const chip = e.target.closest('[data-domain]');
         if (chip) { filter = chip.dataset.domain; render(); return; }
 

@@ -11,6 +11,7 @@ import { createGlobalSearch } from './components/search.js?v=11d9f5e';
 import { Router } from './core/router.js?v=11d9f5e';
 import { store } from './core/store.js?v=11d9f5e';
 import { reports } from './core/reports.js?v=11d9f5e';
+import { liveMode } from './data/live.js?v=11d9f5e';
 import { api } from './data/api.js?v=11d9f5e';
 import { $ } from './core/utils.js?v=11d9f5e';
 import { createDashboard, toast } from './modules/dashboard.js?v=11d9f5e';
@@ -115,6 +116,28 @@ function boot() {
     if (e.key === 'Enter' && gs.value.trim()) {
       toast(`Global search wires into the unified index: "${gs.value.trim()}"`);
     }
+  });
+
+  // Data-mode indicator: the existing system pill doubles as the live/sample
+  // badge, so the user always knows which dataset the numbers came from.
+  const syncMode = (on) => {
+    const pill = document.getElementById('sys-pill');
+    const text = document.getElementById('sys-text');
+    if (!pill || !text) return;
+    pill.classList.toggle('is-livedata', on);
+    text.textContent = on ? 'Live Data' : 'System Online';
+    pill.title = on
+      ? 'Serving real government datasets — see Data Center'
+      : 'Serving sample data — enable Go Live in Data Center';
+  };
+  syncMode(liveMode.enabled);
+  liveMode.subscribe((on) => {
+    syncMode(on);
+    // Keep-alive modules hold rows rendered from the previous source, so drop
+    // every view except the one the user is looking at (Data Center repaints
+    // itself). They rebuild from the new source on next visit.
+    api.clearCache();
+    router.resetViews({ except: router.current });
   });
 
   // Sidebar report-cart counter — the badge slot vacated by live/soon.

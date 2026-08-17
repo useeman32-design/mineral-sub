@@ -657,3 +657,104 @@
 
 .dc-card .dc-meta { margin-top: 10px; }
 .dc-wrap .rg-search { min-width: 240px; flex: 0 1 300px; }
+
+/* ============================================================
+   GO LIVE — data mode switch
+   ============================================================ */
+
+.dc-live {
+  display: flex; align-items: center; gap: 13px;
+  padding: 13px 15px; margin-bottom: var(--gutter);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.022), rgba(255,255,255,0) 42%),
+    var(--surface-1);
+  border: 1px solid var(--line-soft);
+  border-left: 2px solid var(--text-faint);
+  border-radius: var(--r-lg);
+  transition: border-color .25s, box-shadow .25s;
+}
+.dc-live.is-live {
+  border-left-color: var(--green);
+  box-shadow: inset 0 0 0 1px rgba(0, 230, 118, .07), 0 0 22px rgba(0, 230, 118, .06);
+}
+
+.dc-live-i {
+  display: grid; place-items: center;
+  width: 34px; height: 34px; flex-shrink: 0;
+  border-radius: var(--r-md);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft);
+  color: var(--text-low);
+  transition: color .25s, border-color .25s, background .25s;
+}
+.dc-live.is-live .dc-live-i {
+  color: var(--green);
+  border-color: var(--green-dim);
+  background: var(--green-vdim);
+}
+
+.dc-live-t { flex: 1; min-width: 0; }
+.dc-live-t b {
+  display: block; font-size: 12.5px; color: var(--text-hi);
+  letter-spacing: .01em; margin-bottom: 2px;
+}
+.dc-live-t em {
+  display: block; font-style: normal; font-size: 11px;
+  color: var(--text-mid); line-height: 1.45;
+}
+
+.dc-live-l {
+  font-size: 9px; font-weight: 700; letter-spacing: .12em;
+  color: var(--text-faint); flex-shrink: 0;
+  transition: color .25s;
+}
+.dc-live.is-live .dc-live-l { color: var(--green); }
+
+/* the switch itself */
+.dc-switch {
+  position: relative; flex-shrink: 0;
+  width: 46px; height: 24px; padding: 0;
+  border-radius: 20px; cursor: pointer;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-strong);
+  transition: background .25s, border-color .25s, box-shadow .25s;
+}
+.dc-switch:hover { border-color: var(--text-low); }
+.dc-switch.is-on {
+  background: rgba(0, 230, 118, .18);
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(0, 230, 118, .28);
+}
+.dc-switch-k {
+  position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--text-low);
+  transition: transform .28s cubic-bezier(.4, 0, .2, 1), background .25s;
+}
+.dc-switch.is-on .dc-switch-k {
+  transform: translateX(22px);
+  background: var(--green);
+  box-shadow: 0 0 8px rgba(0, 230, 118, .6);
+}
+
+/* topbar pill reflects the active data mode */
+.pill.is-livedata {
+  color: var(--green);
+  border-color: rgba(0, 230, 118, .34);
+  background: rgba(0, 230, 118, .09);
+}
+.pill.is-livedata .live-dot { background: var(--green); box-shadow: 0 0 7px var(--green); }
+
+/* provenance marker on a KPI fed by real data */
+.kpi-live {
+  display: inline-block; margin-left: 6px;
+  font-size: 8.5px; font-weight: 700; letter-spacing: .09em;
+  color: var(--green); vertical-align: middle;
+  padding: 1px 5px; border-radius: 20px;
+  border: 1px solid var(--green-dim); background: var(--green-vdim);
+}
+
+@media (max-width: 900px) {
+  .dc-live { flex-wrap: wrap; }
+  .dc-live-t { flex: 1 1 100%; order: 3; }
+}

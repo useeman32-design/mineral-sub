@@ -12,6 +12,7 @@
 
 import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=11d9f5e';
 import { seeded } from '../core/utils.js?v=11d9f5e';
+import { liveMode, getLiveTitles, getLiveStates, getLiveNational, loadProtectedAreas, loadSettlements } from './live.js?v=11d9f5e';
 
 /* Operator names for the placeholder registry. Real holder records arrive with
    the mining cadastre import. */
@@ -97,6 +98,12 @@ export class Api {
     this._cache = new Map();
   }
 
+  /** Drop every memoised response — called when the data mode changes. */
+  clearCache() { this._cache.clear(); }
+
+  /** True when the app is serving real government datasets. */
+  get isLive() { return liveMode.enabled; }
+
   async _req(path, fixtureFn) {
     if (this.live) {
       const res = await fetch(this.baseUrl + path, { headers: { Accept: 'application/json' } });
@@ -126,7 +133,29 @@ export class Api {
   }
 
   /** GET /dashboard/summary */
-  getDashboardSummary() {
+  async getDashboardSummary() {
+    const base = await this._dashboardSample();
+    if (!liveMode.enabled) return base;
+
+    // Live: swap the two KPIs the real cadastre can actually evidence, and
+    // mark them so the UI can show where the number came from.
+    try {
+      const nat = await getLiveNational();
+      const kpis = base.kpis.map((k) => {
+        if (k.id === 'titles') {
+          return { ...k, value: nat.totalTitles, delta: 0, live: true,
+            ctx: `${nat.states} states · ${Math.round(nat.totalAreaKm2).toLocaleString('en-US')} km² licensed` };
+        }
+        return k;
+      });
+      return { ...base, kpis, live: true };
+    } catch (err) {
+      console.error('[api] live dashboard failed, using sample', err);
+      return base;
+    }
+  }
+
+  _dashboardSample() {
     return this._req('/dashboard/summary', () => ({
       kpis: [
         { id: 'occurrences', label: 'Mineral Occurrences', value: 3134, unit: 'sites', delta: 4.2,
@@ -200,7 +229,16 @@ export class Api {
   }
 
   /** GET /geo/states/:code — detail card payload */
-  getStateProfile(name) {
+  async getStateProfile(name) {
+    if (liveMode.enabled) {
+      const key = '/geo/states:live';
+      let states = this._cache.get(key);
+      if (!states) {
+        ({ states } = await getLiveStates(STATES));
+        this._cache.set(key, states);
+      }
+      return states[name] || null;
+    }
     return this._req('/geo/states/' + name, () => STATES[name] || null);
   }
 
@@ -267,7 +305,17 @@ export class Api {
    * instantly; once Laravel hosts it, POST the weights and return scored
    * targets from here instead.
    */
-  getProspectivityInputs() {
+  async getProspectivityInputs() {
+    // The scoring engine reads titles/occurrences per state; in live mode the
+    // title counts come from the real cadastre, so the ranking shifts to match.
+    if (liveMode.enabled) {
+      const key = '/prospectivity/inputs:live';
+      if (this._cache.has(key)) return this._cache.get(key);
+      const { states } = await getLiveStates(STATES);
+      const rows = Object.entries(states).map(([name, s]) => ({ name, ...s }));
+      this._cache.set(key, rows);
+      return rows;
+    }
     return this._req('/prospectivity/inputs', () =>
       Object.entries(STATES).map(([name, s]) => ({ name, ...s })));
   }
@@ -454,7 +502,15 @@ export class Api {
    * Licence polygons are not in the fixture set, so each title carries the
    * state centroid; swap for real geometry when the cadastre lands.
    */
-  getMiningTitles() {
+  async getMiningTitles() {
+    // Live: the real cadastre, 10,125 titles from the Mining Cadastre Office.
+    if (liveMode.enabled) {
+      const key = '/titles:live';
+      if (this._cache.has(key)) return this._cache.get(key);
+      const rows = await getLiveTitles(STATES);
+      this._cache.set(key, rows);
+      return rows;
+    }
     return this._req('/titles', () => {
       const out = [];
       const TYPES = [
@@ -505,7 +561,28 @@ export class Api {
   }
 
   /** GET /datasets — catalogue backing the Data Center. */
-  getDatasets() {
+  async getDatasets() {
+    const rows = await this._datasetsSample();
+    if (!liveMode.enabled) return rows;
+    // Live mode: reflect what is genuinely connected now.
+    const LIVE = {
+      titles: { status: 'Connected', source: 'Mining Cadastre Office', format: 'XLSX → JSON',
+        records: 10125, quality: 92, updated: '31 May 2026', licence: 'Nigerian Government public data' },
+      infra: { status: 'Connected', source: 'OpenStreetMap (Overpass)', format: 'JSON',
+        records: 911, quality: 88, updated: '17 Aug 2026', licence: 'ODbL 1.0' },
+    };
+    const extra = [
+      { id: 'protected', name: 'Protected areas (WDPA)', domain: 'Environment',
+        source: 'Protected Planet', format: 'GeoJSON', sizeMb: 0.3, records: 325,
+        status: 'Connected', quality: 95, updated: 'Aug 2026', licence: 'WDPA terms' },
+      { id: 'population', name: 'Gridded population', domain: 'Environment',
+        source: 'WorldPop 1 km', format: 'GeoTIFF', sizeMb: 4.9, records: 0,
+        status: 'Connected', quality: 90, updated: '2020', licence: 'CC BY 4.0' },
+    ];
+    return [...rows.map((d) => (LIVE[d.id] ? { ...d, ...LIVE[d.id] } : d)), ...extra];
+  }
+
+  _datasetsSample() {
     return this._req('/datasets', () => {
       const DEFS = [
         ['adm1', 'State boundaries (ADM1)', 'Geospatial', 'geoBoundaries', 'GeoJSON', 316, 37, 'Connected', 100],

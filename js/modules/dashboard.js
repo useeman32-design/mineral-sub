@@ -27,6 +27,7 @@ export function createDashboard() {
           ${icon(k.id === 'occurrences' ? 'minerals' : k.id === 'blocks' ? 'oil' : k.id === 'titles' ? 'titles' : 'risk', { size: 15 })}
         </span>
         <span class="kpi-label">${k.label}</span>
+        ${k.live ? '<span class="kpi-live" title="Sourced from real government data">LIVE</span>' : ''}
         <span class="delta ${k.delta > 0 ? 'up' : k.delta < 0 ? 'down' : 'flat'}">
           ${icon(k.delta >= 0 ? 'chevron' : 'chevron', { size: 9, cls: k.delta >= 0 ? 'd-up' : 'd-down', sw: 3 })}${Math.abs(k.delta).toFixed(1)}%
         </span>

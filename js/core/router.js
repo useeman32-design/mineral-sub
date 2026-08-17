@@ -29,6 +29,20 @@ export class Router {
 
   onChange(fn) { this._subs.add(fn); return () => this._subs.delete(fn); }
 
+  /**
+   * Tear down every mounted view except the active one, and force the active
+   * one to remount. Used when the underlying data source changes (sample <->
+   * live), since keep-alive modules hold rendered rows that are now stale.
+   */
+  resetViews({ except = null } = {}) {
+    this.mounted.forEach((entry, id) => {
+      if (id === except) return;
+      try { entry.mod?.destroy?.(); } catch (err) { console.error('[router] destroy', id, err); }
+      entry.el.remove();
+      this.mounted.delete(id);
+    });
+  }
+
   start(fallback = 'overview') {
     this.fallback = fallback;
     addEventListener('hashchange', () => this._resolve());
