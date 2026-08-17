@@ -10,16 +10,16 @@
  * core/context.js and is carried onward by the action buttons.
  */
 
-import { $, $$, fmt, clamp } from '../core/utils.js?v=ef18581';
-import { icon } from '../core/icons.js?v=ef18581';
-import { api } from '../data/api.js?v=ef18581';
-import { ctx } from '../core/context.js?v=ef18581';
-import { reports } from '../core/reports.js?v=ef18581';
-import { toast } from './dashboard.js?v=ef18581';
-import { RESOURCE_META } from '../data/fixtures.js?v=ef18581';
+import { $, $$, fmt, clamp } from '../core/utils.js?v=20ba70e';
+import { icon } from '../core/icons.js?v=20ba70e';
+import { api } from '../data/api.js?v=20ba70e';
+import { ctx } from '../core/context.js?v=20ba70e';
+import { reports } from '../core/reports.js?v=20ba70e';
+import { toast } from './dashboard.js?v=20ba70e';
+import { RESOURCE_META } from '../data/fixtures.js?v=20ba70e';
 import {
   RISK_FACTORS, RISK_BANDS, runRisk, defaultRiskWeights, explainRisk,
-} from '../core/risk.js?v=ef18581';
+} from '../core/risk.js?v=20ba70e';
 
 const WEIGHTS_KEY = 'nmi.riskWeights';
 
