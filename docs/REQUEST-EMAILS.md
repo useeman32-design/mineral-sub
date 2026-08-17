@@ -8,8 +8,8 @@ Practical advice for Nigerian agency correspondence:
 - **Copy more than one recipient**, and phone to confirm receipt a few days later.
 - Attach a **letter-headed PDF** of the same text if you have letterhead — it is
   often what gets a request formally logged.
-- Be explicit that you accept a **paid data licence**; several of these datasets
-  are sold, and saying so upfront avoids a round trip.
+- Keep the tone **humble and specific**. Name the exact datasets you need and say
+  what they are for — a clear, modest request is easier to act on than a broad one.
 
 ---
 
@@ -17,13 +17,13 @@ Practical advice for Nigerian agency correspondence:
 
 **To:** support@ngsa.gov.ng
 **Cc:** info@ngsa.gov.ng
-**Subject:** Data request — National Mineral Occurrence Database and prospectivity layers (digital, licensed use)
+**Subject:** Respectful request for access to the National Mineral Occurrence Database and prospectivity layers
 
 > Dear Sir/Madam,
 >
-> I am writing to request access to geoscientific datasets held by the Nigerian
-> Geological Survey Agency for use in a mineral-resource intelligence platform we
-> are developing for the Nigerian mining sector.
+> I am writing to humbly request access to geoscientific datasets held by the
+> Nigerian Geological Survey Agency, for use in a mineral-resource intelligence
+> platform we are developing for the Nigerian mining sector.
 >
 > **About the project**
 > We are building a web-based GIS and analytics platform that consolidates
@@ -52,11 +52,11 @@ Practical advice for Nigerian agency correspondence:
 >    published gold, copper, silver, aluminium and cerium maps, together with the
 >    Geochemical Mapping Index Map 2024.
 >
-> **Terms**
-> We are prepared to pay any applicable data licence, reproduction or service fee,
-> and to sign a data-use agreement. Please advise the cost, the procedure and any
-> forms we need to complete. We are equally happy to collect the data in person at
-> the GeoData Centre in Utako if that is more convenient.
+> **Access**
+> We would be grateful for your guidance on the procedure for obtaining these
+> datasets and any forms we would need to complete. We are happy to sign a
+> data-use agreement, and equally happy to collect the data in person at the
+> GeoData Centre in Utako if that is more convenient.
 >
 > **A technical note offered in good faith**
 > The TLS/SSL certificate for `ngsa.gov.ng` expired recently. Web browsers and
@@ -64,8 +64,8 @@ Practical advice for Nigerian agency correspondence:
 > which may be limiting public access to your published downloads. Renewing the
 > certificate (a free Let's Encrypt certificate would suffice) should resolve it.
 >
-> I would be grateful for your guidance on how to proceed and am happy to provide
-> any further information.
+> Thank you very much for your time and consideration. I am happy to provide any
+> further information about the project that would be helpful.
 >
 > Yours faithfully,
 > **[Your full name]**
@@ -77,12 +77,12 @@ Practical advice for Nigerian agency correspondence:
 ## Email 2 — NGSA GeoData Centre: airborne geophysics
 
 **To:** support@ngsa.gov.ng
-**Subject:** Request for airborne geophysical data — magnetic and radiometric sheet coverage
+**Subject:** Respectful request for airborne geophysical data — magnetic and radiometric sheets
 
 > Dear Sir/Madam,
 >
 > Further to our interest in NGSA's geoscientific holdings, I would like to
-> request access to the national airborne geophysical survey data.
+> humbly request access to the national airborne geophysical survey data.
 >
 > Your website publishes sample sheets — Sheet 28 (Argungu NE) and Sheet 66
 > (Gubio NW) — as ASCII grids, TMI grids and interpretation reports. These are
@@ -102,9 +102,11 @@ Practical advice for Nigerian agency correspondence:
 > - Airborne electromagnetic (TDEM) for the Birnin Gwari, Ife-Ilesha and Benue blocks
 > - Accompanying interpretation reports and sheet index
 >
-> We understand this data may be supplied on a commercial basis. Please advise the
-> applicable fees, the available formats (Geosoft `.grd`, ASCII XYZ or GeoTIFF are
-> all suitable), and the delivery method for datasets of this size.
+> We would be grateful if you could advise on the procedure for obtaining this
+> data, the formats available (Geosoft `.grd`, ASCII XYZ or GeoTIFF would all be
+> suitable), and how datasets of this size are usually delivered.
+>
+> Thank you very much for your time and assistance.
 >
 > Yours faithfully,
 > **[Your full name]** · [Organisation]
@@ -115,13 +117,13 @@ Practical advice for Nigerian agency correspondence:
 ## Email 3 — NGSA: geological maps
 
 **To:** support@ngsa.gov.ng
-**Subject:** Purchase enquiry — geological and mineral resources maps, digital GIS formats
+**Subject:** Request for geological and mineral resources maps in digital GIS format
 
 > Dear Sir/Madam,
 >
-> I would like to enquire about purchasing geological map products from NGSA,
+> I am writing to humbly request access to geological map products held by NGSA,
 > preferably in **digital GIS format** (shapefile, geodatabase or GeoTIFF) rather
-> than print, as they will be used as data layers in a web mapping platform.
+> than print, as they would be used as data layers in a web mapping platform.
 >
 > Of interest:
 > - Geological Map of Nigeria, 1:2,000,000
@@ -131,9 +133,11 @@ Practical advice for Nigerian agency correspondence:
 > - Schist Belt map of Nigeria
 > - Lineament and structural data where available
 >
-> Please advise pricing (per sheet and for complete sets), available formats, and
-> whether digital licensing is offered for use in a web application with
-> attribution to NGSA.
+> We would be grateful if you could advise on the available formats and the
+> procedure for obtaining them, including whether they may be used in a web
+> application with full attribution to NGSA.
+>
+> Thank you very much for your time and consideration.
 >
 > Yours faithfully,
 > **[Your full name]** · [Organisation]
@@ -164,10 +168,10 @@ Practical advice for Nigerian agency correspondence:
 >
 > The server appears to be configured with an **internal hostname**
 > (`VPORTAL.ASMD.INTERNAL`) that cannot be resolved from the public internet, so
-> the map and query functions do not work for external users. Your GIS team should
-> be able to correct this by updating the portal's WebContextURL configuration.
-> I report this simply as a member of the public who would find the system
-> valuable were it operational.
+> the map and query functions do not currently work for external users. We
+> understand this may relate to the portal's WebContextURL setting, though your
+> technical team will know best. I mention it only as a member of the public who
+> would find the system genuinely valuable were it operational.
 >
 > **2. Mining title spatial data**
 >
@@ -184,7 +188,10 @@ Practical advice for Nigerian agency correspondence:
 > area already covered by an existing licence?"* — which supports both investor
 > due diligence and transparent tenure administration.
 >
-> We are prepared to pay any applicable fee and to sign a data-use agreement.
+> We would be happy to sign a data-use agreement, and would of course credit the
+> Ministry and the Mining Cadastre Office wherever the data is displayed.
+>
+> Thank you very much for your time and assistance.
 >
 > Yours faithfully,
 > **[Your full name]** · [Organisation]
@@ -195,12 +202,12 @@ Practical advice for Nigerian agency correspondence:
 ## Email 5 — NUPRC: petroleum concession data
 
 **To:** info@nuprc.gov.ng
-**Subject:** Data request — petroleum concession register and block boundaries
+**Subject:** Respectful request for petroleum concession register and block boundaries
 
 > Dear Sir/Madam,
 >
-> I am writing to request access to petroleum acreage data held by the Commission
-> for use in a Nigerian natural-resource intelligence platform.
+> I am writing to humbly request access to petroleum acreage data held by the
+> Commission, for use in a Nigerian natural-resource intelligence platform.
 >
 > **Requested**
 > 1. **Concession register** — current OPLs, OMLs, PPLs and PMLs, with block
@@ -214,13 +221,15 @@ Practical advice for Nigerian agency correspondence:
 > 4. **Production data** — published field or terminal-level production summaries.
 > 5. **Basin boundaries** — Niger Delta, Anambra, Benin, Benue Trough, Chad.
 >
-> We understand some data held in the National Data Repository is commercial or
-> restricted; we are requesting only what the Commission is able to release
-> publicly, and are happy to pay any applicable licence fee.
+> We understand that some data held in the National Data Repository is restricted;
+> we are requesting only what the Commission is able to release publicly, and
+> would credit the Commission wherever the data is displayed.
 >
-> A minor note: several document links on `nuprc.gov.ng` (including the Concession
-> Situation report) currently return "page not found", which makes published
-> material hard to locate.
+> A minor note offered in good faith: several document links on `nuprc.gov.ng`
+> (including the Concession Situation report) currently return "page not found",
+> which makes published material difficult to locate.
+>
+> Thank you very much for your time and consideration.
 >
 > Yours faithfully,
 > **[Your full name]** · [Organisation]
