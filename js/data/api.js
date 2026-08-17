@@ -578,6 +578,14 @@ export class Api {
       { id: 'population', name: 'Gridded population', domain: 'Environment',
         source: 'WorldPop 1 km', format: 'GeoTIFF', sizeMb: 4.9, records: 0,
         status: 'Connected', quality: 90, updated: '2020', licence: 'CC BY 4.0' },
+      { id: 'footprints', name: 'Mining footprints (satellite)', domain: 'Geospatial',
+        source: 'Maus et al. 2022 / OSM (Zenodo)', format: 'GeoJSON', sizeMb: 0.1, records: 160,
+        status: 'Connected', quality: 84, updated: '2022', licence: 'ODbL 1.0',
+        note: 'Observed workings delineated from high-resolution imagery — not licence boundaries.' },
+      { id: 'sites', name: 'Georeferenced mineral sites', domain: 'Geoscience',
+        source: 'USGS minfac + MRDS + OpenStreetMap', format: 'JSON', sizeMb: 0.03, records: 165,
+        status: 'Partial', quality: 61, updated: '2026', licence: 'Public domain + ODbL 1.0',
+        note: 'Interim coverage pending the NGSA National Mineral Occurrence Database.' },
     ];
     return [...rows.map((d) => (LIVE[d.id] ? { ...d, ...LIVE[d.id] } : d)), ...extra];
   }

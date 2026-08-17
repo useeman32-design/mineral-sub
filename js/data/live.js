@@ -69,6 +69,8 @@ export const loadTitles = () => load('titles', 'data/reference/mining-titles.jso
 export const loadTitlesSummary = () => load('summary', 'data/reference/titles-summary.json');
 export const loadProtectedAreas = () => load('protected', 'data/reference/protected-areas.geojson');
 export const loadSettlements = () => load('settlements', 'data/reference/ng-settlements-osm.json');
+export const loadMineralSites = () => load('sites', 'data/reference/mineral-sites.json');
+export const loadFootprints = () => load('footprints', 'data/reference/mining-footprints.geojson');
 
 /* ------------------------------------------------------------------ *
  * Shaping — real records into the app's existing contracts
@@ -201,5 +203,9 @@ export function liveDatasetStatus() {
       quality: 88, updated: '17 Aug 2026', format: 'JSON' },
     population: { status: 'Connected', source: 'WorldPop 1 km', records: 0,
       quality: 90, updated: '2020', format: 'GeoTIFF' },
+    footprints: { status: 'Connected', source: 'Maus et al. 2022 / OSM (Zenodo)', records: 160,
+      quality: 84, updated: '2022', format: 'GeoPackage → GeoJSON' },
+    sites: { status: 'Partial', source: 'USGS minfac + MRDS + OpenStreetMap', records: 165,
+      quality: 61, updated: '2026', format: 'CSV + Overpass → JSON' },
   };
 }

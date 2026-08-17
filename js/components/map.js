@@ -94,7 +94,9 @@ export class NigeriaMap {
       graticule: 400, halo: 420, states: 440,
       lgas: 460,          // above states so LGA clicks win
       risk: 470,          // risk tint above fills, below heat/deposits
-      heat: 500, deposits: 540, labels: 580,
+      heat: 500,
+      footprints: 520,    // observed workings under the occurrence pins
+      deposits: 540, sites: 550, labels: 580,
     };
     Object.entries(PANE_Z).forEach(([p, z]) => {
       this.map.createPane(p);
@@ -620,6 +622,8 @@ export class NigeriaMap {
     }
     if (id === 'graticule') this._setLayerVisible(this.layers.graticule, on);
     if (id === 'risk') this.setRiskZones(on);
+    if (id === 'footprints') this.setFootprints(on);
+    if (id === 'sites') this.setMineralSites(on);
   }
 
   /**
@@ -920,5 +924,68 @@ export class NigeriaMap {
     removeEventListener('nmi:theme', this._onTheme);
     clearTimeout(this._rt);
     this.map?.remove();
+  }
+
+  /**
+   * Satellite-mapped mining footprints (Maus et al. / OSM, ODbL).
+   * These are observed workings on the ground, not licence boundaries — the
+   * cadastre has no geometry, so this is the closest honest thing we can draw.
+   */
+  async setFootprints(on) {
+    if (!on) { this._setLayerVisible(this.layers.footprints, false); return; }
+    if (this.layers.footprints) { this._setLayerVisible(this.layers.footprints, true); return; }
+
+    const { loadFootprints } = await import('../data/live.js?v=20ba70e');
+    const fc = await loadFootprints();
+    this.layers.footprints = L.geoJSON(fc, {
+      pane: 'footprints',
+      style: { color: '#ff8a3d', weight: 1, fillColor: '#ff8a3d', fillOpacity: 0.35 },
+      onEachFeature: (ft, layer) => {
+        const p = ft.properties;
+        layer.bindTooltip(
+          `<div class="dt">
+            <div class="dt-hd"><span class="dt-sw" style="background:#ff8a3d"></span>
+              <span class="dt-name">Mining footprint</span></div>
+            <div class="dt-rows">
+              <div class="dt-r"><span>Area</span><b>${p.areaKm2} km²</b></div>
+              <div class="dt-r"><span>LGA</span><b>${p.lga || '—'}</b></div>
+              <div class="dt-r"><span>State</span><b>${p.state}</b></div>
+              <div class="dt-r"><span>Source</span><b>Satellite survey</b></div>
+            </div>
+          </div>`,
+          { direction: 'top', className: 'dep-tip', opacity: 1 });
+      },
+    }).addTo(this.map);
+  }
+
+  /** Georeferenced mineral sites — USGS minfac + MRDS + OSM. */
+  async setMineralSites(on) {
+    if (!on) { this._setLayerVisible(this.layers.sites, false); return; }
+    if (this.layers.sites) { this._setLayerVisible(this.layers.sites, true); return; }
+
+    const { loadMineralSites } = await import('../data/live.js?v=20ba70e');
+    const data = await loadMineralSites();
+    const g = L.layerGroup([], { pane: 'sites' });
+    (data.sites || []).forEach((d) => {
+      const m = L.circleMarker([d.lat, d.lng], {
+        pane: 'sites', radius: 4, weight: 1.4,
+        color: '#4d9dff', fillColor: '#4d9dff', fillOpacity: 0.55,
+      });
+      m.bindTooltip(
+        `<div class="dt">
+          <div class="dt-hd"><span class="dt-sw" style="background:#4d9dff"></span>
+            <span class="dt-name">${d.name}</span></div>
+          <div class="dt-rows">
+            ${d.commodity ? `<div class="dt-r"><span>Commodity</span><b>${d.commodity}</b></div>` : ''}
+            ${d.status ? `<div class="dt-r"><span>Status</span><b>${d.status}</b></div>` : ''}
+            <div class="dt-r"><span>LGA</span><b>${d.lga || '—'}</b></div>
+            <div class="dt-r"><span>State</span><b>${d.state}</b></div>
+            <div class="dt-r"><span>Source</span><b>${d.source}</b></div>
+          </div>
+        </div>`,
+        { direction: 'top', className: 'dep-tip', opacity: 1 });
+      g.addLayer(m);
+    });
+    this.layers.sites = g.addTo(this.map);
   }
 }

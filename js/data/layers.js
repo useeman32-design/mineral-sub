@@ -23,6 +23,10 @@ export const LAYER_GROUPS = [
         hint: 'Needs a selected state · auto at zoom 8.5+' },
       { id: 'risk',          label: 'Risk zones',          color: '#ff4d5e', def: false,
         hint: 'States tinted by security advisory level' },
+      { id: 'footprints',    label: 'Mining footprints',   color: '#ff8a3d', def: false,
+        hint: 'Satellite-mapped workings · 160 polygons' },
+      { id: 'sites',         label: 'Georeferenced sites', color: '#4d9dff', def: false,
+        hint: 'USGS + OpenStreetMap · 165 points' },
     ],
   },
   {
