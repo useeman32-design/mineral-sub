@@ -9,7 +9,7 @@
  * server-side model without touching the UI.
  */
 
-import { clamp, seeded } from './utils.js?v=a2f4c1d';
+import { clamp, seeded } from './utils.js?v=f6c0de3';
 
 const LEVEL_BASE = { low: 18, medium: 52, high: 84 };
 

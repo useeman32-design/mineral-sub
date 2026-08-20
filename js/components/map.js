@@ -10,9 +10,9 @@
  * register another layer in LAYER_SPECS and give it a zoom band.
  */
 
-import { store } from '../core/store.js?v=a2f4c1d';
-import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=a2f4c1d';
-import { fmt } from '../core/utils.js?v=a2f4c1d';
+import { store } from '../core/store.js?v=f6c0de3';
+import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=f6c0de3';
+import { fmt } from '../core/utils.js?v=f6c0de3';
 
 const NG_CENTER = [9.06, 8.68];
 const NG_BOUNDS = L.latLngBounds([3.6, 2.4], [14.3, 15.2]);
@@ -935,7 +935,7 @@ export class NigeriaMap {
     if (!on) { this._setLayerVisible(this.layers.footprints, false); return; }
     if (this.layers.footprints) { this._setLayerVisible(this.layers.footprints, true); return; }
 
-    const { loadFootprints } = await import('../data/live.js?v=a2f4c1d');
+    const { loadFootprints } = await import('../data/live.js?v=f6c0de3');
     const fc = await loadFootprints();
     this.layers.footprints = L.geoJSON(fc, {
       pane: 'footprints',
@@ -963,7 +963,7 @@ export class NigeriaMap {
     if (!on) { this._setLayerVisible(this.layers.sites, false); return; }
     if (this.layers.sites) { this._setLayerVisible(this.layers.sites, true); return; }
 
-    const { loadMineralSites } = await import('../data/live.js?v=a2f4c1d');
+    const { loadMineralSites } = await import('../data/live.js?v=f6c0de3');
     const data = await loadMineralSites();
     const g = L.layerGroup([], { pane: 'sites' });
     (data.sites || []).forEach((d) => {
