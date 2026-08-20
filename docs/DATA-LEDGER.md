@@ -26,8 +26,8 @@ These are the small derived products the browser actually fetches.
 | `mining-titles.json` | 2 186 KB | 10 125 titles | MCO cadastre export | `8d602ad` | `afcb4a8589e2` |
 | `titles-summary.json` | 8 KB | 36 states + FCT | Derived from the above | `8d602ad` | `80c7d7c50293` |
 | `production-2023.json` | 24 KB | 36 states, 44 commodities | NEITI 2023 Audit, App. 19 | `f6c0de3` | `30a4b96e6e43` |
-| `title-polygons.geojson` | 2,830 KB | 11 706 polygons | MCO eMC+ GeoServer WFS | `PENDING` | `a096afff6cf5` |
-| `title-attributes.json` | 3,182 KB | 11 706 titles | MCO eMC+ GeoServer WFS | `PENDING` | `c9ee8f3ffffe` |
+| `title-polygons.geojson` | 2,830 KB | 11 706 polygons | MCO eMC+ GeoServer WFS | `b8d356e` | `a096afff6cf5` |
+| `title-attributes.json` | 3,182 KB | 11 706 titles | MCO eMC+ GeoServer WFS | `b8d356e` | `c9ee8f3ffffe` |
 | `mining-footprints.geojson` | 101 KB | 160 polygons | Maus et al. 2022 + OSM | `a2f4c1d` | `29a9d1b39acb` |
 | `mineral-sites.json` | 28 KB | 165 points | USGS minfac + MRDS + OSM | `a2f4c1d` | `616b15b409d9` |
 | `protected-areas.geojson` | 333 KB | 325 polygons | WDPA / Protected Planet | `8d602ad` | `48d973d46d9e` |
