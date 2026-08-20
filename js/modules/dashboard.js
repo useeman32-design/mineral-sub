@@ -308,6 +308,20 @@ export function createDashboard() {
             <div class="sel-cell"><div class="k">Risk Class</div><div class="v" style="color:${riskColor};text-transform:capitalize;font-size:var(--fs-base)">${p.risk}</div></div>
             <div class="sel-cell"><div class="k">Data Coverage</div><div class="v" style="color:var(--purple)">${p.coverage}%</div></div>
           </div>
+          ${p.production ? `
+          <div class="sel-prod">
+            <div class="sel-prod-hd">
+              <span>Audited output 2023</span>
+              <b>#${p.production.rank} of 36</b>
+            </div>
+            <div class="sel-prod-row">
+              <span class="spv">${fmt.compact(p.production.tonnes)}<i>t</i></span>
+              <span class="spk">·</span>
+              <span class="spv">₦${fmt.compact(p.production.valueNgn)}</span>
+              <span class="spk">·</span>
+              <span class="spk">${p.production.minerals?.[0]?.mineral || ''}</span>
+            </div>
+          </div>` : ''}
           <div class="sel-actions">
             <button class="btn-ghost btn-primary" data-act="drill">Drill to LGAs</button>
             <button class="btn-ghost" data-act="report">Report</button>

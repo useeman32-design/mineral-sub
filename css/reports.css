@@ -783,3 +783,49 @@
   color: var(--green); border-color: var(--green-dim); background: var(--green-vdim);
 }
 .rg-pg:disabled { opacity: .3; cursor: default; }
+
+
+/* ---------- audited production (NEITI 2023) ---------- */
+
+.prod-top {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;
+  margin-top: 8px;
+}
+.prod-fig {
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm); padding: 7px 8px;
+}
+.prod-v {
+  font-family: var(--font-mono); font-size: 14px;
+  color: var(--gold); line-height: 1.15;
+}
+.prod-v i { font-style: normal; font-size: 9.5px; opacity: .65; margin-left: 1px; }
+.prod-k {
+  font-size: 9px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text-low); margin-top: 3px;
+}
+.prod-src {
+  margin-top: 8px; font-size: 9.5px; line-height: 1.45;
+  color: var(--text-low); opacity: .85;
+}
+
+/* compact variant inside the dashboard selection card */
+.sel-prod {
+  margin-top: 9px; padding-top: 8px;
+  border-top: 1px solid var(--line-soft);
+}
+.sel-prod-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-low);
+}
+.sel-prod-hd b { color: var(--gold); font-weight: 600; }
+.sel-prod-row {
+  display: flex; align-items: baseline; gap: 6px;
+  margin-top: 5px; flex-wrap: wrap;
+}
+.sel-prod-row .spv {
+  font-family: var(--font-mono); font-size: 13px; color: var(--gold);
+}
+.sel-prod-row .spv i { font-style: normal; font-size: 9px; opacity: .65; }
+.sel-prod-row .spk { font-size: 10.5px; color: var(--text-low); }

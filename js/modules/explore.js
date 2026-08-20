@@ -307,6 +307,47 @@ export function createExplore() {
       <p class="es-t">Hover or select a state, LGA or occurrence.<br/>Its full profile appears here.</p>
     </div>`;
 
+  /**
+   * NEITI-audited 2023 output for a state. Rendered with the same
+   * insp-sec / comm-row vocabulary the rest of the inspector already uses,
+   * so it reads as part of the panel rather than a bolt-on.
+   */
+  const productionBlock = (pr) => {
+    if (!pr || !pr.tonnes) return '';
+    const top = (pr.minerals || []).slice(0, 5);
+    const max = top.length ? top[0].tonnes : 1;
+    return `
+      <div class="insp-sec">
+        <div class="insp-sec-hd">
+          Audited production 2023 <span>#${pr.rank} of 36</span>
+        </div>
+        <div class="prod-top">
+          <div class="prod-fig">
+            <div class="prod-v">${fmt.compact(pr.tonnes)}<i>t</i></div>
+            <div class="prod-k">Tonnes produced</div>
+          </div>
+          <div class="prod-fig">
+            <div class="prod-v">₦${fmt.compact(pr.valueNgn)}</div>
+            <div class="prod-k">Declared value</div>
+          </div>
+          <div class="prod-fig">
+            <div class="prod-v">${pr.operators}</div>
+            <div class="prod-k">Operators</div>
+          </div>
+        </div>
+        <div class="comm-list" style="margin-top:9px">
+          ${top.map((m) => `
+            <div class="comm-row">
+              <i class="comm-dot" style="background:var(--gold);box-shadow:0 0 6px var(--gold)"></i>
+              <span class="comm-name">${m.mineral}</span>
+              <span class="comm-bar"><i style="width:${Math.max(3, (m.tonnes / max) * 100)}%;background:var(--gold)"></i></span>
+              <span class="comm-n">${fmt.compact(m.tonnes)}t</span>
+            </div>`).join('')}
+        </div>
+        <div class="prod-src">NEITI Solid Minerals Audit 2023 · reconciled by Haruna Yahaya &amp; Co.</div>
+      </div>`;
+  };
+
   const inspectorState = (p) => {
     const riskColor = { high: 'var(--red)', medium: 'var(--orange)', low: 'var(--green)' }[p.risk];
     const chips = (p.commodities || []).map((c) => {
@@ -331,6 +372,8 @@ export function createExplore() {
         <div class="sel-cell"><div class="k">Risk Class</div><div class="v" style="color:${riskColor};text-transform:capitalize;font-size:var(--fs-base)">${p.risk}</div></div>
         <div class="sel-cell"><div class="k">Coverage</div><div class="v" style="color:var(--purple)">${p.coverage}%</div></div>
       </div>
+
+      ${productionBlock(p.production)}
 
       <div class="insp-sec">
         <div class="insp-sec-hd">Known occurrences <span>${local.length}</span></div>

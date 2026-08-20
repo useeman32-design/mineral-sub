@@ -123,10 +123,15 @@ export class Api {
     const res = await fetch('data/nigeria-states.geojson');
     if (!res.ok) throw new Error('Failed to load state boundaries');
     const geo = await res.json();
+    // NEITI-audited output, joined here so every consumer of the boundaries
+    // (map selection, dashboard card, explore inspector) gets it for free.
+    const prod = await this.getProduction();
     // Join analytical attributes onto each feature
     geo.features.forEach((f) => {
       const rec = STATES[f.properties.name];
       if (rec) Object.assign(f.properties, rec);
+      const pr = prod?.states?.[f.properties.name];
+      if (pr) f.properties.production = pr;
     });
     this._cache.set('geo', geo);
     return geo;
