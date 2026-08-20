@@ -12,7 +12,7 @@
 
 import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=a2f4c1d';
 import { seeded } from '../core/utils.js?v=a2f4c1d';
-import { liveMode, getLiveTitles, getLiveStates, getLiveNational, loadProtectedAreas, loadSettlements } from './live.js?v=a2f4c1d';
+import { liveMode, getLiveTitles, getLiveStates, getLiveNational, loadProtectedAreas, loadSettlements, loadProduction } from './live.js?v=a2f4c1d';
 
 /* Operator names for the placeholder registry. Real holder records arrive with
    the mining cadastre import. */
@@ -230,6 +230,7 @@ export class Api {
 
   /** GET /geo/states/:code — detail card payload */
   async getStateProfile(name) {
+    let base;
     if (liveMode.enabled) {
       const key = '/geo/states:live';
       let states = this._cache.get(key);
@@ -237,9 +238,29 @@ export class Api {
         ({ states } = await getLiveStates(STATES));
         this._cache.set(key, states);
       }
-      return states[name] || null;
+      base = states[name] || null;
+    } else {
+      base = await this._req('/geo/states/' + name, () => STATES[name] || null);
     }
-    return this._req('/geo/states/' + name, () => STATES[name] || null);
+    if (!base) return null;
+
+    // Attach NEITI-audited 2023 production. This is the strongest evidence in
+    // the app: independently reconciled, attributable to a named operator.
+    const prod = await this.getProduction();
+    const row = prod?.states?.[name];
+    return row ? { ...base, production: row, productionMeta: prod.meta } : base;
+  }
+
+  /** GET /production — NEITI 2023 audited output by state. */
+  async getProduction() {
+    const key = '/production';
+    if (this._cache.has(key)) return this._cache.get(key);
+    const p = loadProduction().catch((e) => {
+      console.warn('[api] production data unavailable', e);
+      return null;
+    });
+    this._cache.set(key, p);
+    return p;
   }
 
   /**
@@ -586,6 +607,11 @@ export class Api {
         source: 'USGS minfac + MRDS + OpenStreetMap', format: 'JSON', sizeMb: 0.03, records: 165,
         status: 'Partial', quality: 61, updated: '2026', licence: 'Public domain + ODbL 1.0',
         note: 'Interim coverage pending the NGSA National Mineral Occurrence Database.' },
+      { id: 'production', name: 'Audited production by state (2023)', domain: 'Economic',
+        source: 'NEITI Solid Minerals Audit 2023, Appendix 19', format: 'JSON', sizeMb: 0.02,
+        records: 36, status: 'Connected', quality: 97, updated: 'Oct 2024',
+        licence: 'Nigerian Government public data',
+        note: 'Independently reconciled by Haruna Yahaya & Co. under the NEITI Act 2007 and the EITI Standard.' },
     ];
     return [...rows.map((d) => (LIVE[d.id] ? { ...d, ...LIVE[d.id] } : d)), ...extra];
   }

@@ -71,6 +71,7 @@ export const loadProtectedAreas = () => load('protected', 'data/reference/protec
 export const loadSettlements = () => load('settlements', 'data/reference/ng-settlements-osm.json');
 export const loadMineralSites = () => load('sites', 'data/reference/mineral-sites.json');
 export const loadFootprints = () => load('footprints', 'data/reference/mining-footprints.geojson');
+export const loadProduction = () => load('production', 'data/reference/production-2023.json');
 
 /* ------------------------------------------------------------------ *
  * Shaping — real records into the app's existing contracts
@@ -207,5 +208,7 @@ export function liveDatasetStatus() {
       quality: 84, updated: '2022', format: 'GeoPackage → GeoJSON' },
     sites: { status: 'Partial', source: 'USGS minfac + MRDS + OpenStreetMap', records: 165,
       quality: 61, updated: '2026', format: 'CSV + Overpass → JSON' },
+    production: { status: 'Connected', source: 'NEITI Solid Minerals Audit 2023', records: 36,
+      quality: 97, updated: 'Oct 2024', format: 'XLSX → JSON' },
   };
 }
