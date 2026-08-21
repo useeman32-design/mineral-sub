@@ -12,6 +12,7 @@ import { api } from '../data/api.js?v=411abbd';
 import { reports } from '../core/reports.js?v=411abbd';
 import { toast } from './dashboard.js?v=411abbd';
 import { liveMode } from '../data/live.js?v=411abbd';
+import { dsToggles } from '../data/toggles.js?v=411abbd';
 
 /**
  * Consumer map: which modules read each dataset. Makes the dependency between
@@ -57,7 +58,7 @@ export function createDataCenter() {
   const card = (d) => {
     const st = STATUS[d.status] || STATUS['Not connected'];
     return `
-      <article class="dc-card ${d.status === 'Not connected' ? 'is-off' : ''}" data-ds="${d.id}">
+      <article class="dc-card ${d.status === 'Not connected' ? 'is-off' : ''} ${d.status === 'Connected' && !dsToggles.isOn(d.id) ? 'is-excluded' : ''}" data-ds="${d.id}">
         <header class="dc-card-hd">
           <span class="dc-dot" style="background:${st.c};box-shadow:0 0 8px ${st.c}"></span>
           <div class="dc-card-t">
@@ -65,6 +66,12 @@ export function createDataCenter() {
             <p>${d.domain} · ${d.format}</p>
           </div>
           <span class="dc-status" style="color:${st.c}">${d.status}</span>
+          ${d.status === 'Connected' ? `
+          <button class="ds-sw ${dsToggles.isOn(d.id) ? 'is-on' : ''}" data-ds-toggle="${d.id}"
+                  role="switch" aria-checked="${dsToggles.isOn(d.id)}"
+                  title="${dsToggles.isOn(d.id) ? 'Using this dataset — click to exclude' : 'Excluded — click to use'}">
+            <span class="ds-sw-k"></span>
+          </button>` : ''}
         </header>
 
         <div class="dc-quality">
@@ -216,6 +223,15 @@ export function createDataCenter() {
 
       view.addEventListener('click', (e) => {
         // GO LIVE: swap every module between sample and real government data.
+        const ds = e.target.closest('[data-ds-toggle]');
+        if (ds) {
+          const id = ds.dataset.dsToggle;
+          const on = dsToggles.toggle(id);
+          toast(on ? 'Dataset enabled' : 'Dataset excluded from map and reports');
+          render();
+          return;
+        }
+
         const sw = e.target.closest('[data-go-live]');
         if (sw) {
           const on = !liveMode.enabled;

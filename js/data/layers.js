@@ -27,13 +27,14 @@ export const LAYER_GROUPS = [
         hint: 'Satellite-mapped workings · 160 polygons' },
       { id: 'sites',         label: 'Georeferenced sites', color: '#4d9dff', def: false,
         hint: 'USGS + OpenStreetMap · 165 points' },
+      { id: 'titles',        label: 'Mining title blocks', color: '#8b7dff', def: false,
+        hint: 'Licensed cadastre blocks · 11,706 polygons' },
     ],
   },
   {
     group: 'Pending data service',
     items: [
       { id: 'geology', label: 'Geological units',      color: '#8b7dff', soon: true },
-      { id: 'titles',  label: 'Mining titles',         color: '#4d9dff', soon: true },
       { id: 'infra',   label: 'Roads & infrastructure', color: '#9aa7b0', soon: true },
     ],
   },

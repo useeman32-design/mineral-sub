@@ -12,6 +12,7 @@ import { Router } from './core/router.js?v=411abbd';
 import { store } from './core/store.js?v=411abbd';
 import { reports } from './core/reports.js?v=411abbd';
 import { liveMode } from './data/live.js?v=411abbd';
+import { dsToggles, DATASET_LAYER } from './data/toggles.js?v=411abbd';
 import { api } from './data/api.js?v=411abbd';
 import { $ } from './core/utils.js?v=411abbd';
 import { createDashboard, toast } from './modules/dashboard.js?v=411abbd';
@@ -89,6 +90,15 @@ function boot() {
   router.onChange((id) => shell.setActive(id));
   shell.onNav((id) => router.navigate(id));
   router.start('overview');
+
+  // Excluding a dataset in the Data Center immediately drops its map layer,
+  // so the two controls can never disagree about what is being shown.
+  dsToggles.subscribe((id) => {
+    const layerId = id ? DATASET_LAYER[id] : null;
+    if (layerId) store.set({ layers: { ...store.get('layers'), [layerId]: false } });
+    api.clearCache();
+    router.resetViews({ except: router.current });
+  });
 
   // System health -> topbar + sidebar readouts (API-ready)
   api.getSystemHealth().then((h) => {

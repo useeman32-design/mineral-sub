@@ -72,6 +72,8 @@ export const loadSettlements = () => load('settlements', 'data/reference/ng-sett
 export const loadMineralSites = () => load('sites', 'data/reference/mineral-sites.json');
 export const loadFootprints = () => load('footprints', 'data/reference/mining-footprints.geojson');
 export const loadProduction = () => load('production', 'data/reference/production-2023.json');
+export const loadTitlePolygons = () => load('titlegeom', 'data/reference/title-polygons.geojson');
+export const loadTitleAttributes = () => load('titleattr', 'data/reference/title-attributes.json');
 
 /* ------------------------------------------------------------------ *
  * Shaping — real records into the app's existing contracts
@@ -210,5 +212,7 @@ export function liveDatasetStatus() {
       quality: 61, updated: '2026', format: 'CSV + Overpass → JSON' },
     production: { status: 'Connected', source: 'NEITI Solid Minerals Audit 2023', records: 36,
       quality: 97, updated: 'Oct 2024', format: 'XLSX → JSON' },
+    titlegeom: { status: 'Connected', source: 'MCO eMC+ GeoServer (WFS)', records: 11706,
+      quality: 95, updated: '21 Aug 2026', format: 'WFS → GeoJSON' },
   };
 }

@@ -95,6 +95,7 @@ export class NigeriaMap {
       lgas: 460,          // above states so LGA clicks win
       risk: 470,          // risk tint above fills, below heat/deposits
       heat: 500,
+      titles: 505,        // licensed blocks beneath observed workings
       footprints: 520,    // observed workings under the occurrence pins
       deposits: 540, sites: 550, labels: 580,
     };
@@ -624,6 +625,7 @@ export class NigeriaMap {
     if (id === 'risk') this.setRiskZones(on);
     if (id === 'footprints') this.setFootprints(on);
     if (id === 'sites') this.setMineralSites(on);
+    if (id === 'titles') this.setTitleBlocks(on);
   }
 
   /**
@@ -954,6 +956,70 @@ export class NigeriaMap {
             </div>
           </div>`,
           { direction: 'top', className: 'dep-tip', opacity: 1 });
+      },
+    }).addTo(this.map);
+  }
+
+  /**
+   * Licensed cadastre blocks from the MCO GeoServer — 11,706 polygons.
+   *
+   * Rendered on a CANVAS renderer, not SVG. At this count SVG produces tens of
+   * thousands of DOM nodes and freezes the tab; canvas draws them in one pass.
+   * Colour encodes licence type so the map reads without opening anything.
+   */
+  async setTitleBlocks(on) {
+    if (!on) { this._setLayerVisible(this.layers.titles, false); return; }
+    if (this.layers.titles) { this._setLayerVisible(this.layers.titles, true); return; }
+
+    const { loadTitlePolygons, loadTitleAttributes } = await import('../data/live.js?v=411abbd');
+    const [fc, attrs] = await Promise.all([loadTitlePolygons(), loadTitleAttributes()]);
+    this._titleAttrs = attrs.titles || {};
+
+    // Two-letter prefix of the licence type, set when the extract was built.
+    const TYPE_COLOR = {
+      Ex: '#8b7dff',  // Exploration Licence
+      Sm: '#2dd8c3',  // Small Scale Mining Lease
+      Qu: '#f5b942',  // Quarry Lease
+      Mi: '#ff4d5e',  // Mining Lease
+      Wa: '#4d9dff',  // Water Use Permit
+    };
+
+    if (!this._titleCanvas) this._titleCanvas = L.canvas({ pane: 'titles', padding: 0.3 });
+
+    this.layers.titles = L.geoJSON(fc, {
+      pane: 'titles',
+      renderer: this._titleCanvas,
+      style: (ft) => {
+        const c = TYPE_COLOR[ft.properties.t] || '#8b7dff';
+        return { color: c, weight: 0.7, opacity: 0.85, fillColor: c, fillOpacity: 0.18 };
+      },
+      onEachFeature: (ft, layer) => {
+        layer.on('click', (e) => {
+          if (this.interceptClicks) { this.interceptClicks(e.latlng); L.DomEvent.stopPropagation(e); return; }
+          L.DomEvent.stopPropagation(e);
+          e.originalEvent._stateHit = true;
+          const a = this._titleAttrs[ft.properties.l];
+          if (a) this.onTitleSelect?.({ lic: ft.properties.l, ...a });
+        });
+        layer.on('mouseover', () => {
+          const a = this._titleAttrs[ft.properties.l];
+          if (!a) return;
+          const c = TYPE_COLOR[ft.properties.t] || '#8b7dff';
+          layer.bindTooltip(
+            `<div class="dt">
+              <div class="dt-hd"><span class="dt-sw" style="background:${c}"></span>
+                <span class="dt-name">${ft.properties.l}</span></div>
+              <div class="dt-rows">
+                <div class="dt-r"><span>Type</span><b>${a.type || '—'}</b></div>
+                <div class="dt-r"><span>Holder</span><b>${(a.holder || '—').slice(0, 34)}</b></div>
+                <div class="dt-r"><span>Minerals</span><b>${(a.minerals || '—').slice(0, 34)}</b></div>
+                <div class="dt-r"><span>Area</span><b>${a.areaKm2} km²</b></div>
+                <div class="dt-r"><span>Expires</span><b>${a.expiry || '—'}</b></div>
+                ${a.litigation ? '<div class="dt-r"><span>Status</span><b style="color:#ff4d5e">In litigation</b></div>' : ''}
+              </div>
+            </div>`,
+            { direction: 'top', className: 'dep-tip', opacity: 1, sticky: true }).openTooltip();
+        });
       },
     }).addTo(this.map);
   }

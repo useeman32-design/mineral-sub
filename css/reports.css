@@ -829,3 +829,24 @@
 }
 .sel-prod-row .spv i { font-style: normal; font-size: 9px; opacity: .65; }
 .sel-prod-row .spk { font-size: 10.5px; color: var(--text-low); }
+
+
+/* ---------- per-dataset live toggle ---------- */
+
+.ds-sw {
+  width: 30px; height: 17px; flex: 0 0 auto;
+  border-radius: 999px; cursor: pointer; position: relative;
+  background: var(--surface-3, #16242b); border: 1px solid var(--line);
+  transition: background .16s, border-color .16s; margin-left: 8px;
+}
+.ds-sw-k {
+  position: absolute; top: 1.5px; left: 2px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--text-low); transition: transform .16s, background .16s;
+}
+.ds-sw.is-on { background: rgba(0, 230, 118, .18); border-color: var(--green-dim, #0d5c33); }
+.ds-sw.is-on .ds-sw-k { transform: translateX(13px); background: var(--green); }
+.ds-sw:hover { border-color: var(--green-dim, #0d5c33); }
+
+.dc-card.is-excluded { opacity: .48; }
+.dc-card.is-excluded .dc-quality i { background: var(--text-low) !important; }

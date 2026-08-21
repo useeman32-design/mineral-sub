@@ -28,6 +28,7 @@ import { projects } from '../data/projects.js?v=411abbd';
 import { measureShape } from '../core/geo.js?v=411abbd';
 import { loadPrefs } from './settings.js?v=411abbd';
 import { LAYER_GROUPS } from '../data/layers.js?v=411abbd';
+import { dsToggles, DATASET_LAYER } from '../data/toggles.js?v=411abbd';
 import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=411abbd';
 import { createStatusBar } from '../components/statusbar.js?v=411abbd';
 import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=411abbd';
