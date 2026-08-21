@@ -30,8 +30,8 @@ These are the small derived products the browser actually fetches.
 | `title-attributes.json` | 3,182 KB | 11 706 titles | MCO eMC+ GeoServer WFS | `b8d356e` | `c9ee8f3ffffe` |
 | `mining-footprints.geojson` | 101 KB | 160 polygons | Maus et al. 2022 + OSM | `a2f4c1d` | `29a9d1b39acb` |
 | `mineral-sites.json` | 28 KB | 165 points | USGS minfac + MRDS + OSM | `a2f4c1d` | `616b15b409d9` |
-| `overlap-analysis.json` | 163 KB | 525 conflicts | Derived: cadastre × footprints × WDPA | `PEND` | `758fcf10285c` |
-| `roads-major.geojson` | 730 KB | 5 211 ways | OpenStreetMap Overpass | `PEND` | `005a129aebcf` |
+| `overlap-analysis.json` | 163 KB | 525 conflicts | Derived: cadastre × footprints × WDPA | `4f964c1` | `758fcf10285c` |
+| `roads-major.geojson` | 730 KB | 5 211 ways | OpenStreetMap Overpass | `4f964c1` | `005a129aebcf` |
 | `protected-areas.geojson` | 333 KB | 325 polygons | WDPA / Protected Planet | `8d602ad` | `48d973d46d9e` |
 | `ng-settlements-osm.json` | 67 KB | 911 settlements | OSM Overpass | `74b1b0f` | `0a4f878e9373` |
 
