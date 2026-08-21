@@ -147,6 +147,23 @@ depends on it at runtime.
 
 ---
 
+## Per-dataset toggles
+
+Beyond the global GO LIVE switch, every **Connected** dataset has its own
+switch on its Data Center card. Default is on. Exclusions persist in
+localStorage under `nmi.dsOff` as a list of disabled ids.
+
+Switching a dataset off dims its card, drops its map layer immediately and
+excludes it from reports. `DATASET_LAYER` in `js/data/toggles.js` maps dataset
+ids to map layer ids so the Data Center and the layer tree can never disagree.
+
+| Dataset id | Map layer |
+|---|---|
+| `titlegeom` | Mining title blocks |
+| `footprints` | Mining footprints |
+| `sites` | Georeferenced sites |
+| `protected` | Protected areas |
+
 ## Rules
 
 1. **Any new dataset gets a row here in the same commit that adds the file.**
