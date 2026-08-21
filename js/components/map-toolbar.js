@@ -4,14 +4,14 @@
  * so the Explore Map module can reuse it with a different configuration.
  */
 
-import { icon } from '../core/icons.js?v=3c8d53f';
-import { store } from '../core/store.js?v=3c8d53f';
-import { $, $$ } from '../core/utils.js?v=3c8d53f';
-import { RESOURCE_META } from '../data/fixtures.js?v=3c8d53f';
-import { LAYER_GROUPS, applyLayer } from '../data/layers.js?v=3c8d53f';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=3c8d53f';
-import { createStatusBar } from '../components/statusbar.js?v=3c8d53f';
-import { toast } from '../modules/dashboard.js?v=3c8d53f';
+import { icon } from '../core/icons.js?v=4f964c1';
+import { store } from '../core/store.js?v=4f964c1';
+import { $, $$ } from '../core/utils.js?v=4f964c1';
+import { RESOURCE_META } from '../data/fixtures.js?v=4f964c1';
+import { LAYER_GROUPS, applyLayer } from '../data/layers.js?v=4f964c1';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=4f964c1';
+import { createStatusBar } from '../components/statusbar.js?v=4f964c1';
+import { toast } from '../modules/dashboard.js?v=4f964c1';
 
 const RESOURCES = LEGEND_RESOURCES;
 
