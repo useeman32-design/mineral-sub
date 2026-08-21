@@ -58,7 +58,7 @@ export const dsToggles = {
  * hides its layer and disables the row in the layer tree.
  */
 export const DATASET_LAYER = {
-  titlegeom: 'titles',
+  titles: 'titles',      // cadastre dataset id in the catalogue is 'titles'
   footprints: 'footprints',
   sites: 'sites',
   protected: 'protected',

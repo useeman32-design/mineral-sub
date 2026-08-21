@@ -594,8 +594,9 @@ export class Api {
     const LIVE = {
       titles: { status: 'Connected', source: 'Mining Cadastre Office', format: 'XLSX → JSON',
         records: 10125, quality: 92, updated: '31 May 2026', licence: 'Nigerian Government public data' },
-      infra: { status: 'Connected', source: 'OpenStreetMap (Overpass)', format: 'JSON',
-        records: 911, quality: 88, updated: '17 Aug 2026', licence: 'ODbL 1.0' },
+      infra: { name: 'Major roads (motorway + trunk)', status: 'Connected',
+        source: 'OpenStreetMap (Overpass)', format: 'GeoJSON', sizeMb: 0.73,
+        records: 5211, quality: 86, updated: '21 Aug 2026', licence: 'ODbL 1.0' },
     };
     const extra = [
       { id: 'protected', name: 'Protected areas (WDPA)', domain: 'Environment',
@@ -612,10 +613,6 @@ export class Api {
         source: 'USGS minfac + MRDS + OpenStreetMap', format: 'JSON', sizeMb: 0.03, records: 165,
         status: 'Partial', quality: 61, updated: '2026', licence: 'Public domain + ODbL 1.0',
         note: 'Interim coverage pending the NGSA National Mineral Occurrence Database.' },
-      { id: 'infra', name: 'Major roads (motorway + trunk)', domain: 'Geospatial',
-        source: 'OpenStreetMap (Overpass)', format: 'GeoJSON', sizeMb: 0.73, records: 5211,
-        status: 'Connected', quality: 86, updated: '21 Aug 2026', licence: 'ODbL 1.0',
-        note: 'Clipped to Nigeria and simplified to ~200 m tolerance for browser delivery.' },
       { id: 'overlap', name: 'Cadastre overlap analysis', domain: 'Analytics',
         source: 'Derived: cadastre × footprints × WDPA', format: 'JSON', sizeMb: 0.16,
         records: 525, status: 'Derived', quality: 88, updated: '21 Aug 2026',

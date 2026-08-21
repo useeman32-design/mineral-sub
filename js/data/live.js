@@ -214,7 +214,7 @@ export function liveDatasetStatus() {
       quality: 61, updated: '2026', format: 'CSV + Overpass → JSON' },
     production: { status: 'Connected', source: 'NEITI Solid Minerals Audit 2023', records: 36,
       quality: 97, updated: 'Oct 2024', format: 'XLSX → JSON' },
-    titlegeom: { status: 'Connected', source: 'MCO eMC+ GeoServer (WFS)', records: 11706,
+    titles: { status: 'Connected', source: 'MCO eMC+ GeoServer (WFS)', records: 11706,
       quality: 95, updated: '21 Aug 2026', format: 'WFS → GeoJSON' },
     overlap: { status: 'Derived', source: 'Cadastre × footprints × WDPA', records: 525,
       quality: 88, updated: '21 Aug 2026', format: 'JSON' },

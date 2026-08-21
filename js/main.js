@@ -97,6 +97,9 @@ function boot() {
     const layerId = id ? DATASET_LAYER[id] : null;
     if (layerId) store.set({ layers: { ...store.get('layers'), [layerId]: false } });
     api.clearCache();
+    // Rebuilding every view drops lazily-drawn map layers, so Explore restores
+    // them from the store on remount (see explore.js). Keep the reset — the
+    // cached data really is stale — but never reset the view the user is on.
     router.resetViews({ except: router.current });
   });
 

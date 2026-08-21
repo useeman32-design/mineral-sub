@@ -27,7 +27,7 @@ import { History } from '../core/history.js?v=4f964c1';
 import { projects } from '../data/projects.js?v=4f964c1';
 import { measureShape } from '../core/geo.js?v=4f964c1';
 import { loadPrefs } from './settings.js?v=4f964c1';
-import { LAYER_GROUPS } from '../data/layers.js?v=4f964c1';
+import { LAYER_GROUPS, LAYER_INDEX, applyLayer } from '../data/layers.js?v=4f964c1';
 import { dsToggles, DATASET_LAYER } from '../data/toggles.js?v=4f964c1';
 import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=4f964c1';
 import { createStatusBar } from '../components/statusbar.js?v=4f964c1';
@@ -585,6 +585,30 @@ export function createExplore() {
     $('#map-loading', view).classList.add('is-hidden');
     // Seed the labels eye from stored state so a persisted "off" is visible.
     setLabels(store.get('showLabels'));
+
+    // Lazy layers (cadastre, conflicts, roads, footprints, sites) are drawn on
+    // demand, so a fresh map instance starts without them even when the store
+    // — and therefore the layer tree — still says they are on. That happens on
+    // every view rebuild, e.g. after a dataset toggle. Redraw whatever the
+    // tree is claiming so the switch and the map cannot disagree.
+    const persisted = store.get('layers') || {};
+    const LAZY = ['titles', 'conflicts', 'infra', 'footprints', 'sites'];
+    LAZY.forEach((id) => {
+      if (!persisted[id]) return;
+      const meta = LAYER_INDEX[id];
+      if (!meta || meta.soon) return;
+      if (dsToggles && DATASET_LAYER) {
+        const dsId = Object.keys(DATASET_LAYER).find((k) => DATASET_LAYER[k] === id);
+        if (dsId && !dsToggles.isOn(dsId)) {
+          // Dataset was excluded — clear the stale "on" instead of drawing it.
+          store.set({ layers: { ...store.get('layers'), [id]: false } });
+          const row = $(`#layer-tree [data-layer="${id}"]`, view);
+          if (row) { row.classList.remove('is-on'); row.setAttribute('aria-checked', 'false'); }
+          return;
+        }
+      }
+      applyLayer(nmap, id, true, { store, toast });
+    });
 
     // --- drawing / measurement ---
     history = new History({ onChange: renderHistoryButtons });
