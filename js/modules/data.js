@@ -6,13 +6,13 @@
  * the honest inventory behind every number the rest of the app displays.
  */
 
-import { $, $$, fmt, debounce } from '../core/utils.js?v=db4eb0f';
-import { icon } from '../core/icons.js?v=db4eb0f';
-import { api } from '../data/api.js?v=db4eb0f';
-import { reports } from '../core/reports.js?v=db4eb0f';
-import { toast } from './dashboard.js?v=db4eb0f';
-import { liveMode } from '../data/live.js?v=db4eb0f';
-import { dsToggles } from '../data/toggles.js?v=db4eb0f';
+import { $, $$, fmt, debounce } from '../core/utils.js?v=2b631da';
+import { icon } from '../core/icons.js?v=2b631da';
+import { api } from '../data/api.js?v=2b631da';
+import { reports } from '../core/reports.js?v=2b631da';
+import { toast } from './dashboard.js?v=2b631da';
+import { liveMode } from '../data/live.js?v=2b631da';
+import { dsToggles } from '../data/toggles.js?v=2b631da';
 
 /**
  * Consumer map: which modules read each dataset. Makes the dependency between

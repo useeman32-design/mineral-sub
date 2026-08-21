@@ -6,13 +6,13 @@
  * like Mining Titles.
  */
 
-import { fmt } from '../core/utils.js?v=db4eb0f';
-import { icon } from '../core/icons.js?v=db4eb0f';
-import { api } from '../data/api.js?v=db4eb0f';
-import { ctx } from '../core/context.js?v=db4eb0f';
-import { reports } from '../core/reports.js?v=db4eb0f';
-import { createRegister } from '../components/register.js?v=db4eb0f';
-import { toast } from './dashboard.js?v=db4eb0f';
+import { fmt } from '../core/utils.js?v=2b631da';
+import { icon } from '../core/icons.js?v=2b631da';
+import { api } from '../data/api.js?v=2b631da';
+import { ctx } from '../core/context.js?v=2b631da';
+import { reports } from '../core/reports.js?v=2b631da';
+import { createRegister } from '../components/register.js?v=2b631da';
+import { toast } from './dashboard.js?v=2b631da';
 
 /** The ten states with petroleum acreage — the register's geographic scope. */
 const PETRO_STATES = ['Abia', 'Akwa Ibom', 'Anambra', 'Bayelsa', 'Cross River',

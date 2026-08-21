@@ -6,8 +6,8 @@
  * state persist across sessions.
  */
 
-import { icon } from '../core/icons.js?v=db4eb0f';
-import { $ } from '../core/utils.js?v=db4eb0f';
+import { icon } from '../core/icons.js?v=2b631da';
+import { $ } from '../core/utils.js?v=2b631da';
 
 const W_KEY = 'nmi.railWidth';
 const C_KEY = 'nmi.railCollapsed';
