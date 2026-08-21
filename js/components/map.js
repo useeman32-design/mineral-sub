@@ -96,6 +96,8 @@ export class NigeriaMap {
       risk: 470,          // risk tint above fills, below heat/deposits
       heat: 500,
       titles: 505,        // licensed blocks beneath observed workings
+      infra: 470,         // roads under the analytical layers
+      conflicts: 512,     // flagged licences above the plain cadastre
       footprints: 520,    // observed workings under the occurrence pins
       deposits: 540, sites: 550, labels: 580,
     };
@@ -626,6 +628,8 @@ export class NigeriaMap {
     if (id === 'footprints') this.setFootprints(on);
     if (id === 'sites') this.setMineralSites(on);
     if (id === 'titles') this.setTitleBlocks(on);
+    if (id === 'conflicts') this.setConflicts(on);
+    if (id === 'infra') this.setRoads(on);
   }
 
   /**
@@ -1021,6 +1025,73 @@ export class NigeriaMap {
             { direction: 'top', className: 'dep-tip', opacity: 1, sticky: true }).openTooltip();
         });
       },
+    }).addTo(this.map);
+  }
+
+  /**
+   * Licences that intersect a protected area. Drawn from the same cadastre
+   * geometry, filtered to the flagged licence numbers, in red.
+   */
+  async setConflicts(on) {
+    if (!on) { this._setLayerVisible(this.layers.conflicts, false); return; }
+    if (this.layers.conflicts) { this._setLayerVisible(this.layers.conflicts, true); return; }
+
+    const { loadTitlePolygons, loadOverlap, loadTitleAttributes } =
+      await import('../data/live.js?v=3c8d53f');
+    const [fc, ov, attrs] = await Promise.all([loadTitlePolygons(), loadOverlap(), loadTitleAttributes()]);
+    const flagged = new Map();
+    (ov.protectedConflicts || []).forEach((c) => {
+      if (!flagged.has(c.lic)) flagged.set(c.lic, []);
+      flagged.get(c.lic).push(c);
+    });
+    const A = attrs.titles || {};
+
+    if (!this._conflictCanvas) this._conflictCanvas = L.canvas({ pane: 'conflicts', padding: 0.3 });
+
+    this.layers.conflicts = L.geoJSON(
+      { type: 'FeatureCollection',
+        features: fc.features.filter((f) => flagged.has(f.properties.l)) },
+      {
+        pane: 'conflicts',
+        renderer: this._conflictCanvas,
+        style: { color: '#ff4d5e', weight: 1.1, opacity: 0.95, fillColor: '#ff4d5e', fillOpacity: 0.3 },
+        onEachFeature: (ft, layer) => {
+          layer.on('mouseover', () => {
+            const rows = flagged.get(ft.properties.l) || [];
+            const a = A[ft.properties.l] || {};
+            layer.bindTooltip(
+              `<div class="dt">
+                <div class="dt-hd"><span class="dt-sw" style="background:#ff4d5e"></span>
+                  <span class="dt-name">${ft.properties.l}</span></div>
+                <div class="dt-rows">
+                  <div class="dt-r"><span>Conflict</span><b style="color:#ff4d5e">Inside protected area</b></div>
+                  <div class="dt-r"><span>Area</span><b>${rows.map((r) => r.park).join(', ').slice(0, 40)}</b></div>
+                  <div class="dt-r"><span>Designation</span><b>${rows[0]?.designation || '—'}</b></div>
+                  <div class="dt-r"><span>Holder</span><b>${(a.holder || '—').slice(0, 32)}</b></div>
+                  <div class="dt-r"><span>Type</span><b>${a.type || '—'}</b></div>
+                </div>
+              </div>`,
+              { direction: 'top', className: 'dep-tip', opacity: 1, sticky: true }).openTooltip();
+          });
+        },
+      }).addTo(this.map);
+  }
+
+  /** Major road network (motorway + trunk) from OpenStreetMap. */
+  async setRoads(on) {
+    if (!on) { this._setLayerVisible(this.layers.infra, false); return; }
+    if (this.layers.infra) { this._setLayerVisible(this.layers.infra, true); return; }
+    const { loadRoads } = await import('../data/live.js?v=3c8d53f');
+    const fc = await loadRoads();
+    if (!this._roadCanvas) this._roadCanvas = L.canvas({ pane: 'infra', padding: 0.3 });
+    this.layers.infra = L.geoJSON(fc, {
+      pane: 'infra',
+      renderer: this._roadCanvas,
+      style: (ft) => ({
+        color: ft.properties.c === 'm' ? '#c8d4d8' : '#7d8f96',
+        weight: ft.properties.c === 'm' ? 1.4 : 0.8,
+        opacity: 0.7, fill: false,
+      }),
     }).addTo(this.map);
   }
 

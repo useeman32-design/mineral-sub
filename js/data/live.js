@@ -74,6 +74,8 @@ export const loadFootprints = () => load('footprints', 'data/reference/mining-fo
 export const loadProduction = () => load('production', 'data/reference/production-2023.json');
 export const loadTitlePolygons = () => load('titlegeom', 'data/reference/title-polygons.geojson');
 export const loadTitleAttributes = () => load('titleattr', 'data/reference/title-attributes.json');
+export const loadOverlap = () => load('overlap', 'data/reference/overlap-analysis.json');
+export const loadRoads = () => load('roads', 'data/reference/roads-major.geojson');
 
 /* ------------------------------------------------------------------ *
  * Shaping — real records into the app's existing contracts
@@ -214,5 +216,9 @@ export function liveDatasetStatus() {
       quality: 97, updated: 'Oct 2024', format: 'XLSX → JSON' },
     titlegeom: { status: 'Connected', source: 'MCO eMC+ GeoServer (WFS)', records: 11706,
       quality: 95, updated: '21 Aug 2026', format: 'WFS → GeoJSON' },
+    overlap: { status: 'Derived', source: 'Cadastre × footprints × WDPA', records: 525,
+      quality: 88, updated: '21 Aug 2026', format: 'JSON' },
+    infra: { status: 'Connected', source: 'OpenStreetMap (Overpass)', records: 5211,
+      quality: 86, updated: '21 Aug 2026', format: 'GeoJSON' },
   };
 }

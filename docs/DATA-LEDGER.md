@@ -30,6 +30,8 @@ These are the small derived products the browser actually fetches.
 | `title-attributes.json` | 3,182 KB | 11 706 titles | MCO eMC+ GeoServer WFS | `b8d356e` | `c9ee8f3ffffe` |
 | `mining-footprints.geojson` | 101 KB | 160 polygons | Maus et al. 2022 + OSM | `a2f4c1d` | `29a9d1b39acb` |
 | `mineral-sites.json` | 28 KB | 165 points | USGS minfac + MRDS + OSM | `a2f4c1d` | `616b15b409d9` |
+| `overlap-analysis.json` | 163 KB | 525 conflicts | Derived: cadastre × footprints × WDPA | `PEND` | `758fcf10285c` |
+| `roads-major.geojson` | 730 KB | 5 211 ways | OpenStreetMap Overpass | `PEND` | `005a129aebcf` |
 | `protected-areas.geojson` | 333 KB | 325 polygons | WDPA / Protected Planet | `8d602ad` | `48d973d46d9e` |
 | `ng-settlements-osm.json` | 67 KB | 911 settlements | OSM Overpass | `74b1b0f` | `0a4f878e9373` |
 
@@ -129,6 +131,41 @@ live, self-contained, carries clean ISO-style dates, and has geometry.
 **Caveat:** this is an application endpoint, not a documented open-data API.
 It could be restricted at any time. The extract is committed so the app never
 depends on it at runtime.
+
+### `overlap-analysis.json` — cadastre × footprints × protected areas
+
+Derived, not downloaded. Polygon intersection of the 11,706 licensed blocks
+against the 160 satellite footprints and 325 WDPA protected areas, using a
+0.25° grid bbox prefilter then vertex-containment and edge-crossing tests.
+
+**Findings:**
+
+| | |
+|---|---|
+| Licences intersecting a protected area | **515**, touching **87** protected areas |
+| Satellite workings inside a licence | 99 of 160 |
+| Satellite workings **outside any licence** | **61** (8.38 km² disturbed) |
+| Licences with an observed working matched | 93 |
+
+Worst-affected protected areas: Cross River National Park (63 licences),
+Opara Game Reserve (51), Ebbe/Kampe Game Reserve (50), Old Oyo National
+Park (42), Stubbs Creek (31).
+
+**CRITICAL CAVEAT — do not overstate this.** The footprint layer covers only
+160 sites and 35.7 km² nationally. It is **not** a complete survey. Absence of
+a matched footprint does **not** prove a title is dormant; it means no
+satellite-mapped working in this dataset falls inside it. The 93 "worked"
+figure is a **lower bound on activity**, not a compliance finding. The
+protected-area overlaps are the robust half of this analysis — both inputs
+are complete polygon sets.
+
+### `roads-major.geojson` — motorway and trunk network
+
+OpenStreetMap via Overpass, ODbL 1.0, retrieved 21 Aug 2026. 7,158 raw ways in
+the bounding box, **5,211** after clipping to Nigeria's actual polygons.
+Simplified with Douglas–Peucker at 0.002° (~200 m) — 730 KB raw, **80 KB
+gzipped**. Replaces the "Roads & infrastructure — awaiting OSM import"
+placeholder.
 
 ### `mining-footprints.geojson` — observed workings
 

@@ -29,13 +29,16 @@ export const LAYER_GROUPS = [
         hint: 'USGS + OpenStreetMap · 165 points' },
       { id: 'titles',        label: 'Mining title blocks', color: '#8b7dff', def: false,
         hint: 'Licensed cadastre blocks · 11,706 polygons' },
+      { id: 'conflicts',     label: 'Protected-area conflicts', color: '#ff4d5e', def: false,
+        hint: '515 licences intersect 87 protected areas' },
+      { id: 'infra',         label: 'Major roads',         color: '#9aa7b0', def: false,
+        hint: 'Motorway and trunk network · OpenStreetMap' },
     ],
   },
   {
     group: 'Pending data service',
     items: [
       { id: 'geology', label: 'Geological units',      color: '#8b7dff', soon: true },
-      { id: 'infra',   label: 'Roads & infrastructure', color: '#9aa7b0', soon: true },
     ],
   },
 ];
