@@ -850,3 +850,23 @@
 
 .dc-card.is-excluded { opacity: .48; }
 .dc-card.is-excluded .dc-quality i { background: var(--text-low) !important; }
+
+/* ---------- title inspector ---------- */
+
+.insp-warn {
+  margin-top: 9px; padding: 7px 9px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 77, 94, .1);
+  border: 1px solid rgba(255, 77, 94, .3);
+  color: var(--red); font-size: 11px; line-height: 1.45;
+}
+.insp-holder {
+  font-size: 12px; line-height: 1.5;
+  color: var(--text); margin-top: 5px;
+}
+.insp-src {
+  margin-top: 10px; padding-top: 8px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 9.5px; color: var(--text-low);
+}
+.sel-cell .v small { font-size: 9.5px; opacity: .6; }

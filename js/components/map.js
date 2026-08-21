@@ -52,7 +52,7 @@ function inRing(x, y, ring) {
 }
 
 export class NigeriaMap {
-  constructor(container, { api, onSelect, onHover, onLgaSelect } = {}) {
+  constructor(container, { api, onSelect, onHover, onLgaSelect, onTitleSelect } = {}) {
     this.uid = 'nmap-' + (++MAP_SEQ);
     container.dataset.nmap = this.uid;
     this.interceptClicks = null;
@@ -62,6 +62,7 @@ export class NigeriaMap {
     this.onSelect = onSelect || (() => {});
     this.onHover = onHover || (() => {});
     this.onLgaSelect = onLgaSelect || null;
+    this.onTitleSelect = onTitleSelect || null;
     this.layers = {};
     this.stateLayers = new Map();
     this.depMarkers = [];

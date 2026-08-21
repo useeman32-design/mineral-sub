@@ -119,7 +119,12 @@
 }
 .leaflet-container { background: transparent !important; font-family: var(--font-ui) !important; outline: none; }
 .leaflet-control-container .leaflet-control-attribution { display: none; }
+/* Flatten the map's own panes so they cannot fight the app chrome. Safe to
+   raise tooltips/popups back up: .leaflet-container already establishes a
+   stacking context at --z-map, so nothing here can escape above the map UI. */
 .leaflet-pane { z-index: 1; }
+.leaflet-tooltip-pane { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
 .leaflet-interactive:focus { outline: none; }
 
 /* Floating map UI shared surface */

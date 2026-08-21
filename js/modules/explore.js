@@ -302,6 +302,61 @@ export function createExplore() {
       </div>`;
   };
 
+  /**
+   * A clicked cadastre block. The hover tooltip is a glance; this is the
+   * full record, in the Inspector where every other selection already lands.
+   */
+  const inspectorTitle = (t) => {
+    const TYPE_COLOR = {
+      'Exploration License': '#8b7dff',
+      'Small Scale Mining Lease': '#2dd8c3',
+      'Quarry Lease': '#f5b942',
+      'Mining Lease': '#ff4d5e',
+      'Water Use Permit': '#4d9dff',
+    };
+    const c = TYPE_COLOR[t.type] || '#8b7dff';
+    const minerals = (t.minerals || '').split(',').map((m) => m.trim()).filter(Boolean);
+    return `
+      <div class="insp-head">
+        <div>
+          <div class="insp-kind" style="color:${c}">${t.type || 'Mineral title'}</div>
+          <div class="insp-title t-mono">${t.lic}</div>
+          <div class="insp-sub">${t.lga ? t.lga + ' · ' : ''}${t.state || '—'}</div>
+        </div>
+      </div>
+
+      ${t.litigation ? '<div class="insp-warn">⚠ Title recorded as in litigation</div>' : ''}
+
+      <div class="sel-grid" style="margin-top:10px">
+        <div class="sel-cell"><div class="k">Area</div>
+          <div class="v" style="color:${c}">${t.areaKm2} <small>km²</small></div></div>
+        <div class="sel-cell"><div class="k">Status</div>
+          <div class="v" style="font-size:var(--fs-base)">${t.status || '—'}</div></div>
+        <div class="sel-cell"><div class="k">Granted</div>
+          <div class="v t-mono" style="font-size:var(--fs-base)">${t.granted || '—'}</div></div>
+        <div class="sel-cell"><div class="k">Expires</div>
+          <div class="v t-mono" style="font-size:var(--fs-base)">${t.expiry || '—'}</div></div>
+      </div>
+
+      <div class="insp-sec">
+        <div class="insp-sec-hd">Holder</div>
+        <p class="insp-holder">${t.holder || 'Not recorded'}</p>
+      </div>
+
+      ${minerals.length ? `
+      <div class="insp-sec">
+        <div class="insp-sec-hd">Minerals <span>${minerals.length}</span></div>
+        <div class="st-chips">${minerals.map((m) =>
+          `<span class="st-chip" style="color:${c};background:${c}1a;border:1px solid ${c}3d">${m}</span>`).join('')}</div>
+      </div>` : ''}
+
+      <div class="sel-actions">
+        <button class="btn-ghost btn-primary" data-title-zoom="${t.lic}">Zoom to block</button>
+        <button class="btn-ghost" data-send="titles" data-st="${t.state || ''}">Open register</button>
+      </div>
+      <div class="insp-src">Mining Cadastre Office · eMC+ register</div>`;
+  };
+
   const inspectorEmpty = () => `
     <div class="empty-sel" style="padding:26px 12px">
       <span class="es-ico">${icon('target', { size: 28 })}</span>
@@ -573,6 +628,11 @@ export function createExplore() {
         lastGeo = props ? { kind: 'state', data: props } : null;
         if (inspectorMode === 'geo') renderInspector();
         renderDrill();
+      },
+      onTitleSelect: (t) => {
+        lastGeo = { kind: 'title', data: t };
+        setInspectorTab('geo');
+        renderInspector();
       },
       onLgaSelect: (props) => {
         lastGeo = { kind: 'lga', data: props };
@@ -1339,6 +1399,15 @@ export function createExplore() {
         const layer = nmap.stateLayers.get(st.name);
         if (layer) nmap.map.flyToBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 9.2, duration: .9 });
       }
+      const tz = e.target.closest('[data-title-zoom]');
+      if (tz && nmap.layers.titles) {
+        const lic = tz.dataset.titleZoom;
+        let hit = null;
+        nmap.layers.titles.eachLayer((l) => { if (l.feature?.properties?.l === lic) hit = l; });
+        if (hit?.getBounds) nmap.map.flyToBounds(hit.getBounds(), { padding: [90, 90], maxZoom: 13, duration: 0.9 });
+        return;
+      }
+
       if (act === 'zoom-state' && st) {
         const layer = nmap.stateLayers.get(st.name);
         if (layer) nmap.map.flyToBounds(layer.getBounds(), { padding: [40, 40], duration: .8 });
@@ -1383,6 +1452,7 @@ export function createExplore() {
     if (!lastGeo) { el.innerHTML = inspectorEmpty(); return; }
     el.innerHTML = lastGeo.kind === 'state' ? inspectorState(lastGeo.data)
       : lastGeo.kind === 'lga' ? inspectorLga(lastGeo.data)
+      : lastGeo.kind === 'title' ? inspectorTitle(lastGeo.data)
       : inspectorDeposit(lastGeo.data);
   }
 
