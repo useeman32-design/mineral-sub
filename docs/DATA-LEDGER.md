@@ -24,7 +24,7 @@ These are the small derived products the browser actually fetches.
 | File | Size | Records | Source | Added | sha256 |
 |---|---|---|---|---|---|
 | `mining-titles.json` | 2 186 KB | 10 125 titles | MCO cadastre export | `8d602ad` | `afcb4a8589e2` |
-| `titles-summary.json` | 11 KB | 37 ADM1 units | Rebuilt from the GeoServer extract | `PEND` | `6e58b604048c` |
+| `titles-summary.json` | 11 KB | 37 ADM1 units | Rebuilt from the GeoServer extract | `HEAD` | `6e58b604048c` |
 | `production-2023.json` | 24 KB | 36 states, 44 commodities | NEITI 2023 Audit, App. 19 | `f6c0de3` | `30a4b96e6e43` |
 | `title-polygons.geojson` | 2,830 KB | 11 706 polygons | MCO eMC+ GeoServer WFS | `b8d356e` | `a096afff6cf5` |
 | `title-attributes.json` | 3,182 KB | 11 706 titles | MCO eMC+ GeoServer WFS | `b8d356e` | `c9ee8f3ffffe` |

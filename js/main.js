@@ -6,27 +6,27 @@
  * shell, design system and navigation need no changes.
  */
 
-import { buildShell } from './components/shell.js?v=2b631da';
-import { createGlobalSearch } from './components/search.js?v=2b631da';
-import { Router } from './core/router.js?v=2b631da';
-import { store } from './core/store.js?v=2b631da';
-import { reports } from './core/reports.js?v=2b631da';
-import { liveMode } from './data/live.js?v=2b631da';
-import { dsToggles, DATASET_LAYER } from './data/toggles.js?v=2b631da';
-import { api } from './data/api.js?v=2b631da';
-import { $ } from './core/utils.js?v=2b631da';
-import { createDashboard, toast } from './modules/dashboard.js?v=2b631da';
-import { createSettings } from './modules/settings.js?v=2b631da';
-import { createMinerals } from './modules/minerals.js?v=2b631da';
-import { createProspectivity } from './modules/prospectivity.js?v=2b631da';
-import { createRisk } from './modules/risk.js?v=2b631da';
-import { createOilGas } from './modules/oilgas.js?v=2b631da';
-import { createTitles } from './modules/titles.js?v=2b631da';
-import { createReports } from './modules/reports.js?v=2b631da';
-import { createDataCenter } from './modules/data.js?v=2b631da';
-import { createExplore } from './modules/explore.js?v=2b631da';
-import { theme } from './core/theme.js?v=2b631da';
-import { applyPrefs } from './modules/settings.js?v=2b631da';
+import { buildShell } from './components/shell.js?v=2a2fc1e';
+import { createGlobalSearch } from './components/search.js?v=2a2fc1e';
+import { Router } from './core/router.js?v=2a2fc1e';
+import { store } from './core/store.js?v=2a2fc1e';
+import { reports } from './core/reports.js?v=2a2fc1e';
+import { liveMode } from './data/live.js?v=2a2fc1e';
+import { dsToggles, DATASET_LAYER } from './data/toggles.js?v=2a2fc1e';
+import { api } from './data/api.js?v=2a2fc1e';
+import { $ } from './core/utils.js?v=2a2fc1e';
+import { createDashboard, toast } from './modules/dashboard.js?v=2a2fc1e';
+import { createSettings } from './modules/settings.js?v=2a2fc1e';
+import { createMinerals } from './modules/minerals.js?v=2a2fc1e';
+import { createProspectivity } from './modules/prospectivity.js?v=2a2fc1e';
+import { createRisk } from './modules/risk.js?v=2a2fc1e';
+import { createOilGas } from './modules/oilgas.js?v=2a2fc1e';
+import { createTitles } from './modules/titles.js?v=2a2fc1e';
+import { createReports } from './modules/reports.js?v=2a2fc1e';
+import { createDataCenter } from './modules/data.js?v=2a2fc1e';
+import { createExplore } from './modules/explore.js?v=2a2fc1e';
+import { theme } from './core/theme.js?v=2a2fc1e';
+import { applyPrefs } from './modules/settings.js?v=2a2fc1e';
 
 const MODULES = [
   {

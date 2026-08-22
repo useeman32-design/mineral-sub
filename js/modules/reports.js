@@ -9,15 +9,15 @@
  * is one layout to maintain rather than a separate document template.
  */
 
-import { $, $$, fmt, debounce } from '../core/utils.js?v=2b631da';
-import { icon } from '../core/icons.js?v=2b631da';
-import { api } from '../data/api.js?v=2b631da';
-import { store } from '../core/store.js?v=2b631da';
-import { ctx } from '../core/context.js?v=2b631da';
+import { $, $$, fmt, debounce } from '../core/utils.js?v=2a2fc1e';
+import { icon } from '../core/icons.js?v=2a2fc1e';
+import { api } from '../data/api.js?v=2a2fc1e';
+import { store } from '../core/store.js?v=2a2fc1e';
+import { ctx } from '../core/context.js?v=2a2fc1e';
 import {
   reports, resolveSections, toCsv, toXlsx, toPdf, download, slug, SECTION_KINDS,
-} from '../core/reports.js?v=2b631da';
-import { toast } from './dashboard.js?v=2b631da';
+} from '../core/reports.js?v=2a2fc1e';
+import { toast } from './dashboard.js?v=2a2fc1e';
 
 /** One-click starting points so the module is useful with an empty cart. */
 const PRESETS = [
