@@ -452,7 +452,7 @@ async function resolveOne(api, s) {
           ['Granted', t.granted], ['Expiry', t.expiry],
           ['Term', `${t.expiry - t.granted} years`],
           ['Status', t.status],
-          ['Overlap check', t.overlap ? 'Flagged — refer to the cadastre office' : 'Clear'],
+          ['Litigation', (t.litigation ?? t.overlap) ? 'In dispute — verify with the Mining Cadastre Office' : 'None recorded'],
         ],
       };
     }
@@ -471,7 +471,7 @@ async function resolveOne(api, s) {
         rows: rows.map((t) => [t.id, t.typeLabel, t.state, t.holder, t.commodity,
           fmt.int(t.areaHa), t.granted, t.expiry, t.status]),
         notes: `Licensed area ${fmt.int(rows.reduce((a, t) => a + t.areaHa, 0))} ha; `
-          + `${rows.filter((t) => t.overlap).length} boundary overlaps flagged.`,
+          + `${rows.filter((t) => t.litigation ?? t.overlap).length} titles recorded in litigation.`,
         chart: Object.keys(byType).length > 1 ? {
           type: 'bar',
           title: 'Titles by instrument type',

@@ -24,7 +24,7 @@ These are the small derived products the browser actually fetches.
 | File | Size | Records | Source | Added | sha256 |
 |---|---|---|---|---|---|
 | `mining-titles.json` | 2 186 KB | 10 125 titles | MCO cadastre export | `8d602ad` | `afcb4a8589e2` |
-| `titles-summary.json` | 8 KB | 36 states + FCT | Derived from the above | `8d602ad` | `80c7d7c50293` |
+| `titles-summary.json` | 11 KB | 37 ADM1 units | Rebuilt from the GeoServer extract | `PEND` | `6e58b604048c` |
 | `production-2023.json` | 24 KB | 36 states, 44 commodities | NEITI 2023 Audit, App. 19 | `f6c0de3` | `30a4b96e6e43` |
 | `title-polygons.geojson` | 2,830 KB | 11 706 polygons | MCO eMC+ GeoServer WFS | `b8d356e` | `a096afff6cf5` |
 | `title-attributes.json` | 3,182 KB | 11 706 titles | MCO eMC+ GeoServer WFS | `b8d356e` | `c9ee8f3ffffe` |
@@ -131,6 +131,34 @@ live, self-contained, carries clean ISO-style dates, and has geometry.
 **Caveat:** this is an application endpoint, not a documented open-data API.
 It could be restricted at any time. The extract is committed so the app never
 depends on it at runtime.
+
+### Register and map now share one source
+
+The Mining Titles register originally ran on `mining-titles.json` (the
+published spreadsheet, 10,125 rows) while the map drew `title-polygons.geojson`
+(the GeoServer extract, 11,706). The two disagreed on the national total, which
+is indefensible in a demo.
+
+The register, the dashboard KPI and `titles-summary.json` now all derive from
+the **GeoServer extract**. It is the authoritative copy: live, with coordinates,
+clean ISO-style dates, an explicit status field and a litigation flag.
+
+| | Spreadsheet | GeoServer |
+|---|---|---|
+| Titles | 10,125 | **11,706** |
+| Coordinates | none | **all 11,706** |
+| Litigation flag | none | **60 titles** |
+| Licensed area | 153,657 km² | **180,270 km²** |
+
+`mining-titles.json` is retained as provenance for the published figures but is
+no longer read by the app.
+
+**One wording correction that mattered.** The register's "Integrity" filter and
+its KPI previously said *boundary overlaps*, derived from a proxy — a grant
+spanning more than one state. The GeoServer carries a real `has_litigation`
+field, so the filter, the KPI, the detail card and the report row now say
+**in litigation** and report the cadastre's own flag: 60 titles. Claiming a
+boundary overlap we had not actually computed would not have survived scrutiny.
 
 ### `overlap-analysis.json` — cadastre × footprints × protected areas
 

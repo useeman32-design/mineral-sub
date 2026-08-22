@@ -115,52 +115,69 @@ function plausibleYear(value) {
  * the national total. The primary state drives filtering; every state and LGA
  * on the grant is kept so the record reads truthfully.
  */
+/**
+ * The register runs on the eMC+ GeoServer extract, not the published
+ * spreadsheet. Both are the same MCO register in different formats, but the
+ * GeoServer copy is authoritative: it is live, it carries coordinates, clean
+ * ISO-style dates, an explicit status and a litigation flag, and it holds
+ * 11,706 titles against the spreadsheet's 10,125. Running the register and the
+ * map off one source also stops them reporting different national totals.
+ *
+ * Dates arrive as DD.MM.YYYY.
+ */
+function geoYear(v) {
+  if (!v) return null;
+  const m = String(v).match(/(\d{2})\.(\d{2})\.(\d{4})/);
+  return m ? plausibleYear(m[3]) : plausibleYear(v);
+}
+
 export async function getLiveTitles(states) {
-  const raw = await loadTitles();
+  const attrs = (await loadTitleAttributes()).titles || {};
   const year = new Date().getFullYear();
 
-  return raw.titles.map((t, i) => {
-    const list = t.states.length ? t.states : ['Unknown'];
-    const primary = list[0];
+  return Object.entries(attrs).map(([lic, t]) => {
+    const primary = t.state || 'Unknown';
     const meta = states?.[primary];
-    const expiryYear = plausibleYear(t.expiry);
-    const grantedYear = plausibleYear(t.granted);
+    const expiryYear = geoYear(t.expiry);
+    const grantedYear = geoYear(t.granted);
     const life = expiryYear === null ? null : expiryYear - year;
+    const minerals = (t.minerals || '')
+      .split(',').map((m) => m.trim()).filter(Boolean);
 
     return {
-      id: String(t.code || `T-${i}`),
-      cadastreId: String(t.code || ''),
-      type: t.type,
-      typeLabel: TYPE_LABEL[t.type] || t.type,
+      id: lic,
+      cadastreId: lic,
+      type: t.type || 'Unknown',
+      typeLabel: t.type || 'Unknown',
       state: primary,
-      states: list,
+      states: [primary],
       code: meta?.code || '',
-      lga: t.lgas[0] || null,
-      lgas: t.lgas,
+      lga: t.lga || null,
+      lgas: t.lga ? [t.lga] : [],
       holder: t.holder || 'Not recorded',
-      commodity: (t.minerals[0] || 'unspecified').toLowerCase(),
-      commodities: t.minerals,
+      commodity: (minerals[0] || 'unspecified').toLowerCase(),
+      commodities: minerals,
       areaHa: Math.round((t.areaKm2 || 0) * KM2_TO_HA),
       areaKm2: t.areaKm2 || 0,
-      cu: t.cu || null,
+      cu: t.areaKm2 ? Math.round(t.areaKm2 / 0.21) : null,
       granted: grantedYear,
       expiry: expiryYear,
       grantedDate: t.granted,
       expiryDate: t.expiry,
-      status: life === null ? 'Unknown' : life < 0 ? 'Expired' : life <= 1 ? 'Expiring' : 'Active',
-      // A grant spanning more than one state is the cadastre's real
-      // cross-boundary flag — surfaced in the register's Integrity filter.
-      overlap: list.length > 1,
-      centroid: meta?.centroid || null,
+      lat: t.lat,
+      lng: t.lng,
+      // The register's Integrity filter now shows a real cadastre flag rather
+      // than a proxy: a title the MCO records as under legal dispute.
+      litigation: !!t.litigation,
+      overlap: !!t.litigation,
+      status: life === null ? 'Unknown'
+        : life < 0 ? 'Expired'
+        : life <= 1 ? 'Expiring' : 'Active',
+      centroid: (t.lat != null && t.lng != null) ? [t.lat, t.lng] : (meta?.centroid || null),
     };
   }).sort((a, b) => (a.expiry ?? 9999) - (b.expiry ?? 9999));
 }
 
-/**
- * Per-state analytical attributes rebuilt from the real cadastre.
- * Keeps every field `STATES[name]` provides so prospectivity, risk and the map
- * continue to work; only the title-derived numbers become real.
- */
 export async function getLiveStates(sampleStates) {
   const [summary, protectedAreas] = await Promise.all([
     loadTitlesSummary(),

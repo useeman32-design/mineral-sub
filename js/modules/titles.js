@@ -2,7 +2,7 @@
  * MINING TITLES MODULE
  * ====================
  * The cadastre: exploration licences, mining leases, quarry leases and small
- * scale permits, with expiry tracking and overlap flags — the two things that
+ * scale permits, with expiry tracking and litigation flags — the two things that
  * matter most when reading a title register.
  */
 
@@ -46,7 +46,7 @@ export function createTitles() {
       ${t.overlap ? `
         <div class="rg-flag">
           ${icon('info', { size: 13 })}
-          <span>Boundary overlap flagged against an adjacent title — refer to the cadastre office before relying on this polygon.</span>
+          <span>The cadastre records this title as under legal dispute — verify status with the Mining Cadastre Office before relying on it.</span>
         </div>` : ''}
 
       <div class="rg-metrics">
@@ -61,7 +61,7 @@ export function createTitles() {
         ${fact('State', t.state)}
         ${fact('Target commodity', t.commodity)}
         ${fact('Granted', `<span class="t-mono">${t.granted}</span>`)}
-        ${fact('Overlap check', t.overlap ? '<span style="color:var(--gold)">Flagged</span>' : 'Clear')}
+        ${fact('Litigation', t.litigation ?? t.overlap ? '<span style="color:var(--red)">In dispute</span>' : 'None recorded')}
       </div>
 
       <div class="ctx-acts">
@@ -78,13 +78,13 @@ export function createTitles() {
     async mount(view) {
       reg = createRegister(view, {
         title: 'Mining Titles',
-        blurb: 'The national mineral cadastre — licences and leases by holder, commodity and term, with expiry and overlap surveillance.',
+        blurb: 'The national mineral cadastre — licences and leases by holder, commodity and term, with expiry tracking and litigation flags.',
         accent: 'accent-gold',
         glyph: 'titles',
         tableTitle: 'Title register',
         searchHint: 'Search title ID, holder or state',
         loadingLabel: 'Loading cadastre…',
-        emptyHint: 'Holder, term, area and overlap status open here.',
+        emptyHint: 'Holder, term, area and litigation status open here.',
         defaultSort: 'expiry',
         defaultDir: 'asc',
         load: async () => {
@@ -106,11 +106,11 @@ export function createTitles() {
         kpis: (list) => {
           const area = list.reduce((a, t) => a + t.areaHa, 0);
           const exp = list.filter((t) => t.status === 'Expiring').length;
-          const ovl = list.filter((t) => t.overlap).length;
+          const lit = list.filter((t) => t.litigation ?? t.overlap).length;
           return [
             { label: 'Titles', value: fmt.int(list.length), sub: `${list.filter((t) => t.status === 'Active').length} active`, accent: 'var(--gold)' },
             { label: 'Expiring', value: exp, sub: 'within 12 months', accent: 'var(--orange)' },
-            { label: 'Licensed area', value: fmt.compact(area), sub: `ha · ${ovl} overlaps`, accent: 'var(--cyan)' },
+            { label: 'Licensed area', value: fmt.compact(area), sub: `ha · ${lit} in litigation`, accent: 'var(--cyan)' },
           ];
         },
 
@@ -139,8 +139,8 @@ export function createTitles() {
               { v: 'Unknown', l: 'Date unrecorded' }],
             match: (t, v) => t.status === v },
           { id: 'flag', label: 'Integrity',
-            options: [{ v: '*', l: 'All titles' }, { v: 'ovl', l: 'Overlaps only' }],
-            match: (t, v) => (v === 'ovl' ? t.overlap : true) },
+            options: [{ v: '*', l: 'All titles' }, { v: 'ovl', l: 'In litigation only' }],
+            match: (t, v) => (v === 'ovl' ? (t.litigation ?? t.overlap) : true) },
         ],
 
         search: (t, q) => t.id.toLowerCase().includes(q)
@@ -157,7 +157,7 @@ export function createTitles() {
           { id: 'expiry', label: 'Expiry', get: (t) => t.expiry ?? '—',
             sort: (t) => t.expiry ?? 9999, align: 'r', mono: true },
           { id: 'status', label: 'Status', get: (t) => t.status,
-            render: (t) => `<span class="rg-tag" style="color:${STATUS_COLOR[t.status]}">${t.status}</span>${t.overlap ? '<i class="rg-dot" title="Overlap flagged"></i>' : ''}` },
+            render: (t) => `<span class="rg-tag" style="color:${STATUS_COLOR[t.status]}">${t.status}</span>${t.overlap ? '<i class="rg-dot" title="In litigation"></i>' : ''}` },
         ],
 
         detail,
