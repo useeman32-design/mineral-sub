@@ -222,8 +222,6 @@ export async function getLiveNational() {
  */
 export function liveDatasetStatus() {
   return {
-    titles: { status: 'Connected', source: 'Mining Cadastre Office', records: 10125,
-      quality: 92, updated: '31 May 2026', format: 'XLSX → JSON' },
     protected: { status: 'Connected', source: 'Protected Planet / WDPA', records: 325,
       quality: 95, updated: 'Aug 2026', format: 'Shapefile → GeoJSON' },
     settlements: { status: 'Connected', source: 'OpenStreetMap (Overpass)', records: 911,

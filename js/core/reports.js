@@ -30,6 +30,7 @@
  */
 
 import { fmt } from './utils.js?v=8503cca';
+import { liveMode } from '../data/live.js?v=8503cca';
 import { Pdf } from './pdf.js?v=8503cca';
 import { buildXlsx } from './xlsx.js?v=8503cca';
 
@@ -777,7 +778,14 @@ export function toPdf(sections, meta = {}) {
   doc.y -= 11;
   doc.text(`Nigeria Mineral Intelligence · generated ${stamp}`, doc.m, doc.y, { size: 7, color: MUTED });
   doc.y -= 10;
-  doc.text('Figures include deterministic placeholder data pending live service connection — see Data Center for provenance.',
+  // Live mode is the default and most sections are now audited government
+  // data, so a blanket "this is placeholder" line is false and undersells the
+  // report. Name the actual sources instead; only warn when demo fixtures are
+  // genuinely in play.
+  doc.text(liveMode.enabled
+    ? 'Sources: Mining Cadastre Office (eMC+), NEITI Solid Minerals Audit 2023, Protected Planet (WDPA), '
+      + 'OpenStreetMap (ODbL). Rows marked otherwise are noted in the section. See Data Center for provenance.'
+    : 'DEMO MODE — figures are deterministic placeholders, not official data. Enable live data in the Data Center.',
     doc.m, doc.y, { size: 7, color: MUTED });
 
   return doc.build();

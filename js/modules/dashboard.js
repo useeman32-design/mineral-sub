@@ -387,11 +387,19 @@ export function createDashboard() {
     const prefs = loadPrefs();
     if (!prefs.mapLabels) nmap.setLabels(false);
     stage.classList.toggle('pulse-off', !prefs.pulseMarkers);
-    addEventListener('nmi:prefs', (e) => {
+    // This listener lives on window, so it outlives the view unless it is
+    // explicitly removed. destroy() tears down the Leaflet map; a later
+    // 'nmi:prefs' from Settings would then call setLabels() on a destroyed
+    // map and throw inside Leaflet (_leaflet_pos of undefined). Register it
+    // through unsub so it dies with the view.
+    const onPrefs = (e) => {
+      if (!nmap) return;
       nmap.setLabels(e.detail.mapLabels);
       stage.classList.toggle('pulse-off', !e.detail.pulseMarkers);
       nmap.invalidate();
-    });
+    };
+    addEventListener('nmi:prefs', onPrefs);
+    unsub.push(() => removeEventListener('nmi:prefs', onPrefs));
 
     // Rail interactions
     $('#intel-rail', view).addEventListener('click', (e) => {
@@ -448,7 +456,7 @@ export function createDashboard() {
     mount,
     onShow() { requestAnimationFrame(() => nmap?.invalidate()); },
     onHide() {},
-    destroy() { unsub.forEach((f) => f()); nmap?.destroy(); },
+    destroy() { unsub.forEach((f) => f()); unsub = []; nmap?.destroy(); nmap = null; },
   };
 }
 

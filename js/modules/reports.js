@@ -13,6 +13,7 @@ import { $, $$, fmt, debounce } from '../core/utils.js?v=8503cca';
 import { icon } from '../core/icons.js?v=8503cca';
 import { api } from '../data/api.js?v=8503cca';
 import { store } from '../core/store.js?v=8503cca';
+import { liveMode } from '../data/live.js?v=8503cca';
 import { ctx } from '../core/context.js?v=8503cca';
 import {
   reports, resolveSections, toCsv, toXlsx, toPdf, download, slug, SECTION_KINDS,
@@ -215,7 +216,9 @@ export function createReports() {
 
       <footer class="rp-foot">
         <span>Nigeria Mineral Intelligence · generated ${stamp()}</span>
-        <span>Figures include deterministic placeholder data pending live service connection — see Data Center for provenance.</span>
+        <span>${liveMode.enabled
+          ? 'Sources: Mining Cadastre Office (eMC+) · NEITI Solid Minerals Audit 2023 · Protected Planet (WDPA) · OpenStreetMap (ODbL). See Data Center for provenance.'
+          : 'DEMO MODE — figures are deterministic placeholders, not official data. Enable live data in the Data Center.'}</span>
       </footer>
     </article>`;
 

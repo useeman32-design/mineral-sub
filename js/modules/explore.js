@@ -1160,9 +1160,14 @@ export function createExplore() {
       menu.hidden = !menu.hidden;
       btn.classList.toggle('is-open', !menu.hidden);
     });
-    document.addEventListener('click', (e) => {
+    // Outside-click closer. Lives on document, so it must be unregistered on
+    // destroy or it keeps a reference to a torn-down view (same leak class as
+    // the dashboard's nmi:prefs listener).
+    const onDocClick = (e) => {
       if (!menu.hidden && !e.target.closest('#ex-filter-menu') && !e.target.closest('#ex-filters-btn')) close();
-    });
+    };
+    document.addEventListener('click', onDocClick);
+    unsub.push(() => document.removeEventListener('click', onDocClick));
 
     menu.addEventListener('click', (e) => {
       const base = e.target.closest('[data-base]');

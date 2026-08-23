@@ -419,3 +419,67 @@ fix cannot yank the marker mid-journey.
 polygons only. Flying to a street-level position on it landed the user in an
 empty black field with nothing to navigate by. Imagery is enabled automatically
 on the first fix (the toggle still works normally afterwards).
+
+## Phase-2 feature audit (23 Aug 2026)
+
+Swept all 10 modules: every module reachable, every visible control clicked,
+console watched throughout. Four real defects found and fixed; the rest of the
+platform came back clean.
+
+### 1. Leaked window listener crashed on a destroyed map
+
+`js/modules/dashboard.js` registered `addEventListener('nmi:prefs', ...)` on
+**window** but never removed it. `destroy()` tore down the Leaflet map while
+the listener survived, so changing any preference in Settings later called
+`setLabels()` → `_onZoom()` → `getCenter()` on a dead map:
+
+```
+Cannot read properties of undefined (reading '_leaflet_pos')
+  at NigeriaMap._stateAtCentre (map.js:513)
+  at NigeriaMap.setLabels    (map.js:692)
+  at dashboard.js:391
+```
+
+Only reproducible after visiting Overview, leaving, then entering Settings —
+which is why plain navigation testing missed it. The listener is now registered
+through `unsub` and `destroy()` nulls `nmap`.
+
+**Same leak class in `js/modules/explore.js`:** the filter menu's outside-click
+handler was added to `document` with no removal. Also fixed.
+
+Rule going forward: any `addEventListener` on `window` or `document` inside a
+module must push its removal onto `unsub` in the same edit.
+
+### 2. Reports disclaimed their own audited data
+
+Both the on-screen footer (`js/modules/reports.js`) and the exported PDF
+(`js/core/reports.js`) printed, unconditionally:
+
+> "Figures include deterministic placeholder data pending live service connection"
+
+Neither file imported `liveMode`. With live data now the default, every
+exported PDF told the reader its NEITI and MCO figures were placeholders. The
+footer is now source-accurate in live mode (naming MCO eMC+, NEITI 2023, WDPA,
+OSM) and only warns in demo mode, where the warning is now blunter.
+
+### 3. Shadowed object key hid the corrected title count
+
+`liveDatasetStatus()` in `js/data/live.js` had **two** `titles:` keys in one
+object literal — the first claiming 10,125 records, the second 11,706. JS keeps
+the last, so behaviour was already correct, but the stale row was misleading to
+read. Removed. (The function is currently exported and never called; left in
+place as documentation of live-mode provenance.)
+
+### Verified NOT broken
+
+Four controls flagged as no-ops by the sweep were false positives, confirmed by
+targeted tests:
+
+| Flagged | Reality |
+|---|---|
+| Oil & Gas `kind/terrain/operator/gas` | Table sort headers — rows *do* reorder; the detector only measured HTML length, which does not change on a reorder |
+| Minerals `All` | Selects all resources; a no-op only because all are already selected |
+| Prospectivity / Risk `Reset` | Works — after actually moving a weight slider, Reset restores it |
+
+All 9 modules render, both report presets build (3 sections / 24 bars and
+8 sections / 10 charts), the overlap caveat is present, zero console errors.
