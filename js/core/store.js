@@ -52,7 +52,10 @@ export const store = new Store({
   showGraticule: true,
 
   // layer + filter state (drives map rendering; API-ready shape)
-  layers: { deposits: true, prospectivity: true, graticule: true, risk: false, titles: false, infrastructure: false },
+  // Seeded from defaultLayerState() at boot (js/main.js) so there is ONE
+  // definition of which layers start on — js/data/layers.js. Keeping a second
+  // hardcoded copy here silently overrode it.
+  layers: {},
   filters: {
     resources: ['gold', 'lithium', 'tin', 'oil', 'gas', 'lead', 'barite', 'iron'],
     prospectivity: 'all',     // 'all' | 'high' | 'moderate'

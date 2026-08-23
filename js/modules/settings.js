@@ -118,9 +118,11 @@ export function createSettings() {
             <div class="set-src">
               ${[
                 ['Boundary service', 'geoBoundaries ADM1 / ADM2', 'Connected', 'ok'],
-                ['Occurrence registry', 'NMI placeholder fixtures', 'Sample data', 'warn'],
+                ['Mining cadastre', 'Mining Cadastre Office — 11,706 titles', 'Connected', 'ok'],
+                ['Audited production', 'NEITI Solid Minerals Audit 2023', 'Connected', 'ok'],
+                ['Occurrence registry', 'USGS + OSM interim — 165 sites', 'Partial', 'warn'],
+                ['Regional geochemistry', 'Awaiting NGSA release', 'Not connected', 'off'],
                 ['Satellite imagery', 'ArcGIS World Imagery', 'On demand', 'ok'],
-                ['Prospectivity engine', 'Awaiting API binding', 'Not connected', 'off'],
               ].map(([n, d, s, k]) => `
                 <div class="src-row">
                   <div><div class="set-label">${n}</div><div class="set-hint">${d}</div></div>

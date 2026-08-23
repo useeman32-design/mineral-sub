@@ -183,3 +183,8 @@
   transition-duration: 80ms !important;
 }
 [data-motion="reduced"] .live-dot { animation: none !important; }
+
+/* Sample-data mode is the opt-out state, so it is flagged amber: demo
+   fixtures must never be mistaken for audited government figures. */
+.pill-live.is-sampledata { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 40%, transparent); }
+.pill-live.is-sampledata .live-dot { background: var(--gold); box-shadow: 0 0 6px var(--gold); animation: none; }

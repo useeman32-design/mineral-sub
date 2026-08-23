@@ -13,6 +13,7 @@ import { store } from './core/store.js?v=c902723';
 import { reports } from './core/reports.js?v=c902723';
 import { liveMode } from './data/live.js?v=c902723';
 import { dsToggles, DATASET_LAYER } from './data/toggles.js?v=c902723';
+import { defaultLayerState } from './data/layers.js?v=c902723';
 import { api } from './data/api.js?v=c902723';
 import { $ } from './core/utils.js?v=c902723';
 import { createDashboard, toast } from './modules/dashboard.js?v=c902723';
@@ -76,6 +77,9 @@ function boot() {
   theme.init();
   applyPrefs();
 
+  // Single source of truth for which layers start visible (js/data/layers.js).
+  store.set({ layers: defaultLayerState() });
+
   const shell = buildShell(document.getElementById('root'));
 
   // Global search reaches every module and hands off through core/context.
@@ -138,10 +142,13 @@ function boot() {
     const text = document.getElementById('sys-text');
     if (!pill || !text) return;
     pill.classList.toggle('is-livedata', on);
-    text.textContent = on ? 'Live Data' : 'System Online';
+    // Sample mode is now the deliberate opt-out, so it is the state that gets
+    // flagged: the user should never mistake demo fixtures for audited data.
+    pill.classList.toggle('is-sampledata', !on);
+    text.textContent = on ? 'Live Data' : 'Sample Data';
     pill.title = on
-      ? 'Serving real government datasets — see Data Center'
-      : 'Serving sample data — enable Go Live in Data Center';
+      ? 'Serving real government datasets — MCO cadastre, NEITI production, WDPA'
+      : 'Serving sample fixtures, NOT official figures — re-enable Go Live in Data Center';
   };
   syncMode(liveMode.enabled);
   liveMode.subscribe((on) => {

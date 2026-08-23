@@ -290,3 +290,57 @@ public endpoint.
 Destinations: any state, LGA, mineral occurrence or mining title — each
 Inspector carries a **Navigate** button. States and LGAs route to their
 centroid, which is a representative point, not a specific address.
+
+## Live data is now the default (22 Aug 2026)
+
+`js/data/live.js` previously read `localStorage['nmi.liveData'] === '1'`, so a
+first-time visitor saw **sample fixtures**, not the real datasets. Measured
+difference on a virgin browser profile:
+
+| | Was (fresh visitor) | Now |
+|---|---|---|
+| Register | 208 titles | **11,706** |
+| Active | 95 | 6,853 |
+| Licensed area | 240.3K ha | 18M ha |
+| In litigation | 32 | 60 |
+
+The only way to reach the real data was a switch two clicks deep in the Data
+Center. Every dataset acquired for this project was invisible by default.
+
+The key is now an **opt-out** (`!== '0'`). Sample mode still exists as a
+deliberate demo, and is flagged amber in the header pill reading `Sample Data`
+with the tooltip "NOT official figures" — because demo fixtures being mistaken
+for audited government data is the failure mode that matters.
+
+### Cost of defaulting to live
+
+Loading is lazy per dataset, and GitHub Pages serves gzip:
+
+| Dataset | Raw | Gzipped | When it loads |
+|---|---|---|---|
+| `titles-summary.json` | 12 KB | ~4 KB | dashboard |
+| `production-2023.json` | 28 KB | ~8 KB | dashboard |
+| `title-attributes.json` | 3.2 MB | **0.5 MB** | register / cadastre click |
+| `title-polygons.geojson` | 2.8 MB | **0.4 MB** | cadastre layer on |
+
+A default visit that never leaves the dashboard costs ~40 KB raw. The heavy
+files are only fetched by the modules that need them.
+
+### Two bugs this surfaced
+
+1. **`js/core/store.js` duplicated the layer defaults** — it hardcoded
+   `layers: { ..., titles: false, ... }`, silently overriding `def:` in
+   `js/data/layers.js`, which is supposed to be the single definition. The
+   store is now seeded from `defaultLayerState()` at boot. Two copies of the
+   same defaults meant edits to the real one did nothing.
+2. **The Data Center understated our own data.** `getDatasets()` only returned
+   the honest catalogue in live mode, so the default view advertised the
+   cadastre as "NMI placeholder, 64 records, Sample data" while the register
+   next door showed 11,706 audited titles. Cadastre, occurrence and commodity
+   rows now carry real provenance, counts and licences.
+
+Mining title blocks are now **on by default** on the Explore map.
+
+Rows that still read "Sample data" or "Not connected" are correct and must stay:
+`petroleum` (every published NUPRC endpoint errors), `geochem` and `geophys`
+(awaiting NGSA release).

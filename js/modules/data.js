@@ -119,14 +119,14 @@ export function createDataCenter() {
           <div class="dc-live-t">
             <b>${live ? 'Live government data' : 'Sample data'}</b>
             <em>${live
-              ? 'Serving real records from the Mining Cadastre Office, Protected Planet, OpenStreetMap and WorldPop.'
-              : 'Serving deterministic placeholders. Switch on to load the real government datasets held in this repository.'}</em>
+              ? 'Serving real records from the Mining Cadastre Office, NEITI, Protected Planet, OpenStreetMap and WorldPop. Files load on demand, so only the datasets you actually open are downloaded.'
+              : 'Serving deterministic placeholders for demonstration. These are NOT official figures — switch back to live for the real government datasets.'}</em>
           </div>
           <button class="dc-switch ${live ? 'is-on' : ''}" data-go-live role="switch"
                   aria-checked="${live}" aria-label="Toggle live government data">
             <span class="dc-switch-k"></span>
           </button>
-          <span class="dc-live-l">${live ? 'GO LIVE' : 'GO LIVE'}</span>
+          <span class="dc-live-l">${live ? 'LIVE' : 'DEMO'}</span>
         </section>
 
         <header class="pr-head">
@@ -240,7 +240,7 @@ export function createDataCenter() {
           api.clearCache();
           toast(on
             ? 'Live data enabled — loading real government datasets'
-            : 'Switched back to sample data');
+            : 'Demo mode — figures shown are placeholders, not official data');
           reload();
           return;
         }

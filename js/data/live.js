@@ -23,8 +23,13 @@
 const KEY = 'nmi.liveData';
 const listeners = new Set();
 
+// Live government data is the DEFAULT. Sample fixtures are an explicit
+// opt-out ('0'), not the starting state — otherwise the real MCO cadastre,
+// NEITI production and WDPA overlays stay invisible behind a buried switch.
+// Loading is lazy per dataset (see load() below), so defaulting to live costs
+// nothing until a module actually asks for a file.
 let enabled = (() => {
-  try { return localStorage.getItem(KEY) === '1'; } catch { return false; }
+  try { return localStorage.getItem(KEY) !== '0'; } catch { return true; }
 })();
 
 export const liveMode = {

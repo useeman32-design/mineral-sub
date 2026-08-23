@@ -27,7 +27,7 @@ export const LAYER_GROUPS = [
         hint: 'Satellite-mapped workings · 160 polygons' },
       { id: 'sites',         label: 'Georeferenced sites', color: '#4d9dff', def: false,
         hint: 'USGS + OpenStreetMap · 165 points' },
-      { id: 'titles',        label: 'Mining title blocks', color: '#8b7dff', def: false,
+      { id: 'titles',        label: 'Mining title blocks', color: '#8b7dff', def: true,
         hint: 'Licensed cadastre blocks · 11,706 polygons' },
       { id: 'conflicts',     label: 'Protected-area conflicts', color: '#ff4d5e', def: false,
         hint: '515 licences intersect 87 protected areas' },
