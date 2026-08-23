@@ -918,16 +918,27 @@
 .nav-acts { display: flex; gap: 6px; margin-top: 9px; }
 .nav-acts .btn-ghost { flex: 1; }
 
-/* the user's own position on the map */
-.me-dot {
-  width: 16px; height: 16px; margin: -8px 0 0 -8px;
-  border-radius: 50%; background: rgba(77,157,255,.28);
+/* the user's own position: a heading arrow, like a car navigator */
+.me-mark {
+  width: 26px; height: 26px; margin: -13px 0 0 -13px;
   display: grid; place-items: center;
+  border-radius: 50%; background: rgba(77,157,255,.22);
 }
-.me-dot i {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: #4d9dff; border: 2px solid #06131c;
-  box-shadow: 0 0 10px rgba(77,157,255,.9);
+.me-arrow {
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 19px solid #4d9dff;
+  filter: drop-shadow(0 0 5px rgba(77,157,255,.95));
+  transform-origin: 50% 62%;
+  transition: transform .35s var(--ease, ease);
+}
+/* Stationary: no trustworthy heading, so show a dot rather than point the
+   arrow in an arbitrary direction. */
+.me-mark.is-still .me-arrow {
+  width: 11px; height: 11px; border: 2px solid #06131c; border-radius: 50%;
+  background: #4d9dff; box-shadow: 0 0 9px rgba(77,157,255,.95);
+  filter: none;
 }
 .dest-pin { margin: -26px 0 0 -7px; display: flex; flex-direction: column; align-items: center; }
 .dest-pin i {
@@ -942,3 +953,13 @@
   background: rgba(4,7,8,.82); color: var(--green);
   font-family: var(--font-mono);
 }
+
+
+/* Coarse network fix — the position is a region, not a point. */
+.nav-coarse {
+  margin-top: 9px; padding: 8px 9px; border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--orange) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--orange) 34%, transparent);
+  color: var(--orange); font-size: 10.5px; line-height: 1.5;
+}
+.nav-coarse b { display: block; margin-bottom: 2px; }

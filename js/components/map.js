@@ -1117,12 +1117,55 @@ export class NigeriaMap {
 
       this.layers.me = L.marker(ll, {
         pane: 'me', interactive: false,
-        icon: L.divIcon({ className: '', html: '<div class="me-dot"><i></i></div>', iconSize: [0, 0], iconAnchor: [0, 0] }),
+        icon: L.divIcon({ className: '', html: this._meHtml(fix), iconSize: [0, 0], iconAnchor: [0, 0] }),
       }).addTo(this.map);
     } else {
       this.layers.me.setLatLng(ll);
       this.layers.meAccuracy.setLatLng(ll).setRadius(fix.accuracy || 0);
+      const el = this.layers.me.getElement()?.querySelector('.me-arrow');
+      if (el) this._aimArrow(el, fix);
     }
+  }
+
+  /**
+   * Heading is only meaningful while actually moving — a stationary GNSS
+   * receiver reports null or noise. When we have no heading we fall back to a
+   * plain dot rather than pointing the arrow somewhere arbitrary.
+   */
+  _meHtml(fix) {
+    const h = this._heading(fix);
+    return `<div class="me-mark${h == null ? ' is-still' : ''}">`
+      + `<span class="me-arrow" style="transform:rotate(${h || 0}deg)"></span></div>`;
+  }
+
+  _heading(fix) {
+    if (fix.heading != null && !Number.isNaN(fix.heading) && (fix.speed == null || fix.speed > 0.5)) {
+      return fix.heading;
+    }
+    // Derive a bearing from the last two trail points when the device does not
+    // supply one (common on laptops and when stationary-then-moving).
+    const t = this.layers.trail?.getLatLngs?.();
+    if (t && t.length >= 2) {
+      const a = t[t.length - 2], b = t[t.length - 1];
+      const d = this._bearing([a.lat, a.lng], [b.lat, b.lng]);
+      if (d != null) return d;
+    }
+    return null;
+  }
+
+  _bearing(a, b) {
+    const toR = (d) => d * Math.PI / 180;
+    const dLon = toR(b[1] - a[1]);
+    const y = Math.sin(dLon) * Math.cos(toR(b[0]));
+    const x = Math.cos(toR(a[0])) * Math.sin(toR(b[0]))
+      - Math.sin(toR(a[0])) * Math.cos(toR(b[0])) * Math.cos(dLon);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  }
+
+  _aimArrow(el, fix) {
+    const h = this._heading(fix);
+    el.parentElement.classList.toggle('is-still', h == null);
+    el.style.transform = `rotate(${h || 0}deg)`;
   }
 
   /** Breadcrumb of where the user has actually been. */
@@ -1130,7 +1173,7 @@ export class NigeriaMap {
     if (!points || points.length < 2) return;
     if (!this.layers.trail) {
       this.layers.trail = L.polyline(points, {
-        pane: 'nav', color: '#4d9dff', weight: 2, opacity: 0.55, dashArray: '1 5', interactive: false,
+        pane: 'nav', color: '#9ec9ff', weight: 2, opacity: 0.5, dashArray: '1 5', interactive: false,
       }).addTo(this.map);
     } else {
       this.layers.trail.setLatLngs(points);
@@ -1146,11 +1189,13 @@ export class NigeriaMap {
     if (this.layers.routeGlow) { this.map.removeLayer(this.layers.routeGlow); this.layers.routeGlow = null; }
     if (!coords || coords.length < 2) return;
 
+    // Blue route: green is the platform's data/selection colour, so the
+    // navigation path uses the standard wayfinding blue instead.
     this.layers.routeGlow = L.polyline(coords, {
-      pane: 'nav', color: '#00e676', weight: 8, opacity: 0.16, interactive: false,
+      pane: 'nav', color: '#4d9dff', weight: 9, opacity: 0.2, interactive: false,
     }).addTo(this.map);
     this.layers.route = L.polyline(coords, {
-      pane: 'nav', color: '#00e676', weight: 3, opacity: 0.95,
+      pane: 'nav', color: '#4d9dff', weight: 4, opacity: 0.95,
       dashArray: road ? null : '7 7', interactive: false,
     }).addTo(this.map);
   }

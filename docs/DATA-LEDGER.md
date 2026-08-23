@@ -344,3 +344,56 @@ Mining title blocks are now **on by default** on the Explore map.
 Rows that still read "Sample data" or "Not connected" are correct and must stay:
 `petroleum` (every published NUPRC endpoint errors), `geochem` and `geophys`
 (awaiting NGSA release).
+
+## Navigation and dock fixes (23 Aug 2026)
+
+### Collapsed side panels kept their space
+
+`makeDockResizer` (`js/components/draggable.js`) writes an inline
+`width`/`min-width` on the dock when the user drags the rail. An inline style
+outranks a stylesheet rule, so `.ex-dock.is-collapsed { width: 0 }` silently
+lost: the panel hid its contents but still occupied its column, and the map
+never reclaimed the area. Measured before the fix — collapsing a 312 px dock
+left `grid-template-columns: 312px 780px 272px`.
+
+Fixed with `!important` on the collapsed width/min-width/border. Verified: dock
+312 → 0 px, map 820 → 1364 px with both docks closed.
+
+### GPS was plotting a network fix as if it were a position
+
+Reported from Gusau: the marker appeared in Abuja, ~260 km away. Reproduced by
+feeding the app a fix with `accuracy: 48000`.
+
+The cause is not our request — we already ask for `enableHighAccuracy: true`
+and `maximumAge: 0`. It is the browser's fallback: with no GNSS lock (desktop,
+tethered laptop, or indoors) Chrome returns a **network provider** estimate,
+which in Nigeria resolves to the carrier's gateway city. The API reports this
+honestly in `coords.accuracy`, and we were drawing it as a confident dot anyway.
+
+`Tracker.COARSE_M = 5000`. Any fix coarser than 5 km is now **rejected**: no
+marker, no route, no distance. The panel explains that only a ±N km network
+estimate was available, that it is the provider's location rather than the
+user's, and keeps watching — GNSS often locks seconds later. Showing nothing is
+correct here, because a confident pin 260 km wrong is worse than a blank state
+the user can act on.
+
+`timeout` raised 20 s → 30 s: a cold GNSS lock outdoors regularly exceeds 20 s.
+
+### Marker, colour and control placement
+
+| Change | Detail |
+|---|---|
+| Locate control | Now a `data-tool="locate"` button in the map toolbar, `is-on` while tracking. The panel button remains. |
+| Marker | Heading arrow (`.me-arrow`) instead of a dot, rotated to `coords.heading`. |
+| Stationary | Falls back to a dot (`.is-still`) — a stationary receiver reports null/noisy heading, so pointing the arrow anywhere would be invention. |
+| Heading fallback | When the device supplies no heading, a bearing is derived from the last two trail points. |
+| Route colour | Blue `#4d9dff` (trail `#9ec9ff`), was green. Green is the platform's data/selection colour; navigation now uses standard wayfinding blue. |
+
+### Harness note
+
+`#view-explore` scoping is mandatory for navigation assertions — the Dashboard
+holds a second `NigeriaMap`, and an unscoped `.leaflet-container` /
+`.leaflet-pane` query hits the hidden Overview instance instead. Also
+`#00e676` appears in the nav-pane vicinity as the country halo and state
+borders (`map.js:196,306`), so route-colour assertions must target
+`.leaflet-nav-pane path`, not all strokes.

@@ -966,7 +966,16 @@ body.is-resizing iframe, body.is-resizing .leaflet-container { pointer-events: n
   background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(246,249,249,.9));
 }
 .ex-right { border-right: none; border-left: 1px solid var(--line-soft); }
-.ex-dock.is-collapsed { width: 0; min-width: 0; }
+/* !important is required: makeDockResizer writes an inline width/min-width
+   when the user drags the rail, and an inline style outranks this rule. Without
+   it a collapsed dock kept its full width and only hid its contents, so the map
+   never reclaimed the space. */
+.ex-dock.is-collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  border-width: 0 !important;
+  overflow: visible;            /* keep the re-open tab clickable */
+}
 .ex-dock.is-collapsed .ex-dock-scroll { opacity: 0; pointer-events: none; }
 
 .ex-dock-scroll {
@@ -1545,7 +1554,7 @@ body.is-resizing iframe, body.is-resizing .leaflet-container { pointer-events: n
 .dock-show-r { right: 0; border-right: none; border-radius: var(--r-sm) 0 0 var(--r-sm); }
 
 /* Collapsed docks must not reserve grid space */
-.ex-dock.is-collapsed { width: 0; min-width: 0; border-width: 0; }
+.ex-dock.is-collapsed { width: 0 !important; min-width: 0 !important; border-width: 0 !important; }
 .ex-dock.is-collapsed .dock-tab { display: none; }
 
 /* ============================================================

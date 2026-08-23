@@ -95,16 +95,45 @@ export class Tracker {
       && (window.isSecureContext || location.hostname === 'localhost');
   }
 
+  /**
+   * A fix this coarse is not a position, it is a region. Chrome's network
+   * provider on a desktop or a tethered laptop commonly returns the carrier
+   * gateway city — a user in Gusau gets plotted in Abuja, ~260 km away, with
+   * an accuracy radius that quietly admits it. We refuse to draw those as if
+   * they were a location.
+   */
+  static COARSE_M = 5000;
+
   start() {
     if (!this.supported) { this.onError({ code: -1, message: 'This browser has no geolocation support.' }); return false; }
     if (!this.secure) { this.onError({ code: -2, message: 'Location needs a secure (https) connection.' }); return false; }
     if (this.id !== null) return true;
 
+    this.rejected = 0;
+
     this.id = navigator.geolocation.watchPosition(
       (pos) => {
+        const acc = pos.coords.accuracy;
+
+        // Reject network-provider fixes outright. Plotting a 48 km-radius
+        // guess as a confident dot is worse than showing nothing, because the
+        // user cannot tell it is wrong.
+        if (acc > Tracker.COARSE_M) {
+          this.rejected += 1;
+          this.onError({
+            code: -3,
+            coarse: true,
+            accuracy: acc,
+            message: `Only a network fix is available (±${Math.round(acc / 1000)} km). `
+              + 'That is your provider\'s location, not yours. Enable GPS/location '
+              + 'services on the device — on a laptop, use a phone instead.',
+          });
+          return;
+        }
+
         const fix = {
           latlng: [pos.coords.latitude, pos.coords.longitude],
-          accuracy: pos.coords.accuracy,
+          accuracy: acc,
           heading: pos.coords.heading,
           speed: pos.coords.speed,
           at: pos.timestamp,
@@ -121,7 +150,7 @@ export class Tracker {
       {
         enableHighAccuracy: true,   // GNSS, not IP
         maximumAge: 0,              // never serve a cached fix
-        timeout: 20000,
+        timeout: 30000,             // a cold GNSS lock outdoors can take ~30 s
       },
     );
     return true;

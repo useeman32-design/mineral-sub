@@ -593,6 +593,8 @@ export function createExplore() {
               <button class="tool-btn" data-tool="in" title="Zoom in">${icon('plus', { size: 15 })}</button>
               <button class="tool-btn" data-tool="out" title="Zoom out">${icon('minus', { size: 15 })}</button>
               <div class="tool-sep-v"></div>
+              <button class="tool-btn" data-tool="locate" title="Show my location">${icon('target', { size: 15 })}</button>
+              <div class="tool-sep-v"></div>
               <button class="tool-btn" data-tool="labels" title="Toggle place labels">${icon('eye', { size: 15 })}</button>
               <button class="tool-btn" data-tool="measure-toggle" title="Measure & draw tools">${icon('ruler', { size: 15 })}</button>
               <button class="tool-btn" data-tool="full" title="Fullscreen">${icon('fullscreen', { size: 15 })}</button>
@@ -790,6 +792,10 @@ export function createExplore() {
       if (t === 'in') nmap.zoomBy(1);
       if (t === 'out') nmap.zoomBy(-1);
       if (t === 'reset') nmap.resetView();
+      if (t === 'locate') {
+        // Same control as the panel button: toggles live tracking.
+        if (tracker?.active) stopTracking(); else startTracking();
+      }
       if (t === 'labels') setLabels(!store.get('showLabels'));
       if (t === 'measure-toggle') setMeasureDock(!isMeasureDockOpen());
       if (t === 'full') {
@@ -1389,6 +1395,8 @@ export function createExplore() {
               : `coarse · ±${m} m — move outdoors for GPS`;
             a.className = m <= 30 ? 'is-good' : m <= 200 ? 'is-ok' : 'is-poor';
           }
+          // A good fix supersedes any coarse-fix warning.
+          if (!navDest) { const bx = $('#nav-target', root); if (bx) bx.hidden = true; }
           // First fix: centre once. Later fixes: just update the numbers.
           if (tracker.trail.length <= 1) nmap.map.flyTo(fix.latlng, Math.max(nmap.map.getZoom(), 12), { duration: 0.8 });
           if (navDest) {
@@ -1398,19 +1406,43 @@ export function createExplore() {
           }
         },
         onError: (err) => {
+          // A coarse network fix is not a failure to report and retry — it is
+          // the wrong kind of answer. Keep watching (GPS often locks a few
+          // seconds later) but never plot it, and say plainly why.
+          if (err.coarse) {
+            const km = Math.round(err.accuracy / 1000);
+            const box = $('#nav-target', root);
+            const tip = $('#nav-tip', root);
+            if (tip) tip.hidden = true;
+            if (box) {
+              box.hidden = false;
+              box.innerHTML = `
+                <div class="nav-coarse">
+                  <b>No GPS fix — showing nothing rather than a wrong pin</b>
+                  Your browser only offered a network estimate accurate to about
+                  ${km} km, which is usually your provider's gateway city, not you.
+                  Turn on location/GPS for this site on a phone and stay outdoors.
+                  Still searching…
+                </div>`;
+            }
+            const a = $('#nav-acc', root);
+            if (a) { a.textContent = `searching — rejected a ±${km} km network fix`; a.className = 'is-poor'; }
+            return;
+          }
           const map = {
             1: 'Location permission denied. Allow it in your browser settings to use navigation.',
             2: 'Position unavailable. Move outdoors or check that location services are on.',
             3: 'Timed out waiting for a GPS fix. Try again outdoors.',
           };
           toast(map[err.code] || err.message || 'Location unavailable');
-          if (err.code === 1 || err.code < 0) stopTracking();
+          if (err.code === 1 || err.code === -1 || err.code === -2) stopTracking();
         },
       });
     }
     if (tracker.start()) {
       $('#nav-off', root).hidden = true;
       $('#nav-on', root).hidden = false;
+      $('[data-tool="locate"]', root)?.classList.add('is-on');
     }
   }
 
@@ -1421,6 +1453,7 @@ export function createExplore() {
     const off = $('#nav-off', root); const on = $('#nav-on', root);
     if (off) off.hidden = false;
     if (on) on.hidden = true;
+    $('[data-tool="locate"]', root)?.classList.remove('is-on');
     renderNavTarget();
   }
 
