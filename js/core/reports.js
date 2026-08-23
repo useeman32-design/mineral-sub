@@ -29,10 +29,10 @@
  * one — a two-column attribute table does not.
  */
 
-import { fmt } from './utils.js?v=8503cca';
-import { liveMode } from '../data/live.js?v=8503cca';
-import { Pdf } from './pdf.js?v=8503cca';
-import { buildXlsx } from './xlsx.js?v=8503cca';
+import { fmt } from './utils.js?v=5814b22';
+import { liveMode } from '../data/live.js?v=5814b22';
+import { Pdf } from './pdf.js?v=5814b22';
+import { buildXlsx } from './xlsx.js?v=5814b22';
 
 const KEY = 'nmi.reportCart';
 
@@ -310,7 +310,7 @@ async function resolveOne(api, s) {
     }
 
     case 'prospectivity': {
-      const { runModel, defaultWeights, CRITERIA } = await import('./scoring.js?v=8503cca');
+      const { runModel, defaultWeights, CRITERIA } = await import('./scoring.js?v=5814b22');
       const states = await api.getProspectivityInputs();
       const { targets } = runModel(states, defaultWeights(), { commodity: s.commodity || null });
 
@@ -361,7 +361,7 @@ async function resolveOne(api, s) {
     }
 
     case 'risk': {
-      const { runRisk, defaultRiskWeights } = await import('./risk.js?v=8503cca');
+      const { runRisk, defaultRiskWeights } = await import('./risk.js?v=5814b22');
       const states = await api.getProspectivityInputs();
       const { rows: scored } = runRisk(states, defaultRiskWeights());
 

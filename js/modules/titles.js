@@ -6,13 +6,13 @@
  * matter most when reading a title register.
  */
 
-import { fmt } from '../core/utils.js?v=8503cca';
-import { icon } from '../core/icons.js?v=8503cca';
-import { api } from '../data/api.js?v=8503cca';
-import { ctx } from '../core/context.js?v=8503cca';
-import { reports } from '../core/reports.js?v=8503cca';
-import { createRegister } from '../components/register.js?v=8503cca';
-import { toast } from './dashboard.js?v=8503cca';
+import { fmt } from '../core/utils.js?v=5814b22';
+import { icon } from '../core/icons.js?v=5814b22';
+import { api } from '../data/api.js?v=5814b22';
+import { ctx } from '../core/context.js?v=5814b22';
+import { reports } from '../core/reports.js?v=5814b22';
+import { createRegister } from '../components/register.js?v=5814b22';
+import { toast } from './dashboard.js?v=5814b22';
 
 /** Populated from the cadastre on first load so the filters match the data. */
 let STATE_NAMES = [];
