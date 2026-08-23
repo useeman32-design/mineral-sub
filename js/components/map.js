@@ -10,9 +10,9 @@
  * register another layer in LAYER_SPECS and give it a zoom band.
  */
 
-import { store } from '../core/store.js?v=2a2fc1e';
-import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=2a2fc1e';
-import { fmt } from '../core/utils.js?v=2a2fc1e';
+import { store } from '../core/store.js?v=c902723';
+import { HEAT, RESOURCE_META } from '../data/fixtures.js?v=c902723';
+import { fmt } from '../core/utils.js?v=c902723';
 
 const NG_CENTER = [9.06, 8.68];
 const NG_BOUNDS = L.latLngBounds([3.6, 2.4], [14.3, 15.2]);
@@ -944,7 +944,7 @@ export class NigeriaMap {
     if (!on) { this._setLayerVisible(this.layers.footprints, false); return; }
     if (this.layers.footprints) { this._setLayerVisible(this.layers.footprints, true); return; }
 
-    const { loadFootprints } = await import('../data/live.js?v=2a2fc1e');
+    const { loadFootprints } = await import('../data/live.js?v=c902723');
     const fc = await loadFootprints();
     this.layers.footprints = L.geoJSON(fc, {
       pane: 'footprints',
@@ -978,7 +978,7 @@ export class NigeriaMap {
     if (!on) { this._setLayerVisible(this.layers.titles, false); return; }
     if (this.layers.titles) { this._setLayerVisible(this.layers.titles, true); return; }
 
-    const { loadTitlePolygons, loadTitleAttributes } = await import('../data/live.js?v=2a2fc1e');
+    const { loadTitlePolygons, loadTitleAttributes } = await import('../data/live.js?v=c902723');
     const [fc, attrs] = await Promise.all([loadTitlePolygons(), loadTitleAttributes()]);
     this._titleAttrs = attrs.titles || {};
 
@@ -1040,7 +1040,7 @@ export class NigeriaMap {
     if (this.layers.conflicts) { this._setLayerVisible(this.layers.conflicts, true); return; }
 
     const { loadTitlePolygons, loadOverlap, loadTitleAttributes } =
-      await import('../data/live.js?v=2a2fc1e');
+      await import('../data/live.js?v=c902723');
     const [fc, ov, attrs] = await Promise.all([loadTitlePolygons(), loadOverlap(), loadTitleAttributes()]);
     const flagged = new Map();
     (ov.protectedConflicts || []).forEach((c) => {
@@ -1084,7 +1084,7 @@ export class NigeriaMap {
   async setRoads(on) {
     if (!on) { this._setLayerVisible(this.layers.infra, false); return; }
     if (this.layers.infra) { this._setLayerVisible(this.layers.infra, true); return; }
-    const { loadRoads } = await import('../data/live.js?v=2a2fc1e');
+    const { loadRoads } = await import('../data/live.js?v=c902723');
     const fc = await loadRoads();
     if (!this._roadCanvas) this._roadCanvas = L.canvas({ pane: 'infra', padding: 0.3 });
     this.layers.infra = L.geoJSON(fc, {
@@ -1187,7 +1187,7 @@ export class NigeriaMap {
     if (!on) { this._setLayerVisible(this.layers.sites, false); return; }
     if (this.layers.sites) { this._setLayerVisible(this.layers.sites, true); return; }
 
-    const { loadMineralSites } = await import('../data/live.js?v=2a2fc1e');
+    const { loadMineralSites } = await import('../data/live.js?v=c902723');
     const data = await loadMineralSites();
     const g = L.layerGroup([], { pane: 'sites' });
     (data.sites || []).forEach((d) => {

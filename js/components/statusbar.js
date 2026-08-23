@@ -3,9 +3,9 @@
  * readout. Used identically by Overview and Explore.
  */
 
-import { icon } from '../core/icons.js?v=2a2fc1e';
-import { store } from '../core/store.js?v=2a2fc1e';
-import { fmt, $ } from '../core/utils.js?v=2a2fc1e';
+import { icon } from '../core/icons.js?v=c902723';
+import { store } from '../core/store.js?v=c902723';
+import { fmt, $ } from '../core/utils.js?v=c902723';
 
 const NEXT = { nation: 'state', state: 'LGA', lga: 'local area', local: 'prospect', prospect: 'occurrence' };
 

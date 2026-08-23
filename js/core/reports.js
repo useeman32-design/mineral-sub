@@ -29,9 +29,9 @@
  * one — a two-column attribute table does not.
  */
 
-import { fmt } from './utils.js?v=2a2fc1e';
-import { Pdf } from './pdf.js?v=2a2fc1e';
-import { buildXlsx } from './xlsx.js?v=2a2fc1e';
+import { fmt } from './utils.js?v=c902723';
+import { Pdf } from './pdf.js?v=c902723';
+import { buildXlsx } from './xlsx.js?v=c902723';
 
 const KEY = 'nmi.reportCart';
 
@@ -309,7 +309,7 @@ async function resolveOne(api, s) {
     }
 
     case 'prospectivity': {
-      const { runModel, defaultWeights, CRITERIA } = await import('./scoring.js?v=2a2fc1e');
+      const { runModel, defaultWeights, CRITERIA } = await import('./scoring.js?v=c902723');
       const states = await api.getProspectivityInputs();
       const { targets } = runModel(states, defaultWeights(), { commodity: s.commodity || null });
 
@@ -360,7 +360,7 @@ async function resolveOne(api, s) {
     }
 
     case 'risk': {
-      const { runRisk, defaultRiskWeights } = await import('./risk.js?v=2a2fc1e');
+      const { runRisk, defaultRiskWeights } = await import('./risk.js?v=c902723');
       const states = await api.getProspectivityInputs();
       const { rows: scored } = runRisk(states, defaultRiskWeights());
 
