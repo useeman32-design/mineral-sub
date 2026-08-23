@@ -17,9 +17,9 @@
  *   });
  */
 
-import { $, $$, fmt, debounce } from '../core/utils.js?v=c902723';
-import { icon } from '../core/icons.js?v=c902723';
-import { ctx } from '../core/context.js?v=c902723';
+import { $, $$, fmt, debounce } from '../core/utils.js?v=acb5907';
+import { icon } from '../core/icons.js?v=acb5907';
+import { ctx } from '../core/context.js?v=acb5907';
 
 export function createRegister(view, cfg) {
   let rows = [];

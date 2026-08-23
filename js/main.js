@@ -6,28 +6,28 @@
  * shell, design system and navigation need no changes.
  */
 
-import { buildShell } from './components/shell.js?v=c902723';
-import { createGlobalSearch } from './components/search.js?v=c902723';
-import { Router } from './core/router.js?v=c902723';
-import { store } from './core/store.js?v=c902723';
-import { reports } from './core/reports.js?v=c902723';
-import { liveMode } from './data/live.js?v=c902723';
-import { dsToggles, DATASET_LAYER } from './data/toggles.js?v=c902723';
-import { defaultLayerState } from './data/layers.js?v=c902723';
-import { api } from './data/api.js?v=c902723';
-import { $ } from './core/utils.js?v=c902723';
-import { createDashboard, toast } from './modules/dashboard.js?v=c902723';
-import { createSettings } from './modules/settings.js?v=c902723';
-import { createMinerals } from './modules/minerals.js?v=c902723';
-import { createProspectivity } from './modules/prospectivity.js?v=c902723';
-import { createRisk } from './modules/risk.js?v=c902723';
-import { createOilGas } from './modules/oilgas.js?v=c902723';
-import { createTitles } from './modules/titles.js?v=c902723';
-import { createReports } from './modules/reports.js?v=c902723';
-import { createDataCenter } from './modules/data.js?v=c902723';
-import { createExplore } from './modules/explore.js?v=c902723';
-import { theme } from './core/theme.js?v=c902723';
-import { applyPrefs } from './modules/settings.js?v=c902723';
+import { buildShell } from './components/shell.js?v=acb5907';
+import { createGlobalSearch } from './components/search.js?v=acb5907';
+import { Router } from './core/router.js?v=acb5907';
+import { store } from './core/store.js?v=acb5907';
+import { reports } from './core/reports.js?v=acb5907';
+import { liveMode } from './data/live.js?v=acb5907';
+import { dsToggles, DATASET_LAYER } from './data/toggles.js?v=acb5907';
+import { defaultLayerState } from './data/layers.js?v=acb5907';
+import { api } from './data/api.js?v=acb5907';
+import { $ } from './core/utils.js?v=acb5907';
+import { createDashboard, toast } from './modules/dashboard.js?v=acb5907';
+import { createSettings } from './modules/settings.js?v=acb5907';
+import { createMinerals } from './modules/minerals.js?v=acb5907';
+import { createProspectivity } from './modules/prospectivity.js?v=acb5907';
+import { createRisk } from './modules/risk.js?v=acb5907';
+import { createOilGas } from './modules/oilgas.js?v=acb5907';
+import { createTitles } from './modules/titles.js?v=acb5907';
+import { createReports } from './modules/reports.js?v=acb5907';
+import { createDataCenter } from './modules/data.js?v=acb5907';
+import { createExplore } from './modules/explore.js?v=acb5907';
+import { theme } from './core/theme.js?v=acb5907';
+import { applyPrefs } from './modules/settings.js?v=acb5907';
 
 const MODULES = [
   {
