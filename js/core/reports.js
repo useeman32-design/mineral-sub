@@ -177,8 +177,29 @@ async function resolveOne(api, s) {
           ['Catalogued sites', deps.length],
           ['Commodities recorded', (st.commodities || []).join(', ') || '—'],
           ['Centroid', fmt.coord(st.centroid[0], st.centroid[1])],
+          ...(st.production ? [
+            ['— Audited production 2023 —', ''],
+            ['Output', `${fmt.int(Math.round(st.production.tonnes))} tonnes`],
+            ['National rank', `#${st.production.rank} of 36`],
+            ['Declared value', `₦${fmt.int(Math.round(st.production.valueNgn))}`],
+            ['Reporting operators', st.production.operators],
+            ['Lead commodity', st.production.minerals?.[0]?.mineral || '—'],
+            ['Audit source', 'NEITI Solid Minerals Audit 2023 · Haruna Yahaya & Co.'],
+          ] : [['Audited production 2023', 'Not reported for this state']]),
         ],
-        chart: {
+        chart: st.production && st.production.minerals?.length ? {
+          type: 'bar',
+          title: 'Audited production by commodity, 2023',
+          note: 'Tonnes reconciled by the independent administrator. NEITI Solid Minerals Audit 2023.',
+          max: Math.max(...st.production.minerals.slice(0, 6).map((m) => m.tonnes)),
+          data: st.production.minerals.slice(0, 6).map((m, i) => ({
+            label: m.mineral,
+            value: Math.round(m.tonnes),
+            color: [CHART_COLORS.gold, CHART_COLORS.cyan, CHART_COLORS.green,
+                    CHART_COLORS.purple, CHART_COLORS.orange, CHART_COLORS.red][i % 6],
+          })),
+          fmt: (v) => fmt.compact(v) + ' t',
+        } : {
           type: 'bar',
           title: 'State indices',
           note: 'All indices normalised to 100.',
@@ -487,6 +508,81 @@ async function resolveOne(api, s) {
             { label: 'Expired', value: byStatus.Expired, color: CHART_COLORS.red },
           ],
         } : null,
+      };
+    }
+
+    /**
+     * National audited production — the strongest evidence in the platform.
+     */
+    case 'production': {
+      const prod = await api.getProduction();
+      if (!prod) throw new Error('no production data');
+      const n = prod.national.minerals;
+      const top = n.slice(0, 12);
+      return {
+        ...base,
+        subtitle: 'NEITI Solid Minerals Industry Audit 2023 · reconciled by Haruna Yahaya & Co.',
+        columns: ['Commodity', 'Tonnes', 'Share', 'Declared value (₦)'],
+        rows: top.map((m) => [
+          m.mineral,
+          fmt.int(Math.round(m.tonnes)),
+          `${m.sharePct.toFixed(2)}%`,
+          fmt.int(Math.round(m.valueNgn)),
+        ]),
+        notes: `${fmt.int(Math.round(prod.meta.totalTonnes))} tonnes attributable to a named operator in a named state, `
+          + `across ${prod.meta.statesReported} states and ${n.length} commodities. `
+          + `The audit's national headline is 95,070,036 t including unilaterally disclosed volumes with no operator attribution — the two figures are not expected to reconcile.`,
+        chart: {
+          type: 'bar',
+          title: 'Top commodities by audited tonnage',
+          note: 'Construction materials dominate: limestone and granite aggregate alone are roughly three quarters of formal output.',
+          max: Math.max(...top.slice(0, 6).map((m) => m.tonnes)),
+          data: top.slice(0, 6).map((m, i) => ({
+            label: m.mineral,
+            value: Math.round(m.tonnes),
+            color: [CHART_COLORS.gold, CHART_COLORS.cyan, CHART_COLORS.green,
+                    CHART_COLORS.purple, CHART_COLORS.orange, CHART_COLORS.red][i % 6],
+          })),
+          fmt: (v) => fmt.compact(v) + ' t',
+        },
+      };
+    }
+
+    /**
+     * Cadastre overlap: licences intersecting protected areas, and observed
+     * workings that fall outside any licence.
+     */
+    case 'overlap': {
+      const ov = await api.getOverlap();
+      if (!ov) throw new Error('no overlap data');
+      const sm = ov.summary;
+      const byPark = {};
+      (ov.protectedConflicts || []).forEach((c) => {
+        byPark[c.park] = byPark[c.park] || { park: c.park, designation: c.designation, iucn: c.iucn, n: 0, km2: 0 };
+        byPark[c.park].n += 1;
+        byPark[c.park].km2 += c.areaKm2 || 0;
+      });
+      const parks = Object.values(byPark).sort((a, b) => b.n - a.n).slice(0, 15);
+      return {
+        ...base,
+        subtitle: 'Cadastre intersected with WDPA protected areas and satellite-mapped workings',
+        columns: ['Protected area', 'Designation', 'IUCN', 'Licences', 'Licensed area (km²)'],
+        rows: parks.map((p) => [
+          p.park, p.designation || '—', p.iucn || '—', p.n, p.km2.toFixed(1),
+        ]),
+        notes: `${sm.titlesTouchingProtectedAreas} licensed blocks intersect ${sm.protectedAreasAffected} protected areas. `
+          + `${sm.footprintsOutsideAnyLicence} satellite-mapped workings (${sm.unlicensedDisturbedAreaKm2} km² disturbed) fall outside any licence. `
+          + `Absence of a matched working does NOT indicate a dormant title: the footprint layer covers 160 sites nationally and is not a complete survey.`,
+        chart: {
+          type: 'bar',
+          title: 'Protected areas with the most licence intersections',
+          note: 'Both inputs are complete polygon sets, so these counts are robust.',
+          max: Math.max(...parks.slice(0, 6).map((p) => p.n)),
+          data: parks.slice(0, 6).map((p) => ({
+            label: p.park, value: p.n, color: CHART_COLORS.red,
+          })),
+          fmt: (v) => `${v} licences`,
+        },
       };
     }
 

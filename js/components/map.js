@@ -101,6 +101,8 @@ export class NigeriaMap {
       conflicts: 512,     // flagged licences above the plain cadastre
       footprints: 520,    // observed workings under the occurrence pins
       deposits: 540, sites: 550, labels: 580,
+      nav: 590,           // route + trail above all data layers
+      me: 600,            // the user's own position above the route
     };
     Object.entries(PANE_Z).forEach(([p, z]) => {
       this.map.createPane(p);
@@ -1094,6 +1096,90 @@ export class NigeriaMap {
         opacity: 0.7, fill: false,
       }),
     }).addTo(this.map);
+  }
+
+  /* ---------------- live navigation ---------------- */
+
+  /**
+   * Draw or move the user's own position.
+   * The accuracy circle is drawn to scale, so a poor fix visibly looks poor
+   * rather than pretending to metre precision.
+   */
+  setMyPosition(fix) {
+    if (!fix) return;
+    const ll = fix.latlng;
+    if (!this.layers.me) {
+      this.layers.meAccuracy = L.circle(ll, {
+        pane: 'nav', radius: fix.accuracy || 0,
+        color: '#4d9dff', weight: 1, opacity: 0.5,
+        fillColor: '#4d9dff', fillOpacity: 0.1, interactive: false,
+      }).addTo(this.map);
+
+      this.layers.me = L.marker(ll, {
+        pane: 'me', interactive: false,
+        icon: L.divIcon({ className: '', html: '<div class="me-dot"><i></i></div>', iconSize: [0, 0], iconAnchor: [0, 0] }),
+      }).addTo(this.map);
+    } else {
+      this.layers.me.setLatLng(ll);
+      this.layers.meAccuracy.setLatLng(ll).setRadius(fix.accuracy || 0);
+    }
+  }
+
+  /** Breadcrumb of where the user has actually been. */
+  setTrail(points) {
+    if (!points || points.length < 2) return;
+    if (!this.layers.trail) {
+      this.layers.trail = L.polyline(points, {
+        pane: 'nav', color: '#4d9dff', weight: 2, opacity: 0.55, dashArray: '1 5', interactive: false,
+      }).addTo(this.map);
+    } else {
+      this.layers.trail.setLatLngs(points);
+    }
+  }
+
+  /**
+   * The route to the destination. `road` false means routing was unavailable
+   * and this is a straight line — drawn dashed so the difference is obvious.
+   */
+  setRoute(coords, { road = true } = {}) {
+    if (this.layers.route) { this.map.removeLayer(this.layers.route); this.layers.route = null; }
+    if (this.layers.routeGlow) { this.map.removeLayer(this.layers.routeGlow); this.layers.routeGlow = null; }
+    if (!coords || coords.length < 2) return;
+
+    this.layers.routeGlow = L.polyline(coords, {
+      pane: 'nav', color: '#00e676', weight: 8, opacity: 0.16, interactive: false,
+    }).addTo(this.map);
+    this.layers.route = L.polyline(coords, {
+      pane: 'nav', color: '#00e676', weight: 3, opacity: 0.95,
+      dashArray: road ? null : '7 7', interactive: false,
+    }).addTo(this.map);
+  }
+
+  /** Destination pin. */
+  setDestination(latlng, label) {
+    if (this.layers.dest) { this.map.removeLayer(this.layers.dest); this.layers.dest = null; }
+    if (!latlng) return;
+    this.layers.dest = L.marker(latlng, {
+      pane: 'me', interactive: false,
+      icon: L.divIcon({
+        className: '',
+        html: `<div class="dest-pin"><i></i><span>${label || ''}</span></div>`,
+        iconSize: [0, 0], iconAnchor: [0, 0],
+      }),
+    }).addTo(this.map);
+  }
+
+  /** Remove every navigation overlay. */
+  clearNavigation() {
+    ['me', 'meAccuracy', 'trail', 'route', 'routeGlow', 'dest'].forEach((k) => {
+      if (this.layers[k]) { this.map.removeLayer(this.layers[k]); this.layers[k] = null; }
+    });
+  }
+
+  /** Fit the map to the whole journey. */
+  fitJourney(from, to) {
+    if (!from || !to) return;
+    this.map.flyToBounds(L.latLngBounds([from, to]).pad(0.25), { duration: 0.9, maxZoom: 13 });
   }
 
   /** Georeferenced mineral sites — USGS minfac + MRDS + OSM. */

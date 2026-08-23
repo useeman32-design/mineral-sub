@@ -12,7 +12,7 @@
 
 import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=2a2fc1e';
 import { seeded } from '../core/utils.js?v=2a2fc1e';
-import { liveMode, getLiveTitles, getLiveStates, getLiveNational, loadProtectedAreas, loadSettlements, loadProduction } from './live.js?v=2a2fc1e';
+import { liveMode, getLiveTitles, getLiveStates, getLiveNational, loadProtectedAreas, loadSettlements, loadProduction, loadOverlap } from './live.js?v=2a2fc1e';
 
 /* Operator names for the placeholder registry. Real holder records arrive with
    the mining cadastre import. */
@@ -254,6 +254,18 @@ export class Api {
     const prod = await this.getProduction();
     const row = prod?.states?.[name];
     return row ? { ...base, production: row, productionMeta: prod.meta } : base;
+  }
+
+  /** GET /overlap — derived cadastre x protected areas x footprints. */
+  async getOverlap() {
+    const key = '/overlap';
+    if (this._cache.has(key)) return this._cache.get(key);
+    const p = loadOverlap().catch((e) => {
+      console.warn('[api] overlap analysis unavailable', e);
+      return null;
+    });
+    this._cache.set(key, p);
+    return p;
   }
 
   /** GET /production — NEITI 2023 audited output by state. */

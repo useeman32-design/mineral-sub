@@ -28,6 +28,12 @@ const PRESETS = [
       { kind: 'risk', id: null, title: 'Risk assessment' },
       { kind: 'datasets', id: null, title: 'Data coverage & provenance' },
     ] },
+  { id: 'evidence', label: 'Evidence pack', hint: 'Audited production and cadastre conflicts',
+    sections: [
+      { kind: 'production', id: null, title: 'Audited production 2023 — national' },
+      { kind: 'overlap', id: null, title: 'Cadastre overlap analysis' },
+      { kind: 'datasets', id: null, title: 'Data coverage & provenance' },
+    ] },
   { id: 'assets', label: 'Asset register', hint: 'Petroleum blocks and the mining cadastre',
     sections: [
       { kind: 'petroleum', id: null, title: 'Petroleum licence blocks — national' },
@@ -43,6 +49,8 @@ const PRESETS = [
       { kind: 'risk', id: null, title: 'Risk assessment' },
       { kind: 'petroleum', id: null, title: 'Petroleum licence blocks — national' },
       { kind: 'titles', id: null, title: 'Mining cadastre — national' },
+      { kind: 'production', id: null, title: 'Audited production 2023 — national' },
+      { kind: 'overlap', id: null, title: 'Cadastre overlap analysis' },
       { kind: 'datasets', id: null, title: 'Data coverage & provenance' },
     ] },
 ];

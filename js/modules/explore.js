@@ -29,6 +29,7 @@ import { measureShape } from '../core/geo.js?v=2a2fc1e';
 import { loadPrefs } from './settings.js?v=2a2fc1e';
 import { LAYER_GROUPS, LAYER_INDEX, applyLayer } from '../data/layers.js?v=2a2fc1e';
 import { dsToggles, DATASET_LAYER } from '../data/toggles.js?v=2a2fc1e';
+import { Tracker, route as osrmRoute, haversine, fmtDistance, fmtDuration } from '../core/geolocate.js?v=2a2fc1e';
 import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=2a2fc1e';
 import { createStatusBar } from '../components/statusbar.js?v=2a2fc1e';
 import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=2a2fc1e';
@@ -40,6 +41,10 @@ export function createExplore() {
   let root, nmap, deposits = [], unsub = [];
   let draw, history, activeProject = null, dirty = false;
   let inspectorMode = 'geo';   // 'geo' | 'shape'
+  let tracker = null;          // live GPS watch
+  let navDest = null;          // { latlng, label, kind }
+  let navRoute = null;         // last computed route
+  let navBusy = false;
   let lastGeo = null;
   let lastCtxStamp = 0;          // remembers the geographic selection
   let legend = null, statusBar = null, setDockRef = null, lastCursor = null;
@@ -84,6 +89,34 @@ export function createExplore() {
 
   /* ================= templates ================= */
 
+  /**
+   * Navigation panel. Off by default: the browser only prompts for location
+   * when the user asks for it, which is both the polite and the correct
+   * behaviour for a permission-gated API.
+   */
+  const navPanel = () => `
+    <div id="nav-body">
+      <div id="nav-off">
+        <button class="btn-ghost btn-primary" id="nav-start">
+          ${icon('target', { size: 13 })} Use my location
+        </button>
+        <p class="nav-hint">Uses your device GPS, not an IP lookup. The
+          position stays in your browser.</p>
+      </div>
+      <div id="nav-on" hidden>
+        <div class="nav-me">
+          <span class="nav-pulse"></span>
+          <div class="nav-me-t">
+            <b id="nav-coord">Locating…</b>
+            <i id="nav-acc">waiting for a fix</i>
+          </div>
+          <button class="ex-mini" id="nav-stop" title="Stop tracking">${icon('close', { size: 12 })}</button>
+        </div>
+        <div id="nav-target" hidden></div>
+        <p class="nav-hint" id="nav-tip">Select a state, LGA, occurrence or
+          mining title, then press <b>Navigate</b> in the Inspector.</p>
+      </div>
+    </div>`;
   const layerTree = () => {
     const st = store.get('layers');
     return LAYER_GROUPS.map((g) => `
@@ -288,6 +321,8 @@ export function createExplore() {
       </div>
       <div class="sel-actions">
         <button class="btn-ghost btn-primary" data-lga-zoom="1">Zoom to LGA</button>
+        ${p.centroid ? `<button class="btn-ghost" data-nav="Local government"
+          data-lat="${p.centroid[0]}" data-lng="${p.centroid[1]}" data-nav-label="${p.name}">Navigate</button>` : ''}
         <button class="btn-ghost" data-act="back-state">Back to state</button>
       </div>
       <div class="ctx-acts ctx-acts-insp">
@@ -353,6 +388,8 @@ export function createExplore() {
       <div class="sel-actions">
         <button class="btn-ghost btn-primary" data-title-zoom="${t.lic}">Zoom to block</button>
         <button class="btn-ghost" data-send="titles" data-st="${t.state || ''}">Open register</button>
+        ${t.lat != null ? `<button class="btn-ghost" data-nav="Mining title"
+          data-lat="${t.lat}" data-lng="${t.lng}" data-nav-label="${t.lic}">Navigate</button>` : ''}
       </div>
       <div class="insp-src">Mining Cadastre Office · eMC+ register</div>`;
   };
@@ -449,6 +486,8 @@ export function createExplore() {
       <div class="sel-actions">
         <button class="btn-ghost btn-primary" data-act="drill-lga">Load LGAs</button>
         <button class="btn-ghost" data-act="zoom-state">Zoom</button>
+        ${p.centroid ? `<button class="btn-ghost" data-nav="State"
+          data-lat="${p.centroid[0]}" data-lng="${p.centroid[1]}" data-nav-label="${p.name}">Navigate</button>` : ''}
       </div>
       <div class="ctx-acts ctx-acts-insp">
         <button class="btn-ghost" data-send="minerals" data-st="${p.name}">
@@ -491,6 +530,8 @@ export function createExplore() {
       </div>
       <div class="sel-actions">
         <button class="btn-ghost btn-primary" data-fly="${d.id}">Fly to site</button>
+        <button class="btn-ghost" data-nav="Occurrence"
+          data-lat="${d.lat}" data-lng="${d.lng}" data-nav-label="${d.name}">Navigate</button>
       </div>
       <div class="ctx-acts ctx-acts-insp">
         <button class="btn-ghost" data-send="minerals" data-res="${d.resource}" data-st="${d.state}" data-occ="${d.id}">
@@ -519,6 +560,7 @@ export function createExplore() {
                     `<button class="ex-mini" id="ex-layers-reset" title="Reset layers">${icon('refresh', { size: 12 })}</button>`)}
             ${panel('resources', 'Resources', 'minerals', `<div id="res-filter">${resourceFilter()}</div>`)}
             ${panel('drill', 'Drill Path', 'target', `<div id="drill-nav">${drillNav()}</div>`)}
+            ${panel('nav', 'Navigation', 'target', navPanel())}
           </div>
         </aside>
         <button class="dock-show dock-show-l" id="show-left" hidden title="Show tools panel">
@@ -712,6 +754,7 @@ export function createExplore() {
     });
     wirePanels(view);
     wireLayers(view);
+    wireNav(view);
     wireResources(view);
     wireInspector(view);
     wireDrawTools(view);
@@ -1245,6 +1288,160 @@ export function createExplore() {
 
   /* ---- docks ---- */
 
+  /* ---------------- live navigation ---------------- */
+
+  /** Re-render the destination block with the current remaining distance. */
+  function renderNavTarget() {
+    const box = $('#nav-target', root);
+    const tip = $('#nav-tip', root);
+    if (!box) return;
+    if (!navDest) { box.hidden = true; if (tip) tip.hidden = false; return; }
+    box.hidden = false;
+    if (tip) tip.hidden = true;
+
+    const me = tracker?.last?.latlng;
+    const straight = me ? haversine(me, navDest.latlng) : null;
+    // Remaining distance follows the road route while one exists, so the
+    // number shrinks along the path actually being travelled.
+    const dist = navRoute?.road && me ? remainingAlongRoute(me) : straight;
+
+    box.innerHTML = `
+      <div class="nav-dest">
+        <span class="nav-dest-k">${navDest.kind}</span>
+        <b class="nav-dest-n">${navDest.label}</b>
+      </div>
+      <div class="nav-figs">
+        <div class="nav-fig"><div class="v" id="nav-dist">${fmtDistance(dist)}</div><div class="k">remaining</div></div>
+        <div class="nav-fig"><div class="v">${navRoute?.duration != null ? fmtDuration(navRoute.duration) : '—'}</div><div class="k">drive time</div></div>
+      </div>
+      ${navRoute && !navRoute.road
+        ? '<p class="nav-warn">Road routing unavailable — showing straight-line distance.</p>'
+        : ''}
+      <div class="nav-acts">
+        <button class="btn-ghost" id="nav-fit">Fit journey</button>
+        <button class="btn-ghost" id="nav-clear">Clear</button>
+      </div>`;
+  }
+
+  /**
+   * Distance still to travel along the route, measured from the point on the
+   * route nearest the user. Falls back to straight line if anything is off.
+   */
+  function remainingAlongRoute(me) {
+    const c = navRoute?.coords;
+    if (!c || c.length < 2) return haversine(me, navDest.latlng);
+    let bestI = 0, bestD = Infinity;
+    for (let i = 0; i < c.length; i++) {
+      const d = haversine(me, c[i]);
+      if (d < bestD) { bestD = d; bestI = i; }
+    }
+    let rest = bestD;                    // hop back onto the route
+    for (let i = bestI; i < c.length - 1; i++) rest += haversine(c[i], c[i + 1]);
+    return rest;
+  }
+
+  /** Recompute the route from the current fix to the destination. */
+  async function computeRoute() {
+    const me = tracker?.last?.latlng;
+    if (!me || !navDest || navBusy) return;
+    navBusy = true;
+    try {
+      navRoute = await osrmRoute(me, navDest.latlng);
+      nmap.setRoute(navRoute.coords, { road: navRoute.road });
+    } catch (err) {
+      console.warn('[nav] routing failed', err);
+      navRoute = null;
+    } finally {
+      navBusy = false;
+      renderNavTarget();
+    }
+  }
+
+  /** Set the destination from anywhere in the app. */
+  function navigateTo(latlng, label, kind) {
+    if (!latlng || latlng[0] == null) { toast('No coordinates for that location'); return; }
+    navDest = { latlng, label, kind };
+    nmap.setDestination(latlng, label);
+    setPanelState('nav', true);
+    $('[data-panel="nav"]', root)?.classList.remove('is-closed');
+    if (!tracker?.active) {
+      toast('Turn on your location to measure the distance');
+      renderNavTarget();
+      return;
+    }
+    computeRoute();
+  }
+
+  function startTracking() {
+    if (!tracker) {
+      tracker = new Tracker({
+        onFix: (fix) => {
+          nmap.setMyPosition(fix);
+          nmap.setTrail(tracker.trail);
+          const c = $('#nav-coord', root);
+          const a = $('#nav-acc', root);
+          if (c) c.textContent = fmt.coord(fix.latlng[0], fix.latlng[1]);
+          if (a) {
+            const m = Math.round(fix.accuracy);
+            // Say plainly when the fix is not GNSS-grade.
+            a.textContent = m <= 30 ? `GPS · ±${m} m`
+              : m <= 200 ? `assisted · ±${m} m`
+              : `coarse · ±${m} m — move outdoors for GPS`;
+            a.className = m <= 30 ? 'is-good' : m <= 200 ? 'is-ok' : 'is-poor';
+          }
+          // First fix: centre once. Later fixes: just update the numbers.
+          if (tracker.trail.length <= 1) nmap.map.flyTo(fix.latlng, Math.max(nmap.map.getZoom(), 12), { duration: 0.8 });
+          if (navDest) {
+            renderNavTarget();
+            // Recompute the road path occasionally, not on every fix.
+            if (!navRoute || tracker.trail.length % 12 === 0) computeRoute();
+          }
+        },
+        onError: (err) => {
+          const map = {
+            1: 'Location permission denied. Allow it in your browser settings to use navigation.',
+            2: 'Position unavailable. Move outdoors or check that location services are on.',
+            3: 'Timed out waiting for a GPS fix. Try again outdoors.',
+          };
+          toast(map[err.code] || err.message || 'Location unavailable');
+          if (err.code === 1 || err.code < 0) stopTracking();
+        },
+      });
+    }
+    if (tracker.start()) {
+      $('#nav-off', root).hidden = true;
+      $('#nav-on', root).hidden = false;
+    }
+  }
+
+  function stopTracking() {
+    tracker?.stop();
+    nmap.clearNavigation();
+    navDest = null; navRoute = null;
+    const off = $('#nav-off', root); const on = $('#nav-on', root);
+    if (off) off.hidden = false;
+    if (on) on.hidden = true;
+    renderNavTarget();
+  }
+
+  function wireNav(root) {
+    const body = $('#nav-body', root);
+    if (!body) return;
+    body.addEventListener('click', (e) => {
+      if (e.target.closest('#nav-start')) { startTracking(); return; }
+      if (e.target.closest('#nav-stop')) { stopTracking(); return; }
+      if (e.target.closest('#nav-clear')) {
+        navDest = null; navRoute = null;
+        nmap.setRoute(null); nmap.setDestination(null);
+        renderNavTarget();
+        return;
+      }
+      if (e.target.closest('#nav-fit')) {
+        const me = tracker?.last?.latlng;
+        if (me && navDest) nmap.fitJourney(me, navDest.latlng);
+      }
+    });
+  }
   /* ---- layer tree ---- */
   function wireLayers(view) {
     $('#layer-tree', view).addEventListener('click', (e) => {
@@ -1399,6 +1596,13 @@ export function createExplore() {
         const layer = nmap.stateLayers.get(st.name);
         if (layer) nmap.map.flyToBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 9.2, duration: .9 });
       }
+      const nav = e.target.closest('[data-nav]');
+      if (nav) {
+        const lat = parseFloat(nav.dataset.lat), lng = parseFloat(nav.dataset.lng);
+        navigateTo([lat, lng], nav.dataset.navLabel || 'Destination', nav.dataset.nav);
+        return;
+      }
+
       const tz = e.target.closest('[data-title-zoom]');
       if (tz && nmap.layers.titles) {
         const lic = tz.dataset.titleZoom;

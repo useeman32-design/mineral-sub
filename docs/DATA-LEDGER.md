@@ -243,3 +243,50 @@ ids to map layer ids so the Data Center and the layer tree can never disagree.
 `neiti.gov.ng` and `ngsa.gov.ng` both serve **expired certificates**. Verifying
 clients fail; `curl -k` succeeds. Scope `CURLOPT_SSL_VERIFYPEER=false` to those
 hosts only — never globally.
+
+## Live GPS navigation (device location, not IP)
+
+Added a navigation panel to Explore Map. Position comes from
+`navigator.geolocation.watchPosition` with `enableHighAccuracy: true` and
+`maximumAge: 0`, which reads the device GNSS receiver — the same source Google
+Maps uses. **IP geolocation is deliberately not used**: in Nigeria it typically
+resolves to the carrier's gateway city and can be hundreds of kilometres from
+the user. Nothing is transmitted to us; the fix stays in the browser.
+
+Reported accuracy is shown rather than hidden, because it tells the user what
+they are actually looking at:
+
+| Reading | Label | Meaning |
+|---|---|---|
+| ≤ 30 m | `GPS` (green) | true satellite fix |
+| ≤ 200 m | `assisted` (gold) | wifi/cell assisted |
+| > 200 m | `coarse` (orange) | network positioning — prompts the user to move outdoors |
+
+The feature needs a secure context; the live GitHub Pages site is https, so it
+qualifies. Permission is requested only when the user presses "Use my location".
+
+### Routing
+
+| Field | Value |
+|---|---|
+| Service | OSRM demo server `router.project-osrm.org`, fallback `routing.openstreetmap.de/routed-car` |
+| Endpoint | `/route/v1/driving/{lon},{lat};{lon},{lat}?overview=full&geometries=geojson` |
+| Licence | OpenStreetMap data, ODbL 1.0 — attribution already carried for `roads-major.geojson` |
+| Key | none required |
+| CORS | `access-control-allow-origin: *` (verified) |
+| Verified | Abuja → Nasarawa, 179.7 km / 131 min, 2,396 geometry points |
+
+Routes follow the road network, not a great-circle line. If both routers fail
+the panel falls back to a straight-line distance and **says so** in an amber
+note, with the line drawn dashed, so a fallback is never mistaken for a
+drivable distance.
+
+The demo server is rate-limited, so re-routing is throttled: the road path is
+recomputed roughly every twelfth fix, while the *remaining* distance is
+recalculated on every fix by measuring from the nearest point on the existing
+route to the destination. That keeps the countdown smooth without hammering a
+public endpoint.
+
+Destinations: any state, LGA, mineral occurrence or mining title — each
+Inspector carries a **Navigate** button. States and LGAs route to their
+centroid, which is a representative point, not a specific address.
