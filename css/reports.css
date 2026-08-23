@@ -963,3 +963,17 @@
   color: var(--orange); font-size: 10.5px; line-height: 1.5;
 }
 .nav-coarse b { display: block; margin-bottom: 2px; }
+
+/* Provenance banner for modelled outputs — visible but not alarmist. */
+.model-note {
+  margin: 0 0 14px;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--gold) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 26%, transparent);
+  border-left: 2px solid var(--gold);
+  color: var(--text-mid);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.model-note b { color: var(--gold); font-weight: 600; }

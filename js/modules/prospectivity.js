@@ -152,6 +152,14 @@ export function createProspectivity() {
         </div>
       </header>
 
+      <p class="model-note">
+        <b>Modelled output.</b> Title counts are real (Mining Cadastre Office,
+        11,706 licences). Occurrence counts and survey coverage are indicative
+        placeholders pending the NGSA occurrence database and airborne
+        geophysics — so treat the ranking as a screening aid, not a resource
+        statement.
+      </p>
+
       <div class="pr-dgrid">
         <section class="panel pr-p pr-p-wide">
           <header class="panel-hd">
@@ -289,6 +297,13 @@ export function createProspectivity() {
           </aside>
 
           <section class="pr-main">
+            <p class="model-note">
+              <b>Modelled output.</b> Title counts are real (Mining Cadastre
+              Office, 11,706 licences). Occurrence counts and survey coverage
+              are indicative placeholders pending the NGSA occurrence database
+              and airborne geophysics — treat the ranking as a screening aid,
+              not a resource statement.
+            </p>
             <div class="panel pr-rank">
               <header class="panel-hd">
                 <span class="accent-bar"></span><h3>Ranked Targets</h3>

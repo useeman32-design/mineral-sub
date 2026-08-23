@@ -483,3 +483,32 @@ targeted tests:
 
 All 9 modules render, both report presets build (3 sections / 24 bars and
 8 sections / 10 charts), the overlap caveat is present, zero console errors.
+
+## Provenance banners on modelled modules (23 Aug 2026)
+
+Prospectivity and Risk Intelligence presented scores with no visible indication
+that their inputs are partly synthetic. Both now carry a banner on the landing
+view and the state detail view.
+
+**Prospectivity** scores five criteria. Only one is fully real:
+
+| Criterion | Weight | Backing |
+|---|---|---|
+| Known occurrences | — | ⚠️ fixture (3,612 claimed vs 165 real georeferenced sites) |
+| Host geology | — | ⚠️ fixture |
+| Survey coverage | — | ⚠️ fixture (53–90%, invented) |
+| Industry commitment | — | ✅ real — 11,706 MCO titles |
+| Accessibility & risk | — | ⚠️ derives from the fixture risk band |
+
+`getLiveStates()` spreads the fixture record (`...rec`) and overwrites only the
+title fields, so occurrences/coverage/risk stay synthetic even in live mode.
+That is correct behaviour — there is no real source yet — but it was invisible.
+
+**Risk Intelligence** is more clearly illustrative: `RISK_FACTORS` in
+`js/core/risk.js` compute evidence with a seeded random term, e.g.
+`clamp(28 + (s.petroleum ? 20 : 0) + r() * 44, 0, 100)`. It is a weighting
+demonstrator, not an incident feed. The banner says so and warns against using
+it for field-safety decisions.
+
+Wording is deliberately specific about what IS real (the cadastre) so the
+banner reads as provenance discipline rather than a blanket disclaimer.

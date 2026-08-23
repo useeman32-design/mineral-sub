@@ -138,6 +138,14 @@ export function createRisk() {
         </div>
       </header>
 
+      <p class="model-note">
+        <b>Illustrative model.</b> These factor scores are generated from a
+        weighted model with a deterministic random component — they are not
+        an incident feed. ACLED and NEMA returned no usable endpoint (see
+        Data Center). Use them to compare states, never as a safety
+        assessment for field deployment.
+      </p>
+
       <div class="pr-dgrid">
         <section class="panel pr-p pr-p-wide">
           <header class="panel-hd">
@@ -236,6 +244,12 @@ export function createRisk() {
           </aside>
 
           <section class="pr-main">
+            <p class="model-note">
+              <b>Illustrative model.</b> Factor scores come from a weighted model
+              with a deterministic random component — this is not an incident
+              feed. ACLED and NEMA returned no usable endpoint (see Data Center).
+              Use it to compare states, never as a field-safety assessment.
+            </p>
             <div class="panel pr-rank">
               <header class="panel-hd">
                 <span class="accent-bar accent-red"></span><h3>Risk Ranking</h3>
