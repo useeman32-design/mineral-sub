@@ -10,9 +10,9 @@
  *   await api.getDashboardSummary();   ->  GET /api/v1/dashboard/summary
  */
 
-import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=e68ba8c';
-import { seeded } from '../core/utils.js?v=e68ba8c';
-import { liveMode, getLiveTitles, getLiveStates, getLiveNational, loadProtectedAreas, loadSettlements, loadProduction, loadOverlap } from './live.js?v=e68ba8c';
+import { STATES, DEPOSITS, COMMODITIES, ACTIVITY, RESOURCE_META } from './fixtures.js?v=8503cca';
+import { seeded } from '../core/utils.js?v=8503cca';
+import { liveMode, getLiveTitles, getLiveStates, getLiveNational, loadProtectedAreas, loadSettlements, loadProduction, loadOverlap } from './live.js?v=8503cca';
 
 /* Operator names for the placeholder registry. Real holder records arrive with
    the mining cadastre import. */

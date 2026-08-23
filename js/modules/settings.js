@@ -4,11 +4,11 @@
  * groups persist to localStorage so the API can adopt them later.
  */
 
-import { icon } from '../core/icons.js?v=e68ba8c';
-import { theme } from '../core/theme.js?v=e68ba8c';
-import { store } from '../core/store.js?v=e68ba8c';
-import { $, $$ } from '../core/utils.js?v=e68ba8c';
-import { toast } from './dashboard.js?v=e68ba8c';
+import { icon } from '../core/icons.js?v=8503cca';
+import { theme } from '../core/theme.js?v=8503cca';
+import { store } from '../core/store.js?v=8503cca';
+import { $, $$ } from '../core/utils.js?v=8503cca';
+import { toast } from './dashboard.js?v=8503cca';
 
 const PREFS_KEY = 'nmi.prefs';
 

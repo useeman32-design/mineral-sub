@@ -14,7 +14,7 @@
  *     data, so undo/redo and save/load only ever swap the array.
  */
 
-import { measureShape, pathLength, haversine, polygonArea, centroid } from '../core/geo.js?v=e68ba8c';
+import { measureShape, pathLength, haversine, polygonArea, centroid } from '../core/geo.js?v=8503cca';
 
 let SEQ = 0;
 const uid = () => `shp-${Date.now().toString(36)}-${(++SEQ).toString(36)}`;
