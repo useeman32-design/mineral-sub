@@ -9,16 +9,16 @@
  * file is presentation and interaction only.
  */
 
-import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=acb5907';
-import { icon } from '../core/icons.js?v=acb5907';
-import { api } from '../data/api.js?v=acb5907';
-import { ctx } from '../core/context.js?v=acb5907';
-import { reports } from '../core/reports.js?v=acb5907';
-import { toast } from './dashboard.js?v=acb5907';
-import { RESOURCE_META } from '../data/fixtures.js?v=acb5907';
+import { $, $$, fmt, debounce, clamp } from '../core/utils.js?v=e68ba8c';
+import { icon } from '../core/icons.js?v=e68ba8c';
+import { api } from '../data/api.js?v=e68ba8c';
+import { ctx } from '../core/context.js?v=e68ba8c';
+import { reports } from '../core/reports.js?v=e68ba8c';
+import { toast } from './dashboard.js?v=e68ba8c';
+import { RESOURCE_META } from '../data/fixtures.js?v=e68ba8c';
 import {
   CRITERIA, TIERS, runModel, defaultWeights, explain,
-} from '../core/scoring.js?v=acb5907';
+} from '../core/scoring.js?v=e68ba8c';
 
 const WEIGHTS_KEY = 'nmi.prosWeights';
 const COMMODITY_OPTS = [

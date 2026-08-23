@@ -10,13 +10,13 @@
  * so the two data modules feel like the same product.
  */
 
-import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=acb5907';
-import { icon } from '../core/icons.js?v=acb5907';
-import { api } from '../data/api.js?v=acb5907';
-import { ctx } from '../core/context.js?v=acb5907';
-import { reports } from '../core/reports.js?v=acb5907';
-import { toast } from './dashboard.js?v=acb5907';
-import { RESOURCE_META as RMETA } from '../data/fixtures.js?v=acb5907';
+import { $, $$, fmt, debounce, sparkline, ring } from '../core/utils.js?v=e68ba8c';
+import { icon } from '../core/icons.js?v=e68ba8c';
+import { api } from '../data/api.js?v=e68ba8c';
+import { ctx } from '../core/context.js?v=e68ba8c';
+import { reports } from '../core/reports.js?v=e68ba8c';
+import { toast } from './dashboard.js?v=e68ba8c';
+import { RESOURCE_META as RMETA } from '../data/fixtures.js?v=e68ba8c';
 
 const CATEGORIES = ['All', 'Metallic', 'Industrial', 'Energy'];
 

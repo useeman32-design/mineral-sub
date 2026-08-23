@@ -13,26 +13,26 @@
  * design language stay identical; only the composition differs.
  */
 
-import { api } from '../data/api.js?v=acb5907';
-import { store } from '../core/store.js?v=acb5907';
-import { ctx } from '../core/context.js?v=acb5907';
-import { icon } from '../core/icons.js?v=acb5907';
-import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=acb5907';
-import { NigeriaMap, zoomBand } from '../components/map.js?v=acb5907';
-import { RESOURCE_META } from '../data/fixtures.js?v=acb5907';
-import { toast } from './dashboard.js?v=acb5907';
-import { reports } from '../core/reports.js?v=acb5907';
-import { DrawEngine, TOOL_META } from '../components/draw.js?v=acb5907';
-import { History } from '../core/history.js?v=acb5907';
-import { projects } from '../data/projects.js?v=acb5907';
-import { measureShape } from '../core/geo.js?v=acb5907';
-import { loadPrefs } from './settings.js?v=acb5907';
-import { LAYER_GROUPS, LAYER_INDEX, applyLayer } from '../data/layers.js?v=acb5907';
-import { dsToggles, DATASET_LAYER } from '../data/toggles.js?v=acb5907';
-import { Tracker, route as osrmRoute, haversine, fmtDistance, fmtDuration } from '../core/geolocate.js?v=acb5907';
-import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=acb5907';
-import { createStatusBar } from '../components/statusbar.js?v=acb5907';
-import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=acb5907';
+import { api } from '../data/api.js?v=e68ba8c';
+import { store } from '../core/store.js?v=e68ba8c';
+import { ctx } from '../core/context.js?v=e68ba8c';
+import { icon } from '../core/icons.js?v=e68ba8c';
+import { $, $$, fmt, sparkline, ring } from '../core/utils.js?v=e68ba8c';
+import { NigeriaMap, zoomBand } from '../components/map.js?v=e68ba8c';
+import { RESOURCE_META } from '../data/fixtures.js?v=e68ba8c';
+import { toast } from './dashboard.js?v=e68ba8c';
+import { reports } from '../core/reports.js?v=e68ba8c';
+import { DrawEngine, TOOL_META } from '../components/draw.js?v=e68ba8c';
+import { History } from '../core/history.js?v=e68ba8c';
+import { projects } from '../data/projects.js?v=e68ba8c';
+import { measureShape } from '../core/geo.js?v=e68ba8c';
+import { loadPrefs } from './settings.js?v=e68ba8c';
+import { LAYER_GROUPS, LAYER_INDEX, applyLayer } from '../data/layers.js?v=e68ba8c';
+import { dsToggles, DATASET_LAYER } from '../data/toggles.js?v=e68ba8c';
+import { Tracker, route as osrmRoute, haversine, fmtDistance, fmtDuration } from '../core/geolocate.js?v=e68ba8c';
+import { createLegend, LEGEND_RESOURCES } from '../components/legend.js?v=e68ba8c';
+import { createStatusBar } from '../components/statusbar.js?v=e68ba8c';
+import { makeDraggable, makeDockResizer } from '../components/draggable.js?v=e68ba8c';
 
 const RESOURCES = LEGEND_RESOURCES;
 
