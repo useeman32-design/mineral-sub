@@ -101,8 +101,21 @@ export class Tracker {
    * gateway city — a user in Gusau gets plotted in Abuja, ~260 km away, with
    * an accuracy radius that quietly admits it. We refuse to draw those as if
    * they were a location.
+   *
+   * 5 km was too permissive: a wifi/cell fix with ~2 km accuracy passed the
+   * check and still plotted Abuja as the user's position. Anything coarser
+   * than 300 m is not a GNSS fix — a real satellite lock is single or low
+   * double-digit metres, and assisted GPS is well under 200 m. 300 m keeps a
+   * little headroom for a degraded but genuine fix indoors or under canopy.
    */
-  static COARSE_M = 5000;
+  static COARSE_M = 300;
+
+  /**
+   * Once a trusted fix exists, a coarse reading must not replace it while the
+   * good one is still fresh — otherwise a momentary network reading yanks the
+   * marker hundreds of kilometres away mid-journey.
+   */
+  static STALE_MS = 60000;
 
   start() {
     if (!this.supported) { this.onError({ code: -1, message: 'This browser has no geolocation support.' }); return false; }
@@ -138,6 +151,12 @@ export class Tracker {
           speed: pos.coords.speed,
           at: pos.timestamp,
         };
+
+        // Guard against regression: a noticeably worse fix arriving while a
+        // recent good one still stands is noise, not movement.
+        if (this.last && acc > this.last.accuracy * 3
+            && (fix.at - this.last.at) < Tracker.STALE_MS) return;
+
         this.last = fix;
         const t = this.trail;
         // Only extend the trail on real movement, so a stationary device does

@@ -397,3 +397,25 @@ holds a second `NigeriaMap`, and an unscoped `.leaflet-container` /
 `#00e676` appears in the nav-pane vicinity as the country halo and state
 borders (`map.js:196,306`), so route-colour assertions must target
 `.leaflet-nav-pane path`, not all strokes.
+
+## GPS threshold tightened + basemap on locate (23 Aug 2026)
+
+Two refinements on top of the navigation fixes.
+
+**`Tracker.COARSE_M` 5000 m → 300 m.** The 5 km reject threshold still let a
+~2 km wifi/cell fix through, which plotted Abuja as the position of a user in
+Gusau — the original complaint, just below the cut-off. Anything coarser than
+300 m is not a GNSS fix: a real satellite lock is single or low double-digit
+metres and assisted GPS is well under 200 m. 300 m leaves headroom for a
+degraded but genuine fix indoors or under canopy. Verified: a ±2 km Abuja fix
+is now rejected with "searching — rejected a ±2 km network fix", and the real
+±14 m Gusau fix is accepted.
+
+Added a matching regression guard: once a trusted fix exists, a reading more
+than 3× worse arriving within 60 s is treated as noise, so a momentary network
+fix cannot yank the marker mid-journey.
+
+**Basemap switches to satellite on the first fix.** The vector basemap is state
+polygons only. Flying to a street-level position on it landed the user in an
+empty black field with nothing to navigate by. Imagery is enabled automatically
+on the first fix (the toggle still works normally afterwards).

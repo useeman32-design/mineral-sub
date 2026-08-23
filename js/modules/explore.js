@@ -1398,7 +1398,17 @@ export function createExplore() {
           // A good fix supersedes any coarse-fix warning.
           if (!navDest) { const bx = $('#nav-target', root); if (bx) bx.hidden = true; }
           // First fix: centre once. Later fixes: just update the numbers.
-          if (tracker.trail.length <= 1) nmap.map.flyTo(fix.latlng, Math.max(nmap.map.getZoom(), 12), { duration: 0.8 });
+          if (tracker.trail.length <= 1) {
+            // The vector basemap is state polygons only. Flying to the user's
+            // street-level position on it lands in an empty black field with
+            // nothing to navigate by, so switch to imagery on the first fix.
+            if (store.get('basemap') !== 'satellite') {
+              nmap.setBasemap('satellite');
+              const sb = $('#ex-basemap [data-base="satellite"]', root);
+              if (sb) $$('#ex-basemap button', root).forEach((n) => n.classList.toggle('is-on', n === sb));
+            }
+            nmap.map.flyTo(fix.latlng, Math.max(nmap.map.getZoom(), 14), { duration: 0.8 });
+          }
           if (navDest) {
             renderNavTarget();
             // Recompute the road path occasionally, not on every fix.
