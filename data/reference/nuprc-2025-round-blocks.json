@@ -1,0 +1,317 @@
+{
+  "meta": {
+    "source": "NUPRC Nigeria 2025 Licensing Round Portal",
+    "url": "https://br2025.nuprc.gov.ng/",
+    "retrieved": "2026-08-26",
+    "note": "Public teaser list of blocks offered in the 2025 round. This is NOT the national concession register (NUPRC 2024 Annual Report cites 282 blocks). No block geometry is published on the public maps page (login required). Do not present this as the Oil & Gas cadastre.",
+    "contacts": [
+      "br2025@nuprc.gov.ng",
+      "nuprc@nuprc.gov.ng",
+      "info.ndr@nuprc.gov.ng",
+      "ogisp@nuprc.gov.ng"
+    ]
+  },
+  "offeredBlocks": [
+    {
+      "id": "PPL 2A29",
+      "field": "Okoroma",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/da2h5inf/ppl2a29_okoroma-field-_2a29-nigeria_2025_license_round_updated.pdf"
+    },
+    {
+      "id": "PPL 2A30",
+      "field": "Twoni Creek",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/dqeoyday/ppl2a30_twoni-creek-nigeria-2025-bid-round.pdf"
+    },
+    {
+      "id": "PPL 2A31",
+      "field": "Ikuru",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/14ifggj2/ppl2a31_ikuru-nigeria-2025-bid-round.pdf"
+    },
+    {
+      "id": "PPL 2A32",
+      "field": "Yorla South",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/o0ri0md3/ppl2a32_yorla-south-field-nigeria-2025-license-round-updated.pdf"
+    },
+    {
+      "id": "PPL 2A33",
+      "field": "Amabilo",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/huxpzho1/ppl2a33_amabilo-field-nigeria-2025-license-round-updated.pdf"
+    },
+    {
+      "id": "PPL 2A34",
+      "field": "Kenam",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/bsynwiwf/ppl2a34_kenam-field-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A35",
+      "field": "Misty",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/ewxf5irq/ppl2a35_misty-field-nigeria-2025-license-round-updated.pdf"
+    },
+    {
+      "id": "PPL 2A36",
+      "field": "Olori",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/zgkk05yh/ppl2a36_olori-field-nigeria-2025-license-round-updated.pdf"
+    },
+    {
+      "id": "PPL 2A37",
+      "field": "Fonoweitoro",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/5f3jhmpw/ppl2a37_fonoweitoro-field-nigeria-2025-license-round_updated.pdf"
+    },
+    {
+      "id": "PPL 2A38",
+      "field": "Idege",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/myklk1gl/ppl2a38_idege-field-nigeria-2025-license-round-updated.pdf"
+    },
+    {
+      "id": "PPL 2A39",
+      "field": "Ebet",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/xrck5hqu/ppl2a39-ebet-field_nigeria_2025_license_round.pdf"
+    },
+    {
+      "id": "PPL 2A40",
+      "field": "Ebiya",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/gb4k35px/ppl2a40_ebiya-field-nigeria-2025-license-round-updated.pdf"
+    },
+    {
+      "id": "PPL 2A41",
+      "field": "Idiok",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/ti4lgioy/ppl2a41_idiok-nigeria-2025-bid-round.pdf"
+    },
+    {
+      "id": "PPL 2A42",
+      "field": "Oyobio",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/qngcnzch/ppl2a42_oyobio-field-nigeria-2025-license-round_updated.pdf"
+    },
+    {
+      "id": "PPL 2A43",
+      "field": "Utai",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/wmjl0cn3/ppl2a43_utai-field-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A44",
+      "field": "Usari",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/lm5nnhvs/ppl2a44_usari-field-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A45",
+      "field": "Obio",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/1brh13zq/ppl2a45_obio-field-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A46",
+      "field": "Amara",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/y4anwejq/ppl2a46_amara-field-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A47",
+      "field": "Anuri",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/lhnajngl/ppl2a47_anuri-field-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A48",
+      "field": "Akiapiri",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/5epgr11m/ppl2a48_akiapiri-field-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A49",
+      "field": "Bobbi",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/ngbfoyju/ppl2a49_bobbi-field-nigeria-2025-license-round-updated.pdf"
+    },
+    {
+      "id": "PPL 2A50",
+      "field": "Ndele",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/blmcrgrm/ppl2a50_ndele-nigeria-2025-bid-round.pdf"
+    },
+    {
+      "id": "PPL 2A51",
+      "field": "Oforola",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/krrdapbh/ppl2a51_oforola-field-nigeria-2025-license-round-updateddoc-27-11-25.pdf"
+    },
+    {
+      "id": "PPL 2A52",
+      "field": "Ayama",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/4t5hvsvd/ppl2a52_ayama-nigeria-2025-bid-round_updated.pdf"
+    },
+    {
+      "id": "PPL 2A53",
+      "field": "LHH",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/lx4hd215/ppl2a53_lhh-field-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A54",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/5cffedve/updated-ppl-2a54-teaser-140526.pdf"
+    },
+    {
+      "id": "PPL 2A55",
+      "field": "Usiere",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/pwjdc5dq/ppl2a55_usiere-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A56",
+      "field": "Nkanda",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/gnjoq3u5/ppl2a56_nkanda-nigeria-2025-bid-round.pdf"
+    },
+    {
+      "id": "PPL 2A57",
+      "field": "Nsung",
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/vp1f2hhp/ppl2a57_nsung-field-nigeria-2025-license-round-updated.pdf"
+    },
+    {
+      "id": "PPL 2A58",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/z20gm42j/ppl2a58-nigeria-2025-license-round_updated.pdf"
+    },
+    {
+      "id": "PPL 2A59",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/kh1hauim/ppl2a59-nigeria-2025-license-round_updated.pdf"
+    },
+    {
+      "id": "PPL 2A60",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/gldoikx2/ppl2a60-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 2A61",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/wn4b1oc3/ppl2a61-nigeria-2025-license-round-docx.pdf"
+    },
+    {
+      "id": "PPL 2A62",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/pf4n5xss/ppl2a62-nigeria-2025-license-round-docx.pdf"
+    },
+    {
+      "id": "PPL 307",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/iiede1qo/ppl307-nigeria-2025-license-round-docx_updated.pdf"
+    },
+    {
+      "id": "PPL 308",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/10lpjo5x/ppl308-nigeria-2025-license-round-docx_updated.pdf"
+    },
+    {
+      "id": "PPL 309",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/a40h30bd/ppl309-nigeria-2025-license-round-docx_updated.pdf"
+    },
+    {
+      "id": "PPL 700",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/0hapgbad/ppl700-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 701",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/lfhhgh1y/ppl701-nigeria-2025-license-round_updated.pdf"
+    },
+    {
+      "id": "PPL 702",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/5eum3u0c/ppl702-nigeria-2025-license-round_updated.pdf"
+    },
+    {
+      "id": "PPL 703",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/hhwfopcc/ppl703-nigeria-2025-license-round.pdf"
+    },
+    {
+      "id": "PPL 800",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/uivpszyt/ppl800-nigeria-2025-license-round-docx_updated.pdf"
+    },
+    {
+      "id": "PPL 801",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/4o1juifa/ppl801-nigeria-2025-license-round-docx.pdf"
+    },
+    {
+      "id": "PPL 802",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/li4lpw4h/ppl802-nigeria-2025-license-round-docx.pdf"
+    },
+    {
+      "id": "PPL 803",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/igvp5wvd/ppl803-nigeria-2025-license-round-docx.pdf"
+    },
+    {
+      "id": "PPL 900",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/rrenpkkp/ppl900-nigeria-2025-license-round-docx_updated.pdf"
+    },
+    {
+      "id": "PPL 901",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/4rbku0wr/ppl901-nigeria-2025-license-round-docx_updated.pdf"
+    },
+    {
+      "id": "PPL 902",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/wd3fx0nw/ppl902-nigeria-2025-license-round-docx.pdf"
+    },
+    {
+      "id": "PPL 903",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/3vye201y/ppl903-nigeria-2025-license-round-docx.pdf"
+    },
+    {
+      "id": "PPL 2010",
+      "field": null,
+      "kind": "PPL",
+      "sourcePdf": "https://br2025.nuprc.gov.ng/media/klsnettl/ppl2010-nigeria-2025-license-round_updated.pdf"
+    }
+  ],
+  "count": 50
+}

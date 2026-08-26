@@ -8,7 +8,8 @@ data is, who produced it, and what it can and cannot support.
 | Dataset | Records | Source | Authority |
 |---|---|---|---|
 | **Audited production by state, 2023** | 36 states, 44 commodities, 82.08 Mt | NEITI Solid Minerals Industry Audit 2023, Appendix 19 | Independently reconciled by **Haruna Yahaya & Co. (Chartered Accountants)** under the NEITI Act 2007 and the EITI Standard |
-| **Valid mineral titles** | 10,125 titles | Mining Cadastre Office, "Valid Mineral Titles as at 31 May 2026" | Statutory licensing register |
+| **Valid mineral titles (georeferenced)** | **11,706** blocks | Mining Cadastre Office eMC+ public map service, snapshot 21 Aug 2026 | Statutory cadastre. **Reuse permission requested** — public endpoint, not an open licence. See `MCO-WFS-REUSE.md`. |
+| **Valid mineral titles (spreadsheet)** | 10,125 titles | Mining Cadastre Office, "Valid Mineral Titles as at 31 May 2026" | Same register, no geometry. Provenance only; the app no longer reads it. |
 | **State boundaries (ADM1)** | 36 states + FCT | geoBoundaries | Standard reference boundaries |
 | **LGA boundaries (ADM2)** | 774 | geoBoundaries | Standard reference boundaries |
 

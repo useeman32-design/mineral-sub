@@ -1,12 +1,19 @@
-# NGSA follow-up — send Monday 24 August
+# NGSA follow-up — call now (Wednesday 26 August)
 
-Email 1 went out **Monday 17 August**. By Monday 24th that is **6 working
-days** with no reply. That is the right moment for a short, polite nudge —
-early enough to stay warm, late enough not to look impatient.
+If Email 1 went out **Monday 17 August**, that is **seven working days** with
+no reply. Call today, then send the nudge below the same afternoon.
+
+If Email 1 has **not** been sent, skip this file: call using `CALL-SCRIPTS.md`,
+then send Email 1 opening with "further to our telephone conversation this
+morning".
 
 **No payment language anywhere.** Same rule as the original: ask for guidance
 on their procedure, offer to sign a data-use agreement, commit to crediting
 the agency, thank them.
+
+The cadastre is no longer blocked. Title polygons are in the app (eMC+
+snapshot). What still gates Minerals and Prospectivity is NGSA. Reuse of the
+cadastre snapshot is a **separate** letter to MCO — Email 6, not this one.
 
 ---
 
@@ -136,8 +143,10 @@ Escalate gently, in this order:
 
 Worth remembering so the wait does not stall the presentation:
 
-- **Mining titles** — solved. All 11,706 polygons from the MCO GeoServer.
-- **Production** — solved. NEITI 2023 audited, 36 states.
+- **Mining titles** — 11,706 polygons from the MCO eMC+ map service. Reuse
+  permission is Email 6, not this letter.
+- **Production** — NEITI 2023 audited, 36 states. Remaining 2023 appendices
+  fetched 26 Aug 2026 (ASF, social spend, unilateral revenue).
 - **Boundaries, protected areas, settlements, roads, footprints** — all in.
 
 NGSA gates **occurrences, geochemistry and airborne geophysics** only. The
@@ -146,4 +155,5 @@ platform demonstrates end-to-end today without them.
 ## Reference
 
 Full original text: `docs/REQUEST-EMAILS.md` (Email 1).
+Phone script: `docs/CALL-SCRIPTS.md`.
 Directors verified from `ngsa.gov.ng/management-team/` on 21 Aug 2026.

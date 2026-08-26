@@ -1,9 +1,14 @@
 # Where do occurrence and title *locations* come from?
 
-You are right that NGSA and NUPRC cover most of what the app needs. The one
-thing neither of them has given us yet is **geometry** — the actual coordinates
-of mineral occurrences and the polygons of mining titles. This note records
-what we hold, what we tested, and how the gap gets closed.
+**Titles — resolved, 21 Aug 2026.** 11,706 cadastral polygons from the Mining
+Cadastre Office eMC+ public map service. Reuse of that snapshot still needs
+written confirmation from MCO (`MCO-WFS-REUSE.md`, Email 6).
+
+**Occurrences — still open.** NGSA's National Mineral Occurrence Database is
+described online and is not downloadable. Call script: `CALL-SCRIPTS.md`.
+
+The rest of this note is kept as the investigation record, including a few
+paragraphs that pre-date the WFS snapshot and are now historical.
 
 ## What we actually have today
 
@@ -13,11 +18,8 @@ what we hold, what we tested, and how the gap gets closed.
 | LGA boundaries (774) | ✅ polygons | geoBoundaries, in repo |
 | Protected areas (325) | ✅ polygons | WDPA, in repo |
 | Settlements (911) | ✅ points | OSM Overpass, in repo |
-| **Mining titles (10,125)** | ❌ **none** | MCO cadastre export — state/LGA *names* and a `CU` count only |
-| **Mineral occurrences** | ❌ **none** | NGSA database is described online but not downloadable |
-
-So the register is real and complete on attributes — holder, commodity, area,
-dates — and completely blind on position. That is the whole gap.
+| **Mining titles (11,706)** | ✅ **polygons** | MCO eMC+ WFS snapshot, 21 Aug 2026 |
+| **Mineral occurrences** | ⚠️ 165 interim points | USGS + OSM. NGSA database still request-only |
 
 ## eMC+ public account — register here
 
@@ -33,21 +35,19 @@ Supporting pages, all reachable:
 - Legal documents — `/eMC/Document/LegalDocuments`
 - Contact — info@miningcadastre.gov.ng
 
-The public account is what gets us into the map viewer where title geometry is
-displayed. Whether it also permits **bulk export** of that geometry is the open
-question — a viewer account often allows inspection but not download. If export
-is not available once logged in, Email 4 (title polygons via MCO) still needs
-to go out. Register first, then check, then send the email only if needed.
+The public account is still worth creating — it makes us a known user before
+Email 6 (reuse permission) goes out. Geometry is no longer the open question;
+**written reuse terms** are.
 
-## Why the MCO export has no coordinates
+## Why the MCO spreadsheet has no coordinates (historical)
 
 The published spreadsheet (`Valid Mineral Titles As At 31 May 2026`) carries
-`STATE`, `LGA` and `CU` (cadastral units, 1 CU = 0.21 km²). The coordinates
-exist in the eMC+ system behind `nigeriaminingcadastre.gov.ng/eMC` — the map
-page is real and returns a 40 KB document, but it sits behind a login. There
-is no public WMS/WFS/ArcGIS service exposed; probing for one returns the
-portal's "Not found" page. **Title polygons therefore require a request**, not
-a scrape. That is Email 4 in `REQUEST-EMAILS.md`.
+`STATE`, `LGA` and `CU` (cadastral units, 1 CU = 0.21 km²) and no polygons.
+Geometry is in eMC+. An earlier probe of the portal missed the GeoServer WFS
+proxy the public map uses. That proxy answered without authentication on
+21 Aug 2026 and is the source of `title-polygons.geojson`. Treat that as a
+**public map snapshot**, not an open-data API. Email 6 asks MCO to confirm
+reuse. Do not put a live WFS harvest into the website.
 
 ## RESOLVED IN PART — two real geometry layers are now in the app
 

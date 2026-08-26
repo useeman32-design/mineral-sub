@@ -13,6 +13,9 @@ Other docs and what they are for:
 | `GEOMETRY-GAP.md` | The coordinates problem and how it gets closed |
 | `DATA-INVENTORY.md` | Longer per-file rationale (superseded in part by this) |
 | `DATA-SOURCES.md`, `DATA-ACQUISITION-PLAN.md` | Source research and analysis |
+| `DATA-MATRIX.md` | Fetch-vs-ask list, how to get each dataset, heavy-file verdict |
+| `MCO-WFS-REUSE.md` | Where the title blocks came from, and how we can depend on them |
+| `CALL-SCRIPTS.md` | Phone scripts — NGSA, MCO, NUPRC. No payment language |
 | `REQUEST-EMAILS.md` | Drafted agency requests, no payment language |
 
 ---
@@ -34,6 +37,8 @@ These are the small derived products the browser actually fetches.
 | `roads-major.geojson` | 730 KB | 5 211 ways | OpenStreetMap Overpass | `4f964c1` | `005a129aebcf` |
 | `protected-areas.geojson` | 333 KB | 325 polygons | WDPA / Protected Planet | `8d602ad` | `48d973d46d9e` |
 | `ng-settlements-osm.json` | 67 KB | 911 settlements | OSM Overpass | `74b1b0f` | `0a4f878e9373` |
+| `neiti-2023-complements.json` | 4 KB | 6 appendices summarised | NEITI SMA 2023 Apps. 6–8, 14, 21, 23 | `HEAD` | `9df911dfd7c5` |
+| `nuprc-2025-round-blocks.json` | 10 KB | 50 PPL teasers | NUPRC 2025 Licensing Round portal | `HEAD` | `fa923919f787` |
 
 Plus boundaries, committed earlier: `data/nigeria-states.geojson` (37 ADM1) and
 `data/lga/*.geojson` (774 ADM2), both geoBoundaries, CC BY 4.0.
@@ -131,6 +136,38 @@ live, self-contained, carries clean ISO-style dates, and has geometry.
 **Caveat:** this is an application endpoint, not a documented open-data API.
 It could be restricted at any time. The extract is committed so the app never
 depends on it at runtime.
+
+**Licence status (26 Aug 2026):** publicly reachable ≠ open licence. The MCO
+website terms (8 May 2023) limit commercial republication / public display
+without written permission. The Data Center now labels this row
+**"Public eMC+ endpoint; reuse permission requested"** rather than
+"Nigerian Government public data". Email 6 asks the Office to confirm reuse,
+attribution and a takedown route. Background: `MCO-WFS-REUSE.md`.
+
+### `neiti-2023-complements.json` — remaining 2023 appendices, summarised
+
+Fetched 26 Aug 2026 from the NEITI solid-minerals listing (the
+`2023-APPENDICES/` directory itself 404s; files linked from the listing
+return 200). TLS expired; `curl -sk`. Originals in `data/source/`.
+
+Headline figures, not to be confused with Appendix 19 production:
+
+- App. 14 ASF liability: **1,619** titles, ₦190.4 m (2021) + ₦462.9 m (2022) +
+  ₦347.2 m (2023) = **₦1.000 bn** listed outstanding.
+- App. 21 social expenditure: **14** companies, **₦1.240 bn** (BUA ₦694 m,
+  Dangote Cement ₦459 m).
+- App. 23 NESS levy: **₦7.023 bn (2023)**, ₦4.093 bn (2022). This is the
+  unilateral-revenue side of the audit — part of why headline 95.07 Mt does
+  not equal our 82.08 Mt operator-attributed total.
+- App. 7 is a **2023** MCO snapshot (2,428 signed + 405 RP) and is
+  **superseded** by the 11,706 eMC+ extract.
+
+### `nuprc-2025-round-blocks.json` — 50 offered PPLs, not the cadastre
+
+Public teaser list from `https://br2025.nuprc.gov.ng/` on 26 Aug 2026.
+**50** PPL identifiers (2A29–2A62, 307–309, 700–703, 800–803, 900–903, 2010).
+No geometry: the licensing-round maps page is a login wall. **Must not** be
+wired into the Oil & Gas module as if it were the 282-block register.
 
 ### Register and map now share one source
 
@@ -512,3 +549,19 @@ it for field-safety decisions.
 
 Wording is deliberately specific about what IS real (the cadastre) so the
 banner reads as provenance discipline rather than a blanket disclaimer.
+
+## Data requests, remaining NEITI appendices, heavy-file verdict (26 Aug 2026)
+
+User asked: draft the NGSA call; name the site the title blocks came from
+without consent; list what we can fetch vs what needs a letter; fetch the
+rest; decide the heavy-file plan.
+
+- Call / email pack: `CALL-SCRIPTS.md`, Email 6 in `REQUEST-EMAILS.md`.
+- Cadastre source named and regularised: `MCO-WFS-REUSE.md`. Data Center
+  licence row no longer says "Nigerian Government public data".
+- Fetch-vs-ask list: `DATA-MATRIX.md`. Everything reachable without a person
+  was fetched today (NEITI 2023 appendices 3, 4, 6–8, 13, 14, 20, 21, 23, 25;
+  NUPRC 2025 teaser list of 50 PPLs; USGS MYB Nigeria 2019).
+- Heavy files: `data/reference/` is **9.9 MB raw / 1.4 MB gzip**. Leave it on
+  GitHub Pages. Do not Git-LFS anything Pages must serve. Future rasters go
+  to Releases / R2 / derived PMTiles, never the Pages tree.

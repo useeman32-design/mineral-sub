@@ -203,11 +203,19 @@ data and one that does not.
 
 ### If you do need to store large files on GitHub
 
-1. Install Git LFS locally (`git lfs install`) — not available in this sandbox,
-   but `.gitattributes` is already configured for `data/source/*.{xlsx,zip,tif}`.
-2. LFS allows up to 2 GB per file, with quota limits on the free tier.
-3. Alternative: attach files to a **GitHub Release** (2 GB per file) rather than
-   tracking them in the working tree. Good for the NGSA archive when it arrives.
+**Do not use Git LFS for anything GitHub Pages must serve.** Pages serves git
+objects; LFS pointers would 404 in the browser. The current `data/reference/`
+payload is **9.9 MB raw / 1.4 MB gzipped** — fine on Pages with lazy load.
+
+When a GB-scale file arrives (NGSA airborne, OSM PBF, 100 m population):
+
+1. Process it offline. Commit only the derived product the browser needs.
+2. Park the original on a **GitHub Release** (2 GB/file), Cloudflare R2, S3,
+   Hugging Face or Zenodo — never in the Pages tree.
+3. `.gitattributes` LFS rules apply only to `data/source/*.{xlsx,zip,tif}`,
+   which the browser never fetches.
+
+Full verdict: `DATA-MATRIX.md` §F.
 
 ---
 
@@ -218,7 +226,7 @@ data and one that does not.
 | **NGSA Mineral Occurrence DB** | 🔴 No download link — MS Access, request only | **Email 1** — the blocker for Minerals + Prospectivity |
 | **NGSA airborne (328 sheets)** | 🔴 Only 2 published | **Email 2** — likely paid |
 | **NGSA geological maps** | 🔴 Sold, not downloadable | **Email 3** |
-| **Mining title polygons** | 🔴 Spreadsheet has no geometry | **Email 4** — unlocks "is this target under licence?" |
+| **Mining title polygons** | ✅ 11,706 in app from eMC+ WFS | **Email 6** — written reuse permission, not a re-download |
 | **NUPRC concessions** | 🟠 URLs rotate; deep links 404 | **Email 5**, or scrape https://br2025.nuprc.gov.ng/ |
 | **ACLED conflict events** | 🟠 Free key required | Self-register, 10 minutes |
 | **NMRDSS** | ❌ Broken server-side | Reported in Email 4; nothing we can do |

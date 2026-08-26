@@ -32,6 +32,12 @@ const USED_BY = {
   geophys: ['prospectivity'],
   imagery: ['explore'],
   infra: ['explore', 'risk'],
+  protected: ['explore', 'risk'],
+  population: ['risk'],
+  footprints: ['explore'],
+  sites: ['minerals', 'explore'],
+  overlap: ['explore', 'reports'],
+  production: ['overview', 'explore', 'reports'],
 };
 
 const MODULE_LABEL = {

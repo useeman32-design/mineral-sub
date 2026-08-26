@@ -606,9 +606,9 @@ export class Api {
     const LIVE = {
       titles: { name: 'Mining cadastre (title blocks)', status: 'Connected',
         source: 'Mining Cadastre Office eMC+ (GeoServer WFS)', format: 'GeoJSON + JSON',
-        sizeMb: 5.9, records: 11706, quality: 96, updated: '22 Aug 2026',
-        licence: 'Nigerian Government public data',
-        note: 'Graticular blocks as issued — 15 arc-second units of 0.21 km², not approximations.' },
+        sizeMb: 5.9, records: 11706, quality: 96, updated: '21 Aug 2026',
+        licence: 'Public eMC+ endpoint; reuse permission requested',
+        note: 'Graticular blocks as issued — 15 arc-second units of 0.21 km², not approximations. Snapshot of the public map service, 21 Aug 2026. Not an open licence — Email 6 asks MCO to confirm reuse.' },
       occurrence: { name: 'Mineral occurrence register', status: 'Partial',
         source: 'USGS minfac + MRDS + OpenStreetMap', format: 'JSON', sizeMb: 0.03,
         records: 165, quality: 61, updated: '2026', licence: 'Public domain + ODbL 1.0',
@@ -647,8 +647,18 @@ export class Api {
       { id: 'production', name: 'Audited production by state (2023)', domain: 'Economic',
         source: 'NEITI Solid Minerals Audit 2023, Appendix 19', format: 'JSON', sizeMb: 0.02,
         records: 36, status: 'Connected', quality: 97, updated: 'Oct 2024',
-        licence: 'Nigerian Government public data',
+        licence: 'NEITI Act 2007 public audit',
         note: 'Independently reconciled by Haruna Yahaya & Co. under the NEITI Act 2007 and the EITI Standard.' },
+      { id: 'neitix', name: 'NEITI 2023 audit complements', domain: 'Economic',
+        source: 'NEITI SMA 2023 Appendices 6–8, 14, 21, 23', format: 'JSON', sizeMb: 0.01,
+        records: 6, status: 'Connected', quality: 94, updated: '26 Aug 2026',
+        licence: 'NEITI Act 2007 public audit',
+        note: 'ASF liabilities ₦1.000 bn across 1,619 titles; social spend ₦1.240 bn (14 companies); NESS levy ₦7.023 bn (2023). Not a substitute for Appendix 19 production.' },
+      { id: 'nuprc2025', name: '2025 petroleum licensing-round blocks (offered)', domain: 'Assets',
+        source: 'NUPRC 2025 Licensing Round portal', format: 'JSON', sizeMb: 0.01,
+        records: 50, status: 'Partial', quality: 58, updated: '26 Aug 2026',
+        licence: 'Public portal listing; not a reuse licence for the national cadastre',
+        note: '50 PPL teasers. Not the 282-block concession register. Oil & Gas still uses placeholders for the national cadastre. No block geometry on the public maps page.' },
     ];
     return [...rows.map((d) => (LIVE[d.id] ? { ...d, ...LIVE[d.id] } : d)), ...extra];
   }

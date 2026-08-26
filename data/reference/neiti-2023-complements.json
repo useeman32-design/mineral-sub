@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "source": "NEITI Solid Minerals Industry Audit 2023",
+    "auditor": "Haruna Yahaya & Co. (Chartered Accountants)",
+    "retrieved": "2026-08-26",
+    "listingUrl": "https://neiti.gov.ng/audits/solid-minerals?period=2023&type=all",
+    "tlsNote": "neiti.gov.ng served an expired TLS certificate on retrieval; files were fetched with certificate verification disabled (curl -sk).",
+    "note": "Summaries only. Originals live in data/source/. Appendix 19 production is already in production-2023.json and is the economic evidence the app displays. These complements are provenance for ASF, social spend, unilateral revenue and the 2023 cadastre snapshot."
+  },
+  "appendix6_issued": {
+    "appendix": 6,
+    "title": "Mining leases / licences issued (audit workbook; filename says 2022)",
+    "records": 2833,
+    "byType": {
+      "EL": 1407,
+      "SSML": 789,
+      "RP": 405,
+      "ML": 48,
+      "QLS": 184
+    }
+  },
+  "appendix7_mco_2023_snapshot": {
+    "appendix": 7,
+    "title": "MCO Register of Valid Mining Licenses (2023 audit snapshot)",
+    "reconnaissancePermits": 405,
+    "signedLicenses": 2428,
+    "signedByType": {
+      "EL": 1304,
+      "ML": 52,
+      "QL": 6,
+      "QLS": 221,
+      "SSML": 845
+    },
+    "caveat": "A 2023 audit snapshot. The live register in the app is the 21 Aug 2026 eMC+ extract (11,706 titles), which supersedes this file."
+  },
+  "appendix8_status_changes": {
+    "appendix": 8,
+    "title": "Licences revoked / relinquished / transferred",
+    "revokedRecommended": 1619,
+    "relinquished": 13,
+    "transfers": 102
+  },
+  "appendix14_asf_liability": {
+    "appendix": 14,
+    "title": "MCO Annual Service Fee Liability Schedule",
+    "records": 1619,
+    "outstandingNgn": {
+      "2021": 190416500.0,
+      "2022": 462868500.0,
+      "2023": 347196000.0,
+      "sumListedYears": 1000481000.0
+    },
+    "byType": {
+      "EL": 528,
+      "ML": 31,
+      "QL": 272,
+      "QLS": 2,
+      "SSML": 786
+    },
+    "topStates": [
+      {
+        "state": "Niger",
+        "n": 151
+      },
+      {
+        "state": "Ogun",
+        "n": 141
+      },
+      {
+        "state": "Kaduna",
+        "n": 127
+      },
+      {
+        "state": "Lagos",
+        "n": 89
+      },
+      {
+        "state": "Kogi",
+        "n": 88
+      },
+      {
+        "state": "Kano",
+        "n": 88
+      },
+      {
+        "state": "Bauchi",
+        "n": 84
+      },
+      {
+        "state": "Osun",
+        "n": 74
+      }
+    ]
+  },
+  "appendix21_social_expenditure": {
+    "appendix": 21,
+    "title": "Social Expenditure 2023",
+    "companiesReporting": 14,
+    "totalNgn": 1240267669.86,
+    "byCompany": [
+      {
+        "company": "BUA CEMENT PLC",
+        "amountNgn": 693781413.1
+      },
+      {
+        "company": "BLACO NIGERIA LIMITED",
+        "amountNgn": 585000.0
+      },
+      {
+        "company": "CENTURY MINING",
+        "amountNgn": 18407500.0
+      },
+      {
+        "company": "DANGOTE CEMENT PLC",
+        "amountNgn": 458694350.0
+      },
+      {
+        "company": "FIRST PATRIOT LIMITED",
+        "amountNgn": 2024700.0
+      },
+      {
+        "company": "hi tech construction",
+        "amountNgn": 3535000.0
+      },
+      {
+        "company": "Kopek Constr Ltd",
+        "amountNgn": 625000.0
+      },
+      {
+        "company": "MASTER ROCK LTD",
+        "amountNgn": 10638656.0
+      },
+      {
+        "company": "MARK SINO",
+        "amountNgn": 6900000.0
+      },
+      {
+        "company": "Manhardi Nigeria Limited",
+        "amountNgn": 27000000.0
+      },
+      {
+        "company": "MORO ECONOMIC",
+        "amountNgn": 75000.0
+      },
+      {
+        "company": "NAEL & BIN HARMAL HYDROEXPORT NIGERIA LIMITED '(NBHH LTD)",
+        "amountNgn": 500000.0
+      },
+      {
+        "company": "Zeberced Ltd",
+        "amountNgn": 10501050.76
+      },
+      {
+        "company": "ZUMA 828 LIMITED",
+        "amountNgn": 7000000.0
+      }
+    ]
+  },
+  "appendix23_unilateral_revenue": {
+    "appendix": 23,
+    "title": "Unilaterally Disclosed Federal Government Revenue",
+    "nessLevyNgn": {
+      "2022": 4092733106.38,
+      "2023": 7022682023.51
+    },
+    "moeEiaAssessed": {
+      "records": 285,
+      "sumNgnParsed": 14250000.0,
+      "caveat": "Source cells mix strings such as \"50,000:00\" with numeric totals; parsed best-effort, not a reconciled figure."
+    },
+    "asmBuyingCentres2022": {
+      "records": 289,
+      "amountPaidNgn": 42750000.0
+    }
+  }
+}

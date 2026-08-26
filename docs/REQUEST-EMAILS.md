@@ -1,7 +1,9 @@
 # Data Request Emails — ready to send
 
 Copy each block into your mail client. Replace `[ … ]` placeholders before
-sending. Send **Email 1 first** — it is the blocker for the whole platform.
+sending. Send **Email 1 first** (NGSA occurrence database) and **Email 6 the
+same week** (MCO reuse permission for the title blocks we already display).
+Call scripts: `CALL-SCRIPTS.md`. What to fetch vs ask for: `DATA-MATRIX.md`.
 
 Practical advice for Nigerian agency correspondence:
 - Send from an **organisational address** if you have one, not a free webmail.
@@ -145,53 +147,34 @@ Practical advice for Nigerian agency correspondence:
 
 ---
 
-## Email 4 — Ministry of Mines and Steel Development: NMRDSS fault report + cadastre geometry
+## Email 4 — Ministry: NMRDSS fault report only
+
+Cadastre geometry is no longer requested here — we already hold an eMC+ snapshot.
+Reuse of that snapshot is **Email 6**, sent to MCO, not to the Ministry.
 
 **To:** iaismp.support@minesandsteel.com
 **Cc:** info@miningcadastre.gov.ng
-**Subject:** NMRDSS portal error — and request for mining title spatial data
+**Subject:** NMRDSS portal error — internal hostname not reachable from the public internet
 
 > Dear Sir/Madam,
 >
-> I am writing on two related matters concerning the Ministry's mineral data
-> systems.
+> I am writing as a member of the public who would find the Nigerian Mineral
+> Resources Decision Support System genuinely valuable, to report a fault that
+> currently prevents the map from loading any data.
 >
-> **1. NMRDSS technical fault**
->
-> The Nigerian Mineral Resources Decision Support System at
-> `https://miningdecision.minesandsteel.gov.ng/nmrdss/` currently loads its
-> interface but cannot retrieve any data. The underlying ArcGIS service returns:
+> The interface at `https://miningdecision.minesandsteel.gov.ng/nmrdss/` loads,
+> but the underlying ArcGIS service returns:
 >
 > > `Could not connect to the ArcGIS component at URL`
 > > `https://VPORTAL.ASMD.INTERNAL:7443/arcgis/sharing/rest/search`
 > > `9017$SITE_NOT_INITIALIZED`
 >
 > The server appears to be configured with an **internal hostname**
-> (`VPORTAL.ASMD.INTERNAL`) that cannot be resolved from the public internet, so
-> the map and query functions do not currently work for external users. We
-> understand this may relate to the portal's WebContextURL setting, though your
-> technical team will know best. I mention it only as a member of the public who
-> would find the system genuinely valuable were it operational.
+> (`VPORTAL.ASMD.INTERNAL`) that cannot be resolved from the public internet.
+> Your technical team will know whether this is a WebContextURL setting.
 >
-> **2. Mining title spatial data**
->
-> We are developing a mineral intelligence platform and are already using the
-> Mining Cadastre Office's published "Valid Mineral Titles" spreadsheet, which is
-> excellent. However, it contains no coordinates or licence boundaries.
->
-> We would like to request the **spatial component** of the cadastre:
-> - Mining title polygons/boundary coordinates (shapefile, GeoJSON or KML)
-> - Cadastral unit reference grid
-> - Title identifier so the geometry can be joined to the published register
->
-> This would allow the platform to answer questions such as *"is this prospective
-> area already covered by an existing licence?"* — which supports both investor
-> due diligence and transparent tenure administration.
->
-> We would be happy to sign a data-use agreement, and would of course credit the
-> Ministry and the Mining Cadastre Office wherever the data is displayed.
->
-> Thank you very much for your time and assistance.
+> I mention it only so the system can be restored for external users. Thank you
+> very much for your time.
 >
 > Yours faithfully,
 > **[Your full name]** · [Organisation]
