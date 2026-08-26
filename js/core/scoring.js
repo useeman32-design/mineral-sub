@@ -12,7 +12,7 @@
  * backend runs the real model, `runModel()` is what gets swapped for a fetch.
  */
 
-import { clamp } from './utils.js?v=1b88c83';
+import { clamp } from './utils.js?v=4a57f31';
 
 /**
  * Criterion definitions.
